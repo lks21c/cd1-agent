@@ -4,12 +4,19 @@ AWS Lambda 기반 서버리스 로그 분석 및 자동 복구 에이전트
 
 ## Overview
 
-BDP Agent는 AWS 인프라의 로그를 주기적으로 분석하여 이상을 감지하고, Bedrock Claude를 활용해 근본 원인을 분석한 후, 신뢰도 기반으로 자동 또는 수동 복구를 수행하는 지능형 에이전트입니다.
+BDP Agent는 AWS 인프라의 로그를 주기적으로 분석하여 이상을 감지하고, LLM을 활용해 근본 원인을 분석한 후, 신뢰도 기반으로 자동 또는 수동 복구를 수행하는 지능형 에이전트입니다.
+
+### LLM Provider 구성
+
+| 환경 | Provider | 모델 | 용도 |
+|------|----------|------|------|
+| **On-Premise** | vLLM | 자체 호스팅 LLM | 프로덕션 분석 |
+| **Public (Mock)** | Google Gemini | Gemini 2.5 Pro/Flash | 개발/테스트 |
 
 ### 주요 기능
 
 - **주기적 로그 감지**: 5-10분 간격으로 CloudWatch 및 RDS 통합 로그 분석
-- **AI 기반 근본 원인 분석**: Bedrock Claude를 활용한 ReAct 패턴 분석
+- **AI 기반 근본 원인 분석**: vLLM 또는 Gemini를 활용한 ReAct 패턴 분석
 - **신뢰도 기반 자동화**:
   - 0.85+ : 자동 실행
   - 0.5-0.85 : 승인 요청
@@ -42,8 +49,8 @@ BDP Agent는 AWS 인프라의 로그를 주기적으로 분석하여 이상을 �
         │              │
         ▼              ▼
 ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
-│  CloudWatch  │  │   Bedrock    │  │  EventBridge │
-│  + RDS Logs  │  │   Claude     │  │  (알림)      │
+│  CloudWatch  │  │  vLLM/Gemini │  │  EventBridge │
+│  + RDS Logs  │  │   (LLM)      │  │  (알림)      │
 └──────────────┘  └──────────────┘  └──────────────┘
 ```
 
@@ -138,7 +145,11 @@ cdk deploy
 | `RDS_CLUSTER_ARN` | RDS Aurora Serverless 클러스터 ARN | Required |
 | `RDS_SECRET_ARN` | RDS 접속 정보가 담긴 Secrets Manager ARN | Required |
 | `RDS_DATABASE` | 데이터베이스 이름 | `unified_logs` |
-| `BEDROCK_MODEL_ID` | Bedrock 모델 ID | `anthropic.claude-3-sonnet-20240229-v1:0` |
+| `LLM_PROVIDER` | LLM 제공자 (`vllm` 또는 `gemini`) | `vllm` |
+| `VLLM_BASE_URL` | vLLM 서버 엔드포인트 (On-Prem) | `http://localhost:8000/v1` |
+| `VLLM_MODEL_NAME` | vLLM 모델 이름 | Required (vllm 사용 시) |
+| `GEMINI_API_KEY` | Gemini API 키 (Public Mock) | Required (gemini 사용 시) |
+| `GEMINI_MODEL_ID` | Gemini 모델 ID | `gemini-2.5-pro` |
 | `DEDUP_TABLE` | DynamoDB 중복 제거 테이블 이름 | `bdp-anomaly-tracking` |
 
 #### DynamoDB Tables
@@ -161,15 +172,22 @@ cdk deploy
 
 ## Cost Estimation
 
-### Monthly Cost (~$16/month for 1M events)
+### Monthly Cost (~$11/month for 1M events, excluding LLM)
 
 | Component | Cost |
 |-----------|------|
 | Lambda (ARM64) | ~$5 |
 | Step Functions | ~$3 |
 | DynamoDB (On-demand) | ~$2 |
-| Bedrock Claude | ~$5 |
 | EventBridge | ~$1 |
+
+### LLM 비용
+
+| Provider | 환경 | 비용 모델 |
+|----------|------|----------|
+| **vLLM (On-Prem)** | 프로덕션 | 자체 인프라 비용 (GPU 서버) |
+| **Gemini 2.5 Pro** | Mock/개발 | ~$0.00125/1K input, ~$0.005/1K output |
+| **Gemini 2.5 Flash** | Mock/개발 | ~$0.00015/1K input, ~$0.0006/1K output |
 
 ### Cost Optimization Strategies
 

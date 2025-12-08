@@ -4,11 +4,20 @@
 
 BDP Agent의 프롬프트는 **hdsp_agent 패턴**을 따라 비즈니스 로직에서 분리되어 `src/prompts/` 디렉토리에서 관리됩니다.
 
+### LLM Provider 호환성
+
+| Provider | 지원 버전 | 특이사항 |
+|----------|----------|----------|
+| **vLLM** | OpenAI Compatible | 모든 프롬프트 호환 |
+| **Gemini 2.5 Pro** | 최신 버전 | JSON 출력 최적화 |
+| **Gemini 2.5 Flash** | 최신 버전 | 빠른 응답, 비용 효율 |
+
 ### 설계 원칙
 1. **분리된 관심사**: 프롬프트 템플릿과 실행 로직 분리
 2. **JSON 출력 강제**: 파싱 가능한 구조화된 응답
 3. **컨텍스트 주입**: 동적 데이터를 위한 포맷 함수 제공
 4. **도메인 지식 통합**: Knowledge Base 내용 삽입 지원
+5. **Provider 중립성**: vLLM/Gemini 모두에서 동작하는 프롬프트 설계
 
 ---
 
@@ -548,4 +557,88 @@ def get_analysis_prompt(variant: str = "default") -> str:
         "detailed": ANALYSIS_PROMPT_DETAILED
     }
     return variants.get(variant, ANALYSIS_PROMPT)
+```
+
+---
+
+## 9. LLM Provider 고려사항
+
+### Provider별 프롬프트 최적화
+
+#### vLLM (On-Premise)
+```python
+# vLLM은 OpenAI Compatible API를 사용
+# 시스템 프롬프트와 사용자 프롬프트를 별도로 전달 가능
+
+def format_for_vllm(system_prompt: str, user_prompt: str) -> list:
+    """vLLM용 메시지 포맷"""
+    return [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt}
+    ]
+```
+
+#### Gemini (Public Mock)
+```python
+# Gemini는 시스템 프롬프트를 사용자 프롬프트에 결합
+# JSON 출력을 위해 명시적인 지시가 더 필요할 수 있음
+
+def format_for_gemini(system_prompt: str, user_prompt: str) -> str:
+    """Gemini용 프롬프트 포맷"""
+    return f"""{system_prompt}
+
+---
+
+{user_prompt}
+
+중요: 반드시 유효한 JSON 형식으로만 응답하세요. 다른 텍스트는 포함하지 마세요."""
+```
+
+### Provider 중립적 프롬프트 설계 지침
+
+1. **명확한 JSON 스키마 제공**: 모든 LLM이 정확한 형식을 따르도록
+2. **예시 포함**: 기대하는 출력 형식의 구체적 예시 제공
+3. **간결한 지시**: 복잡한 프롬프트보다 명확하고 간결한 지시 선호
+4. **에러 처리 고려**: JSON 파싱 실패 시 복구 로직 포함
+
+### Provider별 토큰 제한
+
+| Provider | 입력 토큰 | 출력 토큰 | 권장 설정 |
+|----------|----------|----------|----------|
+| vLLM (모델 의존) | 모델 별 상이 | 모델 별 상이 | max_tokens: 4096 |
+| Gemini 2.5 Pro | 1M | 8K | max_output_tokens: 4096 |
+| Gemini 2.5 Flash | 1M | 8K | max_output_tokens: 4096 |
+
+### 응답 파싱 전략
+
+```python
+def parse_llm_response(response: str) -> dict:
+    """Provider 중립적 응답 파싱"""
+    import json
+    import re
+
+    # 1. JSON 코드 블록 추출
+    json_match = re.search(r'```json\s*([\s\S]*?)\s*```', response)
+    if json_match:
+        try:
+            return json.loads(json_match.group(1).strip())
+        except json.JSONDecodeError:
+            pass
+
+    # 2. 일반 코드 블록 추출
+    code_match = re.search(r'```\s*([\s\S]*?)\s*```', response)
+    if code_match:
+        try:
+            return json.loads(code_match.group(1).strip())
+        except json.JSONDecodeError:
+            pass
+
+    # 3. 직접 JSON 파싱
+    try:
+        return json.loads(response.strip())
+    except json.JSONDecodeError:
+        pass
+
+    # 4. 불완전한 JSON 복구
+    return recover_incomplete_json(response)
 ```

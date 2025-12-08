@@ -24,7 +24,7 @@ bdp-agent/
 │   │   └── analysis_prompts.py
 │   ├── services/           # 비즈니스 로직
 │   │   ├── __init__.py
-│   │   ├── bedrock_client.py
+│   │   ├── llm_client.py         # vLLM/Gemini 통합 클라이언트
 │   │   ├── reflection_engine.py
 │   │   ├── log_collector.py
 │   │   └── remediation_executor.py
@@ -51,6 +51,9 @@ pydantic>=2.0.0
 structlog>=24.0.0
 tenacity>=8.0.0
 python-json-logger>=2.0.0
+openai>=1.0.0            # vLLM OpenAI Compatible API
+google-generativeai>=0.8.0  # Gemini API
+httpx>=0.27.0            # HTTP 클라이언트
 ```
 
 ---
@@ -543,7 +546,7 @@ def lambda_handler(event: Dict, context: Any, log) -> Dict:
 
 ### 2.3 Analysis Handler
 
-Bedrock을 사용한 근본 원인 분석 Lambda:
+vLLM 또는 Gemini를 사용한 근본 원인 분석 Lambda:
 
 ```python
 # src/handlers/analysis_handler.py
@@ -552,7 +555,7 @@ from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 
 from .base_handler import BaseHandler, lambda_handler_wrapper
-from ..services.bedrock_client import BedrockClient
+from ..services.llm_client import LLMClient
 from ..services.reflection_engine import ReflectionEngine
 from ..prompts.analysis_prompts import AnalysisPrompts
 
@@ -575,11 +578,11 @@ class AnalysisResult(BaseModel):
 
 
 class AnalysisHandler(BaseHandler[AnalysisInput]):
-    """Handler for root cause analysis using Bedrock."""
+    """Handler for root cause analysis using vLLM or Gemini."""
 
     def __init__(self):
         super().__init__(AnalysisInput)
-        self.bedrock = BedrockClient()
+        self.llm = LLMClient()  # vLLM 또는 Gemini 자동 선택
         self.reflection = ReflectionEngine()
         self.prompts = AnalysisPrompts()
 
@@ -599,8 +602,8 @@ class AnalysisHandler(BaseHandler[AnalysisInput]):
             previous_attempts=input_data.previous_attempts
         )
 
-        # 4. Bedrock Claude 호출
-        raw_analysis = self.bedrock.invoke(prompt)
+        # 4. LLM 호출 (vLLM 또는 Gemini)
+        raw_analysis = self.llm.invoke(prompt)
 
         # 5. Reflection을 통한 신뢰도 평가
         reflection_result = self.reflection.evaluate(
@@ -733,87 +736,100 @@ def lambda_handler(event: Dict, context: Any, log) -> Dict:
 
 ## Phase 3: Core Services
 
-### 3.1 Bedrock Client
+### 3.1 LLM Client (vLLM / Gemini 통합)
 
 ```python
-# src/services/bedrock_client.py
+# src/services/llm_client.py
 import json
 import os
+from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional
 from tenacity import retry, stop_after_attempt, wait_exponential
-import boto3
 import structlog
 
 logger = structlog.get_logger()
 
 
-class BedrockClient:
-    """Client for AWS Bedrock Claude API."""
+class BaseLLMProvider(ABC):
+    """LLM Provider 추상 클래스"""
 
-    DEFAULT_MODEL = "anthropic.claude-3-sonnet-20240229-v1:0"
+    @abstractmethod
+    def invoke(self, prompt: str, max_tokens: int, temperature: float) -> Dict[str, Any]:
+        pass
 
-    def __init__(self, model_id: Optional[str] = None):
-        self.client = boto3.client('bedrock-runtime')
-        self.model_id = model_id or os.environ.get('BEDROCK_MODEL_ID', self.DEFAULT_MODEL)
-        self.logger = logger.bind(service="bedrock_client")
+    @abstractmethod
+    def invoke_with_system(self, system_prompt: str, user_prompt: str,
+                          max_tokens: int, temperature: float) -> Dict[str, Any]:
+        pass
+
+
+class VLLMProvider(BaseLLMProvider):
+    """vLLM OpenAI Compatible API Provider (On-Premise)"""
+
+    def __init__(self):
+        from openai import OpenAI
+
+        self.base_url = os.environ.get('VLLM_BASE_URL', 'http://localhost:8000/v1')
+        self.model_name = os.environ.get('VLLM_MODEL_NAME')
+        self.api_key = os.environ.get('VLLM_API_KEY', 'EMPTY')  # vLLM은 API key 불필요
+
+        if not self.model_name:
+            raise ValueError("VLLM_MODEL_NAME 환경 변수가 필요합니다")
+
+        self.client = OpenAI(
+            base_url=self.base_url,
+            api_key=self.api_key
+        )
+        self.logger = logger.bind(service="vllm_provider")
 
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=2, max=30)
     )
-    def invoke(
-        self,
-        prompt: str,
-        max_tokens: int = 4096,
-        temperature: float = 0.3
-    ) -> Dict[str, Any]:
-        """Invoke Bedrock Claude with retry logic."""
-
-        request_body = {
-            "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": max_tokens,
-            "temperature": temperature,
-            "messages": [
-                {"role": "user", "content": prompt}
-            ]
-        }
-
+    def invoke(self, prompt: str, max_tokens: int = 4096,
+               temperature: float = 0.3) -> Dict[str, Any]:
+        """vLLM 호출"""
         self.logger.info(
-            "bedrock_invoke_start",
-            model=self.model_id,
-            prompt_length=len(prompt),
-            max_tokens=max_tokens
+            "vllm_invoke_start",
+            model=self.model_name,
+            prompt_length=len(prompt)
         )
 
-        try:
-            response = self.client.invoke_model(
-                modelId=self.model_id,
-                body=json.dumps(request_body),
-                contentType="application/json",
-                accept="application/json"
-            )
+        response = self.client.chat.completions.create(
+            model=self.model_name,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=max_tokens,
+            temperature=temperature
+        )
 
-            response_body = json.loads(response['body'].read())
-            content = response_body.get('content', [{}])[0].get('text', '')
+        content = response.choices[0].message.content
 
-            # JSON 응답 파싱 시도
-            parsed_content = self._parse_json_response(content)
+        self.logger.info(
+            "vllm_invoke_success",
+            input_tokens=response.usage.prompt_tokens,
+            output_tokens=response.usage.completion_tokens
+        )
 
-            self.logger.info(
-                "bedrock_invoke_success",
-                input_tokens=response_body.get('usage', {}).get('input_tokens'),
-                output_tokens=response_body.get('usage', {}).get('output_tokens')
-            )
+        return self._parse_json_response(content)
 
-            return parsed_content
+    def invoke_with_system(self, system_prompt: str, user_prompt: str,
+                          max_tokens: int = 4096, temperature: float = 0.3) -> Dict[str, Any]:
+        """시스템 프롬프트와 함께 호출"""
+        response = self.client.chat.completions.create(
+            model=self.model_name,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            max_tokens=max_tokens,
+            temperature=temperature
+        )
 
-        except Exception as e:
-            self.logger.error("bedrock_invoke_error", error=str(e))
-            raise
+        content = response.choices[0].message.content
+        return self._parse_json_response(content)
 
     def _parse_json_response(self, content: str) -> Dict[str, Any]:
-        """Parse JSON from Claude response, handling markdown code blocks."""
-        # JSON 블록 추출 시도
+        """JSON 응답 파싱"""
         if '```json' in content:
             start = content.find('```json') + 7
             end = content.find('```', start)
@@ -828,44 +844,108 @@ class BedrockClient:
         try:
             return json.loads(json_str)
         except json.JSONDecodeError:
-            # JSON 파싱 실패 시 원본 텍스트 반환
             return {"raw_response": content}
 
-    def invoke_with_system(
-        self,
-        system_prompt: str,
-        user_prompt: str,
-        max_tokens: int = 4096,
-        temperature: float = 0.3
-    ) -> Dict[str, Any]:
-        """Invoke with separate system and user prompts."""
 
-        request_body = {
-            "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": max_tokens,
-            "temperature": temperature,
-            "system": system_prompt,
-            "messages": [
-                {"role": "user", "content": user_prompt}
-            ]
+class GeminiProvider(BaseLLMProvider):
+    """Google Gemini API Provider (Public Mock)"""
+
+    def __init__(self):
+        import google.generativeai as genai
+
+        self.api_key = os.environ.get('GEMINI_API_KEY')
+        self.model_id = os.environ.get('GEMINI_MODEL_ID', 'gemini-2.5-pro')
+
+        if not self.api_key:
+            raise ValueError("GEMINI_API_KEY 환경 변수가 필요합니다")
+
+        genai.configure(api_key=self.api_key)
+        self.model = genai.GenerativeModel(self.model_id)
+        self.logger = logger.bind(service="gemini_provider")
+
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=30)
+    )
+    def invoke(self, prompt: str, max_tokens: int = 4096,
+               temperature: float = 0.3) -> Dict[str, Any]:
+        """Gemini 호출"""
+        self.logger.info(
+            "gemini_invoke_start",
+            model=self.model_id,
+            prompt_length=len(prompt)
+        )
+
+        generation_config = {
+            "max_output_tokens": max_tokens,
+            "temperature": temperature
         }
 
+        response = self.model.generate_content(
+            prompt,
+            generation_config=generation_config
+        )
+
+        content = response.text
+
+        self.logger.info(
+            "gemini_invoke_success",
+            model=self.model_id
+        )
+
+        return self._parse_json_response(content)
+
+    def invoke_with_system(self, system_prompt: str, user_prompt: str,
+                          max_tokens: int = 4096, temperature: float = 0.3) -> Dict[str, Any]:
+        """시스템 프롬프트와 함께 호출"""
+        combined_prompt = f"{system_prompt}\n\n{user_prompt}"
+        return self.invoke(combined_prompt, max_tokens, temperature)
+
+    def _parse_json_response(self, content: str) -> Dict[str, Any]:
+        """JSON 응답 파싱"""
+        if '```json' in content:
+            start = content.find('```json') + 7
+            end = content.find('```', start)
+            json_str = content[start:end].strip()
+        elif '```' in content:
+            start = content.find('```') + 3
+            end = content.find('```', start)
+            json_str = content[start:end].strip()
+        else:
+            json_str = content.strip()
+
         try:
-            response = self.client.invoke_model(
-                modelId=self.model_id,
-                body=json.dumps(request_body),
-                contentType="application/json",
-                accept="application/json"
-            )
+            return json.loads(json_str)
+        except json.JSONDecodeError:
+            return {"raw_response": content}
 
-            response_body = json.loads(response['body'].read())
-            content = response_body.get('content', [{}])[0].get('text', '')
 
-            return self._parse_json_response(content)
+class LLMClient:
+    """통합 LLM 클라이언트 - Provider 자동 선택"""
 
-        except Exception as e:
-            self.logger.error("bedrock_invoke_error", error=str(e))
-            raise
+    def __init__(self, provider: Optional[str] = None):
+        provider = provider or os.environ.get('LLM_PROVIDER', 'vllm')
+
+        if provider == 'vllm':
+            self._provider = VLLMProvider()
+        elif provider == 'gemini':
+            self._provider = GeminiProvider()
+        else:
+            raise ValueError(f"지원하지 않는 LLM provider: {provider}")
+
+        self.logger = logger.bind(service="llm_client", provider=provider)
+
+    def invoke(self, prompt: str, max_tokens: int = 4096,
+               temperature: float = 0.3) -> Dict[str, Any]:
+        """LLM 호출"""
+        return self._provider.invoke(prompt, max_tokens, temperature)
+
+    def invoke_with_system(self, system_prompt: str, user_prompt: str,
+                          max_tokens: int = 4096, temperature: float = 0.3) -> Dict[str, Any]:
+        """시스템 프롬프트와 함께 호출"""
+        return self._provider.invoke_with_system(
+            system_prompt, user_prompt, max_tokens, temperature
+        )
 ```
 
 ### 3.2 Reflection Engine
@@ -1845,7 +1925,13 @@ class BdpAgentStack(Stack):
             memory_size=1024,
             timeout=Duration.seconds(120),
             environment={
-                "BEDROCK_MODEL_ID": "anthropic.claude-3-sonnet-20240229-v1:0",
+                # vLLM (On-Premise) 설정
+                "LLM_PROVIDER": "vllm",  # 또는 "gemini"
+                "VLLM_BASE_URL": "http://your-vllm-server:8000/v1",
+                "VLLM_MODEL_NAME": "your-model-name",
+                # Gemini (Public Mock) 설정 - 필요시 활성화
+                # "LLM_PROVIDER": "gemini",
+                # "GEMINI_MODEL_ID": "gemini-2.5-pro",
             },
             runtime=lambda_.Runtime.PYTHON_3_11,
             architecture=lambda_.Architecture.ARM_64,
@@ -1854,10 +1940,16 @@ class BdpAgentStack(Stack):
         # Grant permissions
         dedup_table.grant_read_write_data(detection_fn)
 
-        # Bedrock permissions
+        # VPC 설정 (vLLM On-Prem 접근 시 필요)
+        # analysis_fn.add_to_role_policy(iam.PolicyStatement(
+        #     actions=["ec2:CreateNetworkInterface", "ec2:DescribeNetworkInterfaces"],
+        #     resources=["*"]
+        # ))
+
+        # Secrets Manager 접근 (API 키 저장 시)
         analysis_fn.add_to_role_policy(iam.PolicyStatement(
-            actions=["bedrock:InvokeModel"],
-            resources=["*"]
+            actions=["secretsmanager:GetSecretValue"],
+            resources=["arn:aws:secretsmanager:*:*:secret:bdp-llm-*"]
         ))
 
         # Step Functions
@@ -2003,10 +2095,12 @@ class TestReflectionEngine:
     {
       "type": "metric",
       "properties": {
-        "title": "Bedrock Token Usage",
+        "title": "LLM Usage (Custom Metrics)",
         "metrics": [
-          ["AWS/Bedrock", "InputTokenCount", "ModelId", "anthropic.claude-3-sonnet-20240229-v1:0"],
-          [".", "OutputTokenCount", ".", "."]
+          ["BDP/LLM", "InvocationCount"],
+          [".", "InputTokenCount"],
+          [".", "OutputTokenCount"],
+          [".", "Latency", {"stat": "p99"}]
         ],
         "period": 3600
       }
@@ -2024,12 +2118,15 @@ class TestReflectionEngine:
 - [ ] 환경 변수 암호화 (KMS)
 - [ ] RDS 접근에 Secrets Manager 사용
 - [ ] VPC 엔드포인트로 private 통신
+- [ ] Gemini API 키는 Secrets Manager에 저장
+- [ ] vLLM 서버 접근은 VPC 내부 통신
 
 ### Cost Optimization
 - [ ] ARM64/Graviton2 아키텍처 사용
 - [ ] Provisioned Concurrency 대신 EventBridge Warmup
 - [ ] CloudWatch Field Indexing 활성화
 - [ ] Hierarchical Summarization으로 토큰 절감
+- [ ] 개발 환경에서는 Gemini Flash 사용 (비용 절감)
 
 ### Reliability
 - [ ] Step Functions Retry 설정

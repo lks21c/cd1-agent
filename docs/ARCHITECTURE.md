@@ -2,7 +2,14 @@
 
 ## Overview
 
-BDP (Bedrock Detection & Prevention) Agent는 AWS Lambda 기반 서버리스 아키텍처로 구현된 지능형 로그 분석 및 자동 복구 시스템입니다.
+BDP (Big Data Platform) Agent는 AWS Lambda 기반 서버리스 아키텍처로 구현된 지능형 로그 분석 및 자동 복구 시스템입니다.
+
+### LLM Provider 아키텍처
+
+| 환경 | Provider | 설명 |
+|------|----------|------|
+| **On-Premise** | vLLM | 자체 호스팅 LLM 서버 (OpenAI Compatible API) |
+| **Public/Mock** | Gemini | Google Gemini 2.5 Pro/Flash API |
 
 ### 핵심 특징
 - **ReAct 패턴**: Plan → Execute → Reflect → Replan 사이클
@@ -54,8 +61,8 @@ BDP (Bedrock Detection & Prevention) Agent는 AWS Lambda 기반 서버리스 아
 │                          │                              │                    │
 │                          ▼                              ▼                    │
 │                   ┌─────────────┐              ┌─────────────┐               │
-│                   │   Bedrock   │              │  Remediate  │               │
-│                   │   Claude    │              │   Actions   │               │
+│                   │ vLLM/Gemini │              │  Remediate  │               │
+│                   │    (LLM)    │              │   Actions   │               │
 │                   └─────────────┘              └─────────────┘               │
 │                                                      │                       │
 │                                                      ▼                       │
@@ -133,23 +140,42 @@ BDP (Bedrock Detection & Prevention) Agent는 AWS Lambda 기반 서버리스 아
 **주요 기능**:
 1. Hierarchical Log Summarization (토큰 80-90% 절감)
 2. Knowledge Base 로딩 (Mini RAG)
-3. Bedrock Claude 분석 요청
+3. vLLM 또는 Gemini 분석 요청
 4. Reflection Engine을 통한 신뢰도 평가
 
-#### Bedrock Integration
+#### LLM Integration
 
+**vLLM (On-Premise)** - OpenAI Compatible API:
 ```python
-# Bedrock 모델 설정
-MODEL_ID = "anthropic.claude-3-sonnet-20240229-v1:0"
+# vLLM 설정
+VLLM_BASE_URL = "http://your-vllm-server:8000/v1"
+VLLM_MODEL_NAME = "your-model-name"
 
-# 분석 요청 구조
+# 분석 요청 구조 (OpenAI Compatible)
 {
-    "anthropic_version": "bedrock-2023-05-31",
+    "model": VLLM_MODEL_NAME,
     "max_tokens": 4096,
     "temperature": 0.3,
     "messages": [
         {"role": "user", "content": formatted_prompt}
     ]
+}
+```
+
+**Gemini (Public Mock)** - Google AI API:
+```python
+# Gemini 설정
+GEMINI_MODEL_ID = "gemini-2.5-pro"  # 또는 "gemini-2.5-flash"
+
+# 분석 요청 구조
+{
+    "contents": [
+        {"role": "user", "parts": [{"text": formatted_prompt}]}
+    ],
+    "generationConfig": {
+        "maxOutputTokens": 4096,
+        "temperature": 0.3
+    }
 }
 ```
 
@@ -395,8 +421,10 @@ Step Functions: AnalyzeRootCause
 | Role | Permissions |
 |------|-------------|
 | bdp-detection-role | CloudWatch Logs, RDS Data API, DynamoDB |
-| bdp-analysis-role | Bedrock, S3 (knowledge base), DynamoDB |
+| bdp-analysis-role | VPC (vLLM 접근), Secrets Manager (API Keys), S3 (knowledge base), DynamoDB |
 | bdp-remediation-role | Lambda, RDS, Auto Scaling, EventBridge |
+
+> **Note**: vLLM 사용 시 Lambda가 On-Prem 서버에 접근하려면 VPC 설정 및 적절한 네트워크 구성이 필요합니다.
 
 ---
 
@@ -448,7 +476,7 @@ Step Functions: AnalyzeRootCause
 ### CloudWatch Alarms
 - Lambda 에러율 > 5%
 - Step Functions 실패율 > 10%
-- Bedrock API 지연 > 10초
+- LLM API 지연 > 10초 (vLLM/Gemini)
 
 ### Dashboards
 - 이상 감지 현황

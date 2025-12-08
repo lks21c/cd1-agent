@@ -4,6 +4,14 @@
 
 BDP Agent는 비용 효율성을 핵심 설계 원칙으로 삼아, 다양한 최적화 기법을 통해 AWS 비용을 최소화합니다.
 
+### LLM Provider별 비용 구조
+
+| Provider | 환경 | 비용 모델 |
+|----------|------|----------|
+| **vLLM (On-Prem)** | 프로덕션 | 고정 인프라 비용 (GPU 서버) |
+| **Gemini 2.5 Pro** | Mock/개발 | ~$0.00125/1K input, ~$0.005/1K output |
+| **Gemini 2.5 Flash** | Mock/개발 | ~$0.00015/1K input, ~$0.0006/1K output |
+
 ### 예상 비용 절감 효과
 
 | 최적화 기법 | 절감률 | 적용 난이도 |
@@ -11,7 +19,7 @@ BDP Agent는 비용 효율성을 핵심 설계 원칙으로 삼아, 다양한 �
 | CloudWatch Field Indexing | 67% (데이터 스캔) | 쉬움 |
 | ARM64/Graviton2 | 20-34% (Lambda) | 쉬움 |
 | Hierarchical Summarization | 80-90% (토큰) | 중간 |
-| Deduplication | 50%+ (Bedrock 호출) | 중간 |
+| Deduplication | 50%+ (LLM 호출) | 중간 |
 | Pre-aggregated Metrics | 90%+ (쿼리) | 중간 |
 | EventBridge Warmup | Cold start 제거 | 쉬움 |
 
@@ -160,7 +168,7 @@ class QueryCache:
 
 ### 2.1 Hierarchical Summarization
 
-로그를 계층적으로 요약하여 Bedrock에 전달되는 토큰 수를 80-90% 줄입니다.
+로그를 계층적으로 요약하여 LLM에 전달되는 토큰 수를 80-90% 줄입니다.
 
 ```python
 class TokenOptimizer:
@@ -251,15 +259,21 @@ class TokenOptimizer:
 ```
 Before (Raw Logs):
 - 1000 로그 × 평균 200 토큰 = 200,000 토큰
-- Bedrock 비용: ~$3.00
 
 After (Hierarchical Summarization):
 - 그룹화: 5개 카테고리
 - 샘플링: 25개 대표 로그
 - 추출: 핵심 필드만
 - 결과: ~4,000 토큰
-- Bedrock 비용: ~$0.06
 - 절감: 98%
+
+Gemini 2.5 Pro 기준 비용:
+- Before: 200K × $0.00125/1K = $0.25
+- After: 4K × $0.00125/1K = $0.005
+
+Gemini 2.5 Flash 기준 비용:
+- Before: 200K × $0.00015/1K = $0.03
+- After: 4K × $0.00015/1K = $0.0006
 ```
 
 ### 2.2 Incremental Context
@@ -422,7 +436,7 @@ WarmupRule:
 
 ---
 
-## 4. Deduplication (50%+ Bedrock 호출 절감)
+## 4. Deduplication (50%+ LLM 호출 절감)
 
 동일한 이상 현상의 중복 분석을 방지합니다.
 
@@ -505,10 +519,10 @@ class DeduplicationService:
 ```
 Before (중복 분석):
 - 1시간 동안 동일 에러 100회 발생
-- 100회 × Bedrock 분석 = 높은 비용
+- 100회 × LLM 분석 = 높은 비용
 
 After (Deduplication):
-- 첫 발생만 Bedrock 분석
+- 첫 발생만 LLM 분석
 - 나머지 99회는 DynamoDB 조회만
 - 절감: 99%
 ```
@@ -618,16 +632,16 @@ class CostAlarms:
         # SNS 토픽
         self.alarm_topic = sns.Topic(scope, "CostAlarmTopic")
 
-        # Bedrock 비용 알람
+        # LLM 호출 횟수 알람 (Custom Metric)
         cloudwatch.Alarm(
-            scope, "BedrockCostAlarm",
+            scope, "LLMCallAlarm",
             metric=cloudwatch.Metric(
-                namespace="AWS/Bedrock",
-                metric_name="InputTokenCount",
+                namespace="BDP/LLM",
+                metric_name="InvocationCount",
                 statistic="Sum",
                 period=Duration.hours(1)
             ),
-            threshold=100000,  # 시간당 10만 토큰
+            threshold=1000,  # 시간당 1000회
             evaluation_periods=1,
             comparison_operator=cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD
         ).add_alarm_action(cloudwatch_actions.SnsAction(self.alarm_topic))
@@ -655,10 +669,12 @@ widgets = [
     {
         "type": "metric",
         "properties": {
-            "title": "Bedrock Token Usage",
+            "title": "LLM Usage (Custom Metrics)",
             "metrics": [
-                ["AWS/Bedrock", "InputTokenCount", {"stat": "Sum"}],
-                ["AWS/Bedrock", "OutputTokenCount", {"stat": "Sum"}]
+                ["BDP/LLM", "InvocationCount", {"stat": "Sum"}],
+                ["BDP/LLM", "InputTokenCount", {"stat": "Sum"}],
+                ["BDP/LLM", "OutputTokenCount", {"stat": "Sum"}],
+                ["BDP/LLM", "Latency", {"stat": "p99"}]
             ]
         }
     },
@@ -679,23 +695,30 @@ widgets = [
 
 ## 7. Cost Estimation
 
-### 월간 비용 예측 (1M 로그 이벤트 기준)
+### 월간 비용 예측 (1M 로그 이벤트 기준, LLM 비용 제외)
 
 | 서비스 | 사용량 | 단가 | 월 비용 |
 |--------|--------|------|---------|
 | Lambda (Detection) | 8,640 호출 × 500ms | $0.20/1M ms | $0.86 |
 | Lambda (Analysis) | 1,000 호출 × 2s | $0.20/1M ms | $0.40 |
-| Bedrock Claude | 500K 토큰 | $0.015/1K | $7.50 |
 | DynamoDB | 1GB 저장, 100K R/W | On-demand | $1.50 |
 | CloudWatch Logs | 10GB 수집 | $0.50/GB | $5.00 |
 | Step Functions | 10K 전환 | $0.025/1K | $0.25 |
-| **합계** | | | **~$16/월** |
+| **합계 (AWS)** | | | **~$8/월** |
+
+### LLM 비용 (별도)
+
+| Provider | 사용량 | 월 비용 |
+|----------|--------|---------|
+| **vLLM (On-Prem)** | 고정 인프라 | GPU 서버 운영 비용 |
+| **Gemini 2.5 Pro** | 500K input + 100K output | ~$1.13 |
+| **Gemini 2.5 Flash** | 500K input + 100K output | ~$0.14 |
 
 ### 최적화 전/후 비교
 
 | 항목 | 최적화 전 | 최적화 후 | 절감액 |
 |------|----------|----------|--------|
 | CloudWatch 쿼리 | $50 | $17 | $33 (67%) |
-| Bedrock 토큰 | $150 | $15 | $135 (90%) |
+| LLM 토큰 (Gemini Pro 기준) | $15 | $1.5 | $13.5 (90%) |
 | Lambda 실행 | $10 | $6.5 | $3.5 (35%) |
-| **합계** | **$210** | **$38.5** | **$171.5 (82%)** |
+| **합계** | **$75** | **$25** | **$50 (67%)** |
