@@ -1,7 +1,7 @@
 """
 Reflection Engine for BDP Agent.
 
-이 모듈은 분석 결과의 품질을 평가하고 신뢰도 점수를 계산합니다.
+이 모듈은 LLM 분석 결과의 품질을 평가하고 신뢰도 점수를 계산합니다.
 hdsp_agent의 Reflection 패턴을 따릅니다.
 
 신뢰도 기반 자동화:
@@ -46,7 +46,7 @@ class ReflectionEngine:
         분석 품질 평가 및 신뢰도 점수 계산.
 
         Args:
-            analysis: Bedrock 분석 결과
+            analysis: LLM 분석 결과
             evidence: 로그 요약 증거
             context: 이전 시도 컨텍스트
 

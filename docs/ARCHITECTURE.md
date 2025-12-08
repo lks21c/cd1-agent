@@ -121,7 +121,7 @@ BDP Agent는 Provider Abstraction 패턴을 사용하여 LLM과 AWS 서비스를
 #### Lambda: bdp-detection
 | 속성 | 값 |
 |------|-----|
-| Runtime | Python 3.11 |
+| Runtime | Python 3.12 |
 | Architecture | ARM64 (Graviton2) |
 | Memory | 512MB |
 | Timeout | 60s |
@@ -152,7 +152,7 @@ BDP Agent는 Provider Abstraction 패턴을 사용하여 LLM과 AWS 서비스를
 #### Lambda: bdp-analysis
 | 속성 | 값 |
 |------|-----|
-| Runtime | Python 3.11 |
+| Runtime | Python 3.12 |
 | Architecture | ARM64 |
 | Memory | 1024MB |
 | Timeout | 120s |
@@ -205,7 +205,7 @@ GEMINI_MODEL_ID = "gemini-2.5-pro"  # 또는 "gemini-2.5-flash"
 #### Lambda: bdp-remediation
 | 속성 | 값 |
 |------|-----|
-| Runtime | Python 3.11 |
+| Runtime | Python 3.12 |
 | Architecture | ARM64 |
 | Memory | 512MB |
 | Timeout | 60s |

@@ -585,7 +585,7 @@ class MockLambdaProvider(BaseLambdaProvider):
         self.call_count += 1
         return self.functions.get(function_name, {
             'FunctionName': function_name,
-            'Runtime': 'python3.11',
+            'Runtime': 'python3.12',
             'MemorySize': 256,
             'Timeout': 30,
             'Environment': {'Variables': {}},

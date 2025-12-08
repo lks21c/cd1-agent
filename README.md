@@ -132,7 +132,7 @@ bdp-agent/
 
 ### Prerequisites
 
-- Python 3.11+
+- Python 3.12+
 - AWS CLI configured
 - AWS CDK 2.x
 

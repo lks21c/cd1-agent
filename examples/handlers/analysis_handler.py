@@ -1,7 +1,7 @@
 """
 Analysis Handler for BDP Agent.
 
-이 핸들러는 Bedrock Claude를 사용하여 근본 원인 분석을 수행합니다.
+이 핸들러는 LLM(vLLM/Gemini)을 사용하여 근본 원인 분석을 수행합니다.
 - 계층적 로그 요약 (토큰 최적화)
 - Knowledge Base 로딩
 - Reflection을 통한 신뢰도 평가
@@ -11,7 +11,7 @@ from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 
 from .base_handler import BaseHandler, lambda_handler_wrapper
-from ..services.bedrock_client import BedrockClient
+from ..services.llm_client import LLMClient
 from ..services.reflection_engine import ReflectionEngine
 from ..prompts.analysis_prompts import AnalysisPrompts
 
@@ -34,11 +34,11 @@ class AnalysisResult(BaseModel):
 
 
 class AnalysisHandler(BaseHandler[AnalysisInput]):
-    """Bedrock을 사용한 근본 원인 분석 핸들러."""
+    """LLM(vLLM/Gemini)을 사용한 근본 원인 분석 핸들러."""
 
     def __init__(self):
         super().__init__(AnalysisInput)
-        self.bedrock = BedrockClient()
+        self.llm = LLMClient()
         self.reflection = ReflectionEngine()
         self.prompts = AnalysisPrompts()
 
@@ -59,8 +59,8 @@ class AnalysisHandler(BaseHandler[AnalysisInput]):
             previous_attempts=input_data.previous_attempts
         )
 
-        # 4. Bedrock Claude 호출
-        raw_analysis = self.bedrock.invoke(prompt)
+        # 4. LLM 호출 (vLLM 또는 Gemini)
+        raw_analysis = self.llm.invoke(prompt)
 
         # 5. Reflection을 통한 신뢰도 평가
         reflection_result = self.reflection.evaluate(

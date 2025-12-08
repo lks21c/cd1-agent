@@ -328,7 +328,7 @@ pip check
 
 # 2. ARM64용 레이어 빌드
 docker run --platform linux/arm64 \
-  public.ecr.aws/lambda/python:3.11 \
+  public.ecr.aws/lambda/python:3.12 \
   pip install -t /var/task/python/ boto3 requests
 
 # 3. 함수 설정 업데이트
