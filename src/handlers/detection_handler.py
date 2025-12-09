@@ -384,7 +384,11 @@ class DetectionHandler(BaseHandler):
             self.logger.error(f"Failed to store detection result: {e}")
 
     def _trigger_analysis(self, anomaly_record: Dict[str, Any]) -> None:
-        """Trigger analysis workflow via EventBridge."""
+        """Publish anomaly event to EventBridge for downstream processing.
+
+        Note: This uses EventBridge for event publishing (not scheduling).
+        The Lambda itself is triggered by MWAA (Airflow DAG).
+        """
         try:
             self.aws_client.put_eventbridge_event(
                 event_bus=self.config["event_bus"],

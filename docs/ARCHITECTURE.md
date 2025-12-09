@@ -36,7 +36,7 @@ BDP Agent는 Provider Abstraction 패턴을 사용하여 LLM과 AWS 서비스를
 - **하이브리드 오케스트레이션**: Step Functions (외부 워크플로우) + LangGraph (내부 에이전트)
 - **신뢰도 기반 자동화**: 0.85+ 자동 실행, 0.5-0.85 승인 요청
 - **비용 최적화**: Field Indexing, Hierarchical Summarization, Deduplication
-- **서버리스**: Lambda + Step Functions + EventBridge
+- **서버리스**: Lambda + Step Functions + MWAA
 
 ---
 
@@ -48,8 +48,8 @@ BDP Agent는 Provider Abstraction 패턴을 사용하여 LLM과 AWS 서비스를
 └─────────────────────────────────────────────────────────────────────────────┘
 
                               ┌──────────────────┐
-                              │   EventBridge    │
-                              │   (5-10분 주기)   │
+                              │      MWAA        │
+                              │  (Airflow DAG)   │
                               └────────┬─────────┘
                                        │
                                        ▼
@@ -125,7 +125,7 @@ BDP Agent는 Provider Abstraction 패턴을 사용하여 LLM과 AWS 서비스를
 | Architecture | ARM64 (Graviton2) |
 | Memory | 512MB |
 | Timeout | 60s |
-| Trigger | EventBridge (configurable 5-10 min) |
+| Trigger | MWAA (Airflow DAG) |
 
 **주요 기능**:
 1. CloudWatch Anomaly Detection 결과 조회
@@ -357,8 +357,8 @@ Step Functions와 LangGraph를 결합하여 각 컴포넌트의 강점을 활용
 └─────────────────────────────────────────────────────────────────────────────┘
 
                            ┌──────────────────┐
-                           │  EventBridge     │
-                           │  (5-10분 주기)   │
+                           │      MWAA        │
+                           │  (Airflow DAG)   │
                            └────────┬─────────┘
                                     │
                                     ▼
@@ -734,11 +734,10 @@ Step Functions: AnalyzeRootCause
 
 | Function | Memory | Timeout | Architecture | Trigger |
 |----------|--------|---------|--------------|---------|
-| bdp-detection | 512MB | 60s | ARM64 | EventBridge |
+| bdp-detection | 512MB | 60s | ARM64 | MWAA (Airflow DAG) |
 | bdp-analysis | 1024MB | 120s | ARM64 | Step Functions |
 | bdp-remediation | 512MB | 60s | ARM64 | Step Functions |
 | bdp-approval | 256MB | 30s | ARM64 | API Gateway |
-| bdp-warmup | 128MB | 5s | ARM64 | EventBridge (5min) |
 
 ### DynamoDB Tables
 
@@ -748,12 +747,11 @@ Step Functions: AnalyzeRootCause
 | bdp-workflow-state | On-Demand | 30 days | Workflow state |
 | bdp-remediation-history | On-Demand | 90 days | Audit trail |
 
-### EventBridge Rules
+### MWAA (Amazon Managed Workflows for Apache Airflow)
 
-| Rule | Schedule | Target |
-|------|----------|--------|
-| bdp-detection-schedule | rate(5 minutes) | bdp-detection |
-| bdp-warmup-schedule | rate(5 minutes) | bdp-warmup |
+| DAG | Schedule | Target |
+|-----|----------|--------|
+| bdp_detection_dag | Configurable (Airflow cron) | bdp-detection Lambda / Step Functions |
 
 ### Step Functions
 

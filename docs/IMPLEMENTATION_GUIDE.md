@@ -2105,22 +2105,34 @@ class BdpAgentStack(Stack):
             timeout=Duration.minutes(30)
         )
 
-        # EventBridge Schedule
-        detection_rule = events.Rule(
-            self, "DetectionSchedule",
-            schedule=events.Schedule.rate(Duration.minutes(5)),
-            targets=[targets.SfnStateMachine(state_machine)]
-        )
-
-        # Warmup Rule (Cold Start 제거)
-        warmup_rule = events.Rule(
-            self, "WarmupSchedule",
-            schedule=events.Schedule.rate(Duration.minutes(5)),
-            targets=[
-                targets.LambdaFunction(detection_fn),
-                targets.LambdaFunction(analysis_fn)
-            ]
-        )
+        # MWAA (Airflow) DAG로 트리거 - Airflow DAG에서 Lambda/Step Functions 호출
+        # 아래는 MWAA DAG 예시 (dags/bdp_detection_dag.py)
+        #
+        # from airflow import DAG
+        # from airflow.providers.amazon.aws.operators.lambda_function import LambdaInvokeFunctionOperator
+        # from airflow.providers.amazon.aws.operators.step_function import StepFunctionStartExecutionOperator
+        # from datetime import datetime, timedelta
+        #
+        # default_args = {
+        #     'owner': 'bdp-team',
+        #     'depends_on_past': False,
+        #     'retries': 1,
+        #     'retry_delay': timedelta(minutes=5),
+        # }
+        #
+        # with DAG(
+        #     'bdp_detection_dag',
+        #     default_args=default_args,
+        #     description='BDP Agent Detection DAG',
+        #     schedule_interval='*/5 * * * *',  # 5분마다 실행
+        #     start_date=datetime(2024, 1, 1),
+        #     catchup=False,
+        # ) as dag:
+        #     start_workflow = StepFunctionStartExecutionOperator(
+        #         task_id='start_bdp_workflow',
+        #         state_machine_arn='arn:aws:states:...:bdp-main-workflow',
+        #         input='{"source": "mwaa"}',
+        #     )
 ```
 
 ---

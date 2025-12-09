@@ -384,55 +384,38 @@ MEMORY_RECOMMENDATIONS = {
 }
 ```
 
-### 3.3 Cold Start 제거 (EventBridge Warmup)
+### 3.3 Cold Start 제거 (Provisioned Concurrency)
 
-5분마다 Lambda를 워밍하여 Cold Start를 제거합니다.
-
-```python
-# src/handlers/warmup_handler.py
-
-import boto3
-
-lambda_client = boto3.client('lambda')
-
-FUNCTIONS_TO_WARM = [
-    'bdp-detection',
-    'bdp-analysis',
-    'bdp-remediation'
-]
-
-def lambda_handler(event, context):
-    """Lambda 워밍 핸들러"""
-
-    results = []
-    for fn_name in FUNCTIONS_TO_WARM:
-        try:
-            lambda_client.invoke(
-                FunctionName=fn_name,
-                InvocationType='Event',  # 비동기
-                Payload='{"warmup": true}'
-            )
-            results.append({'function': fn_name, 'status': 'warmed'})
-        except Exception as e:
-            results.append({'function': fn_name, 'status': 'error', 'error': str(e)})
-
-    return {'results': results}
-```
-
-#### EventBridge 규칙
+MWAA를 트리거로 사용하는 경우, Provisioned Concurrency를 활용하여 Cold Start를 제거합니다.
 
 ```yaml
-# CloudFormation
-WarmupRule:
-  Type: AWS::Events::Rule
+# CloudFormation - Provisioned Concurrency 설정
+DetectionFunctionVersion:
+  Type: AWS::Lambda::Version
   Properties:
-    Name: bdp-warmup-schedule
-    ScheduleExpression: rate(5 minutes)
-    State: ENABLED
-    Targets:
-      - Id: warmup-target
-        Arn: !GetAtt WarmupFunction.Arn
+    FunctionName: !Ref DetectionFunction
+
+DetectionProvisionedConcurrency:
+  Type: AWS::Lambda::ProvisionedConcurrencyConfig
+  Properties:
+    FunctionName: !Ref DetectionFunction
+    Qualifier: !GetAtt DetectionFunctionVersion.Version
+    ProvisionedConcurrentExecutions: 1
+
+AnalysisFunctionVersion:
+  Type: AWS::Lambda::Version
+  Properties:
+    FunctionName: !Ref AnalysisFunction
+
+AnalysisProvisionedConcurrency:
+  Type: AWS::Lambda::ProvisionedConcurrencyConfig
+  Properties:
+    FunctionName: !Ref AnalysisFunction
+    Qualifier: !GetAtt AnalysisFunctionVersion.Version
+    ProvisionedConcurrentExecutions: 1
 ```
+
+> **Note**: MWAA에서 Lambda를 주기적으로 트리거하므로, Provisioned Concurrency 대신 자연스러운 웜업이 이루어질 수 있습니다. 비용을 고려하여 적절한 방식을 선택하세요.
 
 ---
 
