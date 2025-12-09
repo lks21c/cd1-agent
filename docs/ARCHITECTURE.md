@@ -133,6 +133,31 @@ BDP Agent는 Provider Abstraction 패턴을 사용하여 LLM과 AWS 서비스를
 3. CloudWatch Logs 필터링
 4. Deduplication (DynamoDB 기반)
 
+#### Lambda: bdp-drift-detection
+| 속성 | 값 |
+|------|-----|
+| Runtime | Python 3.12 |
+| Architecture | ARM64 (Graviton2) |
+| Memory | 512MB |
+| Timeout | 120s |
+| Trigger | MWAA (Airflow DAG) |
+
+**주요 기능**:
+1. GitLab API를 통한 기준선 JSON 파일 조회
+2. AWS Describe APIs를 통한 현재 구성 조회 (EKS, MSK, S3, EMR, MWAA)
+3. JSON Diff 기반 드리프트 탐지
+4. 심각도 분류 및 EventBridge 알림
+
+#### 탐지 타입
+
+| Type | Source | Handler | Description |
+|------|--------|---------|-------------|
+| `log_anomaly` | CloudWatch Logs | DetectionHandler | 로그 패턴 이상 탐지 |
+| `metric_anomaly` | CloudWatch Metrics | DetectionHandler | 메트릭 이상 탐지 |
+| `cost_anomaly` | Cost Explorer | CostDetectionHandler | 비용 이상 탐지 |
+| `config_drift` | GitLab + AWS APIs | DriftDetectionHandler | 구성 드리프트 탐지 |
+| `scheduled` | MWAA | DetectionHandler | 정기 통합 탐지 |
+
 #### 데이터 소스 통합
 
 ```python
@@ -735,6 +760,7 @@ Step Functions: AnalyzeRootCause
 | Function | Memory | Timeout | Architecture | Trigger |
 |----------|--------|---------|--------------|---------|
 | bdp-detection | 512MB | 60s | ARM64 | MWAA (Airflow DAG) |
+| bdp-drift-detection | 512MB | 120s | ARM64 | MWAA (Airflow DAG) |
 | bdp-analysis | 1024MB | 120s | ARM64 | Step Functions |
 | bdp-remediation | 512MB | 60s | ARM64 | Step Functions |
 | bdp-approval | 256MB | 30s | ARM64 | API Gateway |
@@ -746,12 +772,14 @@ Step Functions: AnalyzeRootCause
 | bdp-anomaly-tracking | On-Demand | 7 days | Deduplication |
 | bdp-workflow-state | On-Demand | 30 days | Workflow state |
 | bdp-remediation-history | On-Demand | 90 days | Audit trail |
+| bdp-config-drift-tracking | On-Demand | 90 days | Config drift history |
 
 ### MWAA (Amazon Managed Workflows for Apache Airflow)
 
 | DAG | Schedule | Target |
 |-----|----------|--------|
 | bdp_detection_dag | Configurable (Airflow cron) | bdp-detection Lambda / Step Functions |
+| bdp_drift_detection_dag | Daily (09:00 KST) | bdp-drift-detection Lambda |
 
 ### Step Functions
 
