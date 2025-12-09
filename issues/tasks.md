@@ -27,11 +27,15 @@
 - **우선순위**: High
 - **관련 파일**: `docs/ARCHITECTURE.md`, `src/`
 
-### 4. Remove infra/cdk directory
-- **상태**: 대기
-- **설명**: 불필요한 infra/cdk 디렉토리 제거 검토
-- **우선순위**: Low
-- **관련 파일**: `infra/cdk/`
+### ~~4. Remove infra/cdk directory~~
+- **상태**: 완료
+- **완료일**: 2024-12-09
+- **설명**: infra/cdk 디렉토리 삭제 및 문서에서 CDK 참조 제거
+- **변경 사항**:
+  - `infra/` 디렉토리 삭제
+  - README.md: 디렉토리 구조, Prerequisites, Installation에서 CDK 제거
+  - docs/COST_OPTIMIZATION.md: CDK 예시를 CloudFormation으로 변경
+  - docs/IMPLEMENTATION_GUIDE.md: CDK Stack을 MWAA DAG + CloudFormation으로 변경
 
 ### 5. Replace remediation terms
 - **상태**: 대기

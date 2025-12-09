@@ -337,23 +337,23 @@ aws lambda update-function-configuration \
   --architectures arm64
 ```
 
-#### CDK 설정
+#### CloudFormation 설정
 
-```python
-# infra/cdk/bdp_stack.py
-
-from aws_cdk import aws_lambda as lambda_
-
-detection_function = lambda_.Function(
-    self, "BdpDetection",
-    function_name="bdp-detection",
-    runtime=lambda_.Runtime.PYTHON_3_11,
-    architecture=lambda_.Architecture.ARM_64,  # ARM64 사용
-    memory_size=512,
-    timeout=Duration.seconds(60),
-    handler="detection_handler.lambda_handler",
-    code=lambda_.Code.from_asset("src/handlers")
-)
+```yaml
+# Lambda ARM64 설정 예시
+DetectionFunction:
+  Type: AWS::Lambda::Function
+  Properties:
+    FunctionName: bdp-detection
+    Runtime: python3.11
+    Architectures:
+      - arm64  # ARM64 사용
+    MemorySize: 512
+    Timeout: 60
+    Handler: detection_handler.lambda_handler
+    Code:
+      S3Bucket: !Ref DeploymentBucket
+      S3Key: handlers.zip
 ```
 
 #### 비용 비교
@@ -602,45 +602,41 @@ class MetricAggregator:
 
 ### CloudWatch 비용 알람
 
-```python
-# infra/cdk/cost_alarms.py
+```yaml
+# CloudFormation - Cost Alarms 설정
 
-from aws_cdk import aws_cloudwatch as cloudwatch
-from aws_cdk import aws_sns as sns
+CostAlarmTopic:
+  Type: AWS::SNS::Topic
+  Properties:
+    TopicName: bdp-cost-alarms
 
-class CostAlarms:
-    """비용 알람 설정"""
+LLMCallAlarm:
+  Type: AWS::CloudWatch::Alarm
+  Properties:
+    AlarmName: bdp-llm-invocation-alarm
+    MetricName: InvocationCount
+    Namespace: BDP/LLM
+    Statistic: Sum
+    Period: 3600  # 1시간
+    Threshold: 1000  # 시간당 1000회
+    EvaluationPeriods: 1
+    ComparisonOperator: GreaterThanThreshold
+    AlarmActions:
+      - !Ref CostAlarmTopic
 
-    def __init__(self, scope, id):
-        # SNS 토픽
-        self.alarm_topic = sns.Topic(scope, "CostAlarmTopic")
-
-        # LLM 호출 횟수 알람 (Custom Metric)
-        cloudwatch.Alarm(
-            scope, "LLMCallAlarm",
-            metric=cloudwatch.Metric(
-                namespace="BDP/LLM",
-                metric_name="InvocationCount",
-                statistic="Sum",
-                period=Duration.hours(1)
-            ),
-            threshold=1000,  # 시간당 1000회
-            evaluation_periods=1,
-            comparison_operator=cloudwatch.ComparisonOperator.GREATER_THAN_THRESHOLD
-        ).add_alarm_action(cloudwatch_actions.SnsAction(self.alarm_topic))
-
-        # Lambda 비용 알람
-        cloudwatch.Alarm(
-            scope, "LambdaCostAlarm",
-            metric=cloudwatch.Metric(
-                namespace="AWS/Lambda",
-                metric_name="Invocations",
-                statistic="Sum",
-                period=Duration.hours(1)
-            ),
-            threshold=10000,  # 시간당 1만 호출
-            evaluation_periods=1
-        ).add_alarm_action(cloudwatch_actions.SnsAction(self.alarm_topic))
+LambdaCostAlarm:
+  Type: AWS::CloudWatch::Alarm
+  Properties:
+    AlarmName: bdp-lambda-invocation-alarm
+    MetricName: Invocations
+    Namespace: AWS/Lambda
+    Statistic: Sum
+    Period: 3600  # 1시간
+    Threshold: 10000  # 시간당 1만 호출
+    EvaluationPeriods: 1
+    ComparisonOperator: GreaterThanThreshold
+    AlarmActions:
+      - !Ref CostAlarmTopic
 ```
 
 ### 비용 대시보드

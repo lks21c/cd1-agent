@@ -37,8 +37,6 @@ bdp-agent/
 │       ├── libraries/
 │       └── playbooks/
 ├── step_functions/         # Step Functions 정의
-├── infra/                  # IaC
-│   └── cdk/
 ├── tests/
 └── docs/
 ```
@@ -1983,156 +1981,108 @@ Evaluate the quality of the following analysis.
 
 ## Phase 6: Deployment
 
-### 6.1 CDK Stack (Python)
+### 6.1 MWAA DAG 설정
+
+BDP Agent는 MWAA (Amazon Managed Workflows for Apache Airflow)를 통해 주기적으로 트리거됩니다.
 
 ```python
-# infra/cdk/bdp_agent_stack.py
-from aws_cdk import (
-    Stack,
-    Duration,
-    RemovalPolicy,
-    aws_lambda as lambda_,
-    aws_lambda_python_alpha as lambda_python,
-    aws_dynamodb as dynamodb,
-    aws_stepfunctions as sfn,
-    aws_events as events,
-    aws_events_targets as targets,
-    aws_iam as iam,
-)
-from constructs import Construct
+# dags/bdp_detection_dag.py
+from airflow import DAG
+from airflow.providers.amazon.aws.operators.step_function import StepFunctionStartExecutionOperator
+from datetime import datetime, timedelta
 
+default_args = {
+    'owner': 'bdp-team',
+    'depends_on_past': False,
+    'retries': 1,
+    'retry_delay': timedelta(minutes=5),
+}
 
-class BdpAgentStack(Stack):
-    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
-        super().__init__(scope, construct_id, **kwargs)
+with DAG(
+    'bdp_detection_dag',
+    default_args=default_args,
+    description='BDP Agent Detection DAG',
+    schedule_interval='*/5 * * * *',  # 5분마다 실행
+    start_date=datetime(2024, 1, 1),
+    catchup=False,
+) as dag:
+    start_workflow = StepFunctionStartExecutionOperator(
+        task_id='start_bdp_workflow',
+        state_machine_arn='arn:aws:states:ap-northeast-2:ACCOUNT_ID:stateMachine:bdp-main-workflow',
+        input='{"source": "mwaa"}',
+    )
+```
 
-        # DynamoDB Tables
-        dedup_table = dynamodb.Table(
-            self, "AnomalyTracking",
-            table_name="bdp-anomaly-tracking",
-            partition_key=dynamodb.Attribute(
-                name="signature",
-                type=dynamodb.AttributeType.STRING
-            ),
-            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
-            removal_policy=RemovalPolicy.DESTROY,
-            time_to_live_attribute="ttl"
-        )
+### 6.2 CloudFormation 리소스 예시
 
-        workflow_table = dynamodb.Table(
-            self, "WorkflowState",
-            table_name="bdp-workflow-state",
-            partition_key=dynamodb.Attribute(
-                name="workflow_id",
-                type=dynamodb.AttributeType.STRING
-            ),
-            sort_key=dynamodb.Attribute(
-                name="timestamp",
-                type=dynamodb.AttributeType.STRING
-            ),
-            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
-            removal_policy=RemovalPolicy.DESTROY
-        )
+```yaml
+# cloudformation/bdp-resources.yaml
 
-        # Common Lambda configuration
-        common_lambda_props = {
-            "runtime": lambda_.Runtime.PYTHON_3_11,
-            "architecture": lambda_.Architecture.ARM_64,
-            "timeout": Duration.seconds(60),
-            "memory_size": 512,
-        }
+AWSTemplateFormatVersion: '2010-09-09'
+Description: BDP Agent Resources
 
-        # Detection Lambda
-        detection_fn = lambda_python.PythonFunction(
-            self, "DetectionFunction",
-            entry="src/handlers",
-            index="detection_handler.py",
-            handler="lambda_handler",
-            function_name="bdp-detection",
-            environment={
-                "DEDUP_TABLE": dedup_table.table_name,
-                "RDS_CLUSTER_ARN": "your-rds-cluster-arn",
-                "RDS_SECRET_ARN": "your-rds-secret-arn",
-            },
-            **common_lambda_props
-        )
+Resources:
+  # DynamoDB Tables
+  AnomalyTrackingTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: bdp-anomaly-tracking
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: signature
+          AttributeType: S
+      KeySchema:
+        - AttributeName: signature
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
 
-        # Analysis Lambda
-        analysis_fn = lambda_python.PythonFunction(
-            self, "AnalysisFunction",
-            entry="src/handlers",
-            index="analysis_handler.py",
-            handler="lambda_handler",
-            function_name="bdp-analysis",
-            memory_size=1024,
-            timeout=Duration.seconds(120),
-            environment={
-                # vLLM (On-Premise) 설정
-                "LLM_PROVIDER": "vllm",  # 또는 "gemini"
-                "VLLM_BASE_URL": "http://your-vllm-server:8000/v1",
-                "VLLM_MODEL_NAME": "your-model-name",
-                # Gemini (Public Mock) 설정 - 필요시 활성화
-                # "LLM_PROVIDER": "gemini",
-                # "GEMINI_MODEL_ID": "gemini-2.5-pro",
-            },
-            runtime=lambda_.Runtime.PYTHON_3_11,
-            architecture=lambda_.Architecture.ARM_64,
-        )
+  WorkflowStateTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: bdp-workflow-state
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: workflow_id
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: S
+      KeySchema:
+        - AttributeName: workflow_id
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
 
-        # Grant permissions
-        dedup_table.grant_read_write_data(detection_fn)
+  # Lambda Functions
+  DetectionFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: bdp-detection
+      Runtime: python3.11
+      Architectures:
+        - arm64
+      MemorySize: 512
+      Timeout: 60
+      Handler: detection_handler.lambda_handler
+      Environment:
+        Variables:
+          DEDUP_TABLE: !Ref AnomalyTrackingTable
 
-        # VPC 설정 (vLLM On-Prem 접근 시 필요)
-        # analysis_fn.add_to_role_policy(iam.PolicyStatement(
-        #     actions=["ec2:CreateNetworkInterface", "ec2:DescribeNetworkInterfaces"],
-        #     resources=["*"]
-        # ))
-
-        # Secrets Manager 접근 (API 키 저장 시)
-        analysis_fn.add_to_role_policy(iam.PolicyStatement(
-            actions=["secretsmanager:GetSecretValue"],
-            resources=["arn:aws:secretsmanager:*:*:secret:bdp-llm-*"]
-        ))
-
-        # Step Functions
-        with open("step_functions/bdp_workflow.asl.json") as f:
-            workflow_definition = f.read()
-
-        state_machine = sfn.StateMachine(
-            self, "BdpWorkflow",
-            state_machine_name="bdp-main-workflow",
-            definition_body=sfn.DefinitionBody.from_string(workflow_definition),
-            timeout=Duration.minutes(30)
-        )
-
-        # MWAA (Airflow) DAG로 트리거 - Airflow DAG에서 Lambda/Step Functions 호출
-        # 아래는 MWAA DAG 예시 (dags/bdp_detection_dag.py)
-        #
-        # from airflow import DAG
-        # from airflow.providers.amazon.aws.operators.lambda_function import LambdaInvokeFunctionOperator
-        # from airflow.providers.amazon.aws.operators.step_function import StepFunctionStartExecutionOperator
-        # from datetime import datetime, timedelta
-        #
-        # default_args = {
-        #     'owner': 'bdp-team',
-        #     'depends_on_past': False,
-        #     'retries': 1,
-        #     'retry_delay': timedelta(minutes=5),
-        # }
-        #
-        # with DAG(
-        #     'bdp_detection_dag',
-        #     default_args=default_args,
-        #     description='BDP Agent Detection DAG',
-        #     schedule_interval='*/5 * * * *',  # 5분마다 실행
-        #     start_date=datetime(2024, 1, 1),
-        #     catchup=False,
-        # ) as dag:
-        #     start_workflow = StepFunctionStartExecutionOperator(
-        #         task_id='start_bdp_workflow',
-        #         state_machine_arn='arn:aws:states:...:bdp-main-workflow',
-        #         input='{"source": "mwaa"}',
-        #     )
+  AnalysisFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: bdp-analysis
+      Runtime: python3.11
+      Architectures:
+        - arm64
+      MemorySize: 1024
+      Timeout: 120
+      Handler: analysis_handler.lambda_handler
+      Environment:
+        Variables:
+          LLM_PROVIDER: vllm
+          VLLM_BASE_URL: http://your-vllm-server:8000/v1
 ```
 
 ---

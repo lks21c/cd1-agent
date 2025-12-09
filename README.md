@@ -124,7 +124,6 @@ bdp-agent/
 ├── src/                     # 실제 구현 코드
 ├── step_functions/          # Step Functions 워크플로우
 │   └── bdp_workflow.asl.json
-├── infra/cdk/               # CDK 인프라 코드
 └── tests/                   # 테스트 코드
 ```
 
@@ -134,7 +133,6 @@ bdp-agent/
 
 - Python 3.12+
 - AWS CLI configured
-- AWS CDK 2.x
 
 ### Installation
 
@@ -150,10 +148,6 @@ source .venv/bin/activate  # Linux/Mac
 
 # 3. Install dependencies
 pip install -r requirements.txt
-
-# 4. Deploy infrastructure
-cd infra/cdk
-cdk deploy
 ```
 
 ### Configuration
