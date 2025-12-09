@@ -193,14 +193,15 @@ class TestAnalysisModels:
         assert len(result.remediations) == 1
 
     def test_analysis_result_auto_execute_property(self):
-        """Test AnalysisResult auto_execute property."""
+        """Test AnalysisResult auto_execute property - always False (disabled)."""
         result = AnalysisResult(
             analysis=AnalysisDetails(root_cause="Test"),
             confidence_score=0.90,
             requires_human_review=False,
         )
 
-        assert result.auto_execute is True
+        # Auto-execute is disabled - all actions require approval
+        assert result.auto_execute is False
 
         result2 = AnalysisResult(
             analysis=AnalysisDetails(root_cause="Test"),

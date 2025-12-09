@@ -34,7 +34,7 @@ BDP Agent는 Provider Abstraction 패턴을 사용하여 LLM과 AWS 서비스를
 ### 핵심 특징
 - **LangGraph Agent**: 동적 ReAct 루프, Reflect & Replan 패턴
 - **하이브리드 오케스트레이션**: Step Functions (외부 워크플로우) + LangGraph (내부 에이전트)
-- **신뢰도 기반 자동화**: 0.85+ 자동 실행, 0.5-0.85 승인 요청
+- **승인 기반 실행**: 모든 조치는 승인 후 실행 (0.5+ 승인 요청, <0.5 에스컬레이션)
 - **비용 최적화**: Field Indexing, Hierarchical Summarization, Deduplication
 - **서버리스**: Lambda + Step Functions + MWAA
 
@@ -571,11 +571,6 @@ LangGraph Agent는 Lambda 내부에서 실행되며, Step Functions는 외부 �
       "Choices": [
         {
           "Variable": "$.confidence_score",
-          "NumericGreaterThanEquals": 0.85,
-          "Next": "AutoExecute"
-        },
-        {
-          "Variable": "$.confidence_score",
           "NumericGreaterThanEquals": 0.5,
           "Next": "RequestApproval"
         }
@@ -690,65 +685,57 @@ Step Functions: AnalyzeRootCause
 
 ### 3. Remediation Decision Flow
 
+모든 복구 조치는 **승인 후 실행** 방식으로 동작합니다.
+
 ```
                   Analysis Result
                         │
                         ▼
               ┌─────────────────┐
-              │ Confidence >= 0.85? │
+              │ Confidence >= 0.5? │
               └────────┬────────┘
                        │
           ┌────────────┼────────────┐
           │ Yes        │            │ No
           ▼            │            ▼
-    ┌───────────┐      │     ┌───────────────┐
-    │ Auto      │      │     │ Confidence    │
-    │ Execute   │      │     │ >= 0.5?       │
-    └─────┬─────┘      │     └───────┬───────┘
-          │            │             │
-          │            │    ┌────────┼────────┐
-          │            │    │ Yes    │        │ No
-          │            │    ▼        │        ▼
-          │            │ ┌────────┐  │  ┌───────────┐
-          │            │ │Request │  │  │ Escalate  │
-          │            │ │Approval│  │  │ to Human  │
-          │            │ └───┬────┘  │  └───────────┘
-          │            │     │       │
-          │            │     ▼       │
-          │            │ ┌────────┐  │
-          │            │ │Approved│  │
-          │            │ │?       │  │
-          │            │ └───┬────┘  │
-          │            │     │       │
-          └────────────┼─────┘       │
-                       ▼             │
-                 ┌───────────┐       │
-                 │ Execute   │       │
-                 │Remediation│       │
-                 └─────┬─────┘       │
-                       │             │
-                       ▼             │
-                 ┌───────────┐       │
-                 │ Reflect   │       │
-                 │ on Result │       │
-                 └─────┬─────┘       │
-                       │             │
-              ┌────────┼─────────────┘
-              │        │
-              ▼        ▼
-        ┌───────────────────┐
-        │ Success?          │
-        └────────┬──────────┘
-                 │
-        ┌────────┼────────┐
-        │ Yes    │        │ No
-        ▼        │        ▼
-   ┌─────────┐   │   ┌─────────┐
-   │ Notify  │   │   │ Replan  │
-   │ Success │   │   │ & Retry │
-   └─────────┘   │   └─────────┘
-                 │
-              [End]
+    ┌───────────┐      │     ┌───────────┐
+    │ Request   │      │     │ Escalate  │
+    │ Approval  │      │     │ to Human  │
+    └─────┬─────┘      │     └───────────┘
+          │            │
+          ▼            │
+    ┌───────────┐      │
+    │ Approved? │      │
+    └─────┬─────┘      │
+          │            │
+     ┌────┼────┐       │
+     │Yes │    │No     │
+     ▼    │    ▼       │
+┌─────────┐│ ┌─────────┐
+│ Execute ││ │ Rejected│
+│Remediation│ └─────────┘
+└─────┬─────┘      │
+      │            │
+      ▼            │
+┌───────────┐      │
+│ Reflect   │      │
+│ on Result │      │
+└─────┬─────┘      │
+      │            │
+      ▼            │
+┌───────────────────┐
+│ Success?          │
+└────────┬──────────┘
+         │
+    ┌────┼────┐
+    │Yes │    │No
+    ▼    │    ▼
+┌─────────┐ ┌─────────┐
+│ Notify  │ │ Replan  │
+│ Success │ │ & Retry │
+└─────────┘ └─────────┘
+         │
+      [End]
 ```
 
 ---

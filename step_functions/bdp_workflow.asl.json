@@ -74,12 +74,8 @@
 
     "EvaluateConfidence": {
       "Type": "Choice",
+      "Comment": "All remediation actions require approval before execution",
       "Choices": [
-        {
-          "Variable": "$.analysis.analysis.confidence",
-          "NumericGreaterThanEquals": 0.85,
-          "Next": "AutoExecuteRemediation"
-        },
         {
           "Variable": "$.analysis.analysis.confidence",
           "NumericGreaterThanEquals": 0.5,
@@ -87,32 +83,6 @@
         }
       ],
       "Default": "EscalateToHuman"
-    },
-
-    "AutoExecuteRemediation": {
-      "Type": "Task",
-      "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:bdp-remediation",
-      "Parameters": {
-        "actions.$": "$.analysis.analysis.recommended_actions",
-        "workflow_id.$": "$$.Execution.Id",
-        "auto_approved": true
-      },
-      "ResultPath": "$.remediation",
-      "Next": "ReflectOnResult",
-      "Retry": [
-        {
-          "ErrorEquals": ["Lambda.ServiceException"],
-          "IntervalSeconds": 2,
-          "MaxAttempts": 2
-        }
-      ],
-      "Catch": [
-        {
-          "ErrorEquals": ["States.ALL"],
-          "ResultPath": "$.error",
-          "Next": "HandleRemediationError"
-        }
-      ]
     },
 
     "RequestApproval": {

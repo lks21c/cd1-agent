@@ -298,14 +298,13 @@ def finalize_node(state: AgentState) -> Dict[str, Any]:
     latest_reflection = reflection_history[-1] if reflection_history else {}
     confidence = latest_reflection.get("overall_confidence", 0.5)
 
-    # Determine if human review is needed
-    requires_human_review = confidence < 0.85
+    # All actions require human review (auto-execute is disabled)
+    requires_human_review = True
     review_reason = None
-    if requires_human_review:
-        if confidence < 0.5:
-            review_reason = "Low confidence - insufficient evidence for automated action"
-        else:
-            review_reason = "Moderate confidence - recommend human verification"
+    if confidence < 0.5:
+        review_reason = "Low confidence - escalation required"
+    else:
+        review_reason = "Approval required before execution"
 
     # Build analysis result
     service_name = anomaly_data.get("service_name", "unknown")
@@ -361,7 +360,7 @@ def finalize_node(state: AgentState) -> Dict[str, Any]:
 **Evidence ({len(evidence_list)} items):**
 {chr(10).join(f'- {e}' for e in evidence_list[:5])}
 
-**Recommendation:** {'Proceed with automated remediation' if confidence >= 0.85 else 'Request human approval before proceeding'}
+**Recommendation:** Request human approval before proceeding
 """
     )
 

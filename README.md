@@ -28,10 +28,9 @@ BDP Agent는 AWS 인프라의 로그를 주기적으로 분석하여 이상을 �
 - **LangGraph Agent**: 동적 ReAct 루프 기반 분석 에이전트
 - **주기적 로그 감지**: 5-10분 간격으로 CloudWatch 및 RDS 통합 로그 분석
 - **AI 기반 근본 원인 분석**: vLLM 또는 Gemini를 활용한 ReAct 패턴 분석
-- **신뢰도 기반 자동화**:
-  - 0.85+ : 자동 실행
-  - 0.5-0.85 : 승인 요청
-  - <0.5 : 재분석 필요
+- **승인 기반 실행**:
+  - 0.5+ : 승인 요청 후 실행
+  - <0.5 : 담당자 에스컬레이션
 - **AWS 리소스 조정**: Lambda 재시작, RDS 파라미터 변경, Auto Scaling 조정
 - **EventBridge 알림**: 외부 시스템 연동 (Slack, Teams 등)
 
@@ -88,11 +87,9 @@ stateDiagram-v2
 
     AnalyzeRootCause --> EvaluateConfidence
 
-    EvaluateConfidence --> AutoExecute: >= 0.85
-    EvaluateConfidence --> RequestApproval: 0.5 - 0.85
+    EvaluateConfidence --> RequestApproval: >= 0.5
     EvaluateConfidence --> Escalate: < 0.5
 
-    AutoExecute --> Reflect
     RequestApproval --> CheckApproval
     CheckApproval --> ExecuteApproved: Approved
     CheckApproval --> Rejected: Rejected
@@ -234,13 +231,16 @@ python -m examples.services.llm_client  # LLM Mock 테스트
 3. **ARM64/Graviton2**: 20-34% Lambda 비용 절감
 4. **Provisioned Concurrency**: Cold start 제거 (MWAA 트리거 사용 시)
 
-## Confidence-Based Decision Flow
+## Decision Flow
+
+모든 복구 조치는 **승인 후 실행** 방식으로 동작합니다.
 
 | Confidence | Action | Use Case |
 |------------|--------|----------|
-| >= 0.85 | Auto Execute | 명확한 원인, 안전한 조치 |
-| 0.5 - 0.85 | Request Approval | 중간 확신, 리스크 있는 조치 |
-| < 0.5 | Escalate | 추가 분석 필요 |
+| >= 0.5 | Request Approval | 분석 완료, 승인 요청 |
+| < 0.5 | Escalate | 추가 분석 필요, 담당자 에스컬레이션 |
+
+> **Note**: 자동 실행(Auto Execute) 기능은 현재 비활성화되어 있습니다. 모든 조치는 담당자 승인 후 실행됩니다.
 
 ## Supported Remediation Actions
 

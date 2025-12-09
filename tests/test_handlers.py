@@ -200,8 +200,8 @@ class TestAnalysisHandler:
         assert result is not None
         assert 0.0 <= result.confidence_score <= 1.0
 
-    def test_determine_action_auto_execute(self, handler):
-        """Test action determination for auto-execute."""
+    def test_determine_action_high_confidence(self, handler):
+        """Test action determination for high confidence (still requires approval)."""
         from src.models.analysis_result import AnalysisResult, AnalysisDetails
 
         result = AnalysisResult(
@@ -212,7 +212,8 @@ class TestAnalysisHandler:
 
         action = handler._determine_action(result)
 
-        assert action == "auto_execute"
+        # Auto-execute is disabled - all actions require approval
+        assert action == "request_approval"
 
     def test_determine_action_approval(self, handler):
         """Test action determination for approval."""

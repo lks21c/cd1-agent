@@ -61,13 +61,17 @@ class AnalysisResult(BaseModel):
 
     @property
     def auto_execute(self) -> bool:
-        """Determine if remediation can be auto-executed."""
-        return self.confidence_score >= 0.85 and not self.requires_human_review
+        """
+        Determine if remediation can be auto-executed.
+
+        Note: Auto-execute is currently disabled. All actions require approval.
+        """
+        return False  # All actions require approval
 
     @property
     def requires_approval(self) -> bool:
         """Determine if human approval is required."""
-        return 0.5 <= self.confidence_score < 0.85
+        return self.confidence_score >= 0.5
 
     @property
     def requires_escalation(self) -> bool:
@@ -93,5 +97,5 @@ class ReflectionOutput(BaseModel):
     overall_confidence: float = Field(ge=0.0, le=1.0)
     concerns: List[str] = Field(default_factory=list)
     recommendations: Dict[str, Any] = Field(default_factory=dict)
-    auto_execute: bool = False
+    auto_execute: bool = False  # Disabled - all actions require approval
     reason: str = ""

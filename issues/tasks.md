@@ -9,11 +9,21 @@
 
 ## Tasks
 
-### 1. Review confidence-based decision flow
-- **상태**: 대기
-- **설명**: confidence-based decision flow 시기상조 여부 검토 및 단순화/제거 결정
-- **우선순위**: Medium
-- **관련 파일**: `src/`, `docs/ARCHITECTURE.md`
+### ~~1. Review confidence-based decision flow~~
+- **상태**: 완료
+- **완료일**: 2024-12-09
+- **설명**: Auto-execute 기능 비활성화, 모든 조치는 승인 후 실행으로 단순화
+- **변경 사항**:
+  - Auto-execute (0.85+) 제거 → 모든 조치는 approval 필요
+  - Confidence >= 0.5: 승인 요청
+  - Confidence < 0.5: 에스컬레이션
+  - README.md: Decision Flow 섹션 업데이트
+  - docs/ARCHITECTURE.md: 신뢰도 기반 자동화 → 승인 기반 실행
+  - step_functions/bdp_workflow.asl.json: AutoExecuteRemediation 상태 제거
+  - src/models/analysis_result.py: auto_execute 속성 항상 False 반환
+  - src/handlers/analysis_handler.py: _trigger_remediation 메서드 제거
+  - src/agent/nodes.py: 자동 실행 로직 제거
+  - tests/test_models.py, tests/test_handlers.py: 테스트 업데이트
 
 ### 2. Reorganize features
 - **상태**: 대기

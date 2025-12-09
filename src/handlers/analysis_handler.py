@@ -79,11 +79,11 @@ class AnalysisHandler(BaseHandler):
         # Store result
         self._store_analysis_result(anomaly_data, analysis_result, action)
 
-        # Trigger next step if needed
-        if action == "auto_execute":
-            self._trigger_remediation(anomaly_data, analysis_result)
-        elif action == "request_approval":
+        # Trigger next step - all actions require approval
+        if action == "request_approval":
             self._request_human_approval(anomaly_data, analysis_result)
+        elif action == "escalate":
+            self._escalate_to_human(anomaly_data, analysis_result)
 
         return {
             "signature": anomaly_data.get("signature"),
@@ -206,12 +206,12 @@ class AnalysisHandler(BaseHandler):
             return None
 
     def _determine_action(self, result: AnalysisResult) -> str:
-        """Determine action based on analysis result."""
-        confidence = result.confidence_score
+        """
+        Determine action based on analysis result.
 
-        if result.auto_execute:
-            return "auto_execute"
-        elif result.requires_approval:
+        Note: Auto-execute is disabled. All actions require approval.
+        """
+        if result.requires_approval:
             return "request_approval"
         elif result.requires_escalation:
             return "escalate"
@@ -240,27 +240,6 @@ class AnalysisHandler(BaseHandler):
         except Exception as e:
             self.logger.error(f"Failed to store analysis result: {e}")
 
-    def _trigger_remediation(
-        self, anomaly_data: Dict[str, Any], result: AnalysisResult
-    ) -> None:
-        """Trigger automatic remediation."""
-        try:
-            self.aws_client.put_eventbridge_event(
-                event_bus=self.config["event_bus"],
-                source="bdp.analysis",
-                detail_type="RemediationApproved",
-                detail={
-                    "anomaly_data": anomaly_data,
-                    "analysis_result": result.model_dump(),
-                    "auto_approved": True,
-                },
-            )
-            self.logger.info(
-                f"Remediation triggered for {anomaly_data.get('signature')}"
-            )
-        except Exception as e:
-            self.logger.error(f"Failed to trigger remediation: {e}")
-
     def _request_human_approval(
         self, anomaly_data: Dict[str, Any], result: AnalysisResult
     ) -> None:
@@ -281,6 +260,27 @@ class AnalysisHandler(BaseHandler):
             )
         except Exception as e:
             self.logger.error(f"Failed to request approval: {e}")
+
+    def _escalate_to_human(
+        self, anomaly_data: Dict[str, Any], result: AnalysisResult
+    ) -> None:
+        """Escalate to human for low confidence analysis."""
+        try:
+            self.aws_client.put_eventbridge_event(
+                event_bus=self.config["event_bus"],
+                source="bdp.analysis",
+                detail_type="EscalationRequired",
+                detail={
+                    "anomaly_data": anomaly_data,
+                    "analysis_result": result.model_dump(),
+                    "reason": result.review_reason or "Low confidence - requires human review",
+                },
+            )
+            self.logger.info(
+                f"Escalation triggered for {anomaly_data.get('signature')}"
+            )
+        except Exception as e:
+            self.logger.error(f"Failed to escalate: {e}")
 
 
 # Lambda entry point
