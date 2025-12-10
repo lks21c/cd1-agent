@@ -1,0 +1,81 @@
+{
+  "table_name": "service_metrics",
+  "database": "bdp_production",
+  "columns": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "nullable": false,
+      "primary_key": true,
+      "auto_increment": true,
+      "description": "고유 식별자"
+    },
+    {
+      "name": "timestamp",
+      "type": "timestamp",
+      "nullable": false,
+      "description": "메트릭 수집 시간"
+    },
+    {
+      "name": "service_name",
+      "type": "varchar(100)",
+      "nullable": false,
+      "description": "서비스명"
+    },
+    {
+      "name": "metric_name",
+      "type": "varchar(100)",
+      "nullable": false,
+      "description": "메트릭 이름 (예: cpu_utilization, memory_usage, request_count, error_rate)"
+    },
+    {
+      "name": "metric_value",
+      "type": "decimal(15,4)",
+      "nullable": false,
+      "description": "메트릭 값"
+    },
+    {
+      "name": "metric_unit",
+      "type": "varchar(30)",
+      "nullable": true,
+      "description": "메트릭 단위 (percent, bytes, count, milliseconds)"
+    },
+    {
+      "name": "dimensions",
+      "type": "json",
+      "nullable": true,
+      "description": "추가 차원 정보 (region, instance_id, container 등)"
+    },
+    {
+      "name": "source",
+      "type": "varchar(50)",
+      "nullable": false,
+      "description": "메트릭 소스: CLOUDWATCH, PROMETHEUS"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp",
+      "nullable": false,
+      "default": "CURRENT_TIMESTAMP",
+      "description": "레코드 생성 시간"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "idx_timestamp",
+      "columns": ["timestamp"],
+      "type": "btree"
+    },
+    {
+      "name": "idx_service_metric",
+      "columns": ["service_name", "metric_name", "timestamp"],
+      "type": "btree"
+    },
+    {
+      "name": "idx_source",
+      "columns": ["source", "timestamp"],
+      "type": "btree"
+    }
+  ],
+  "description": "서비스 메트릭 테이블 - 각 서비스의 성능 메트릭 시계열 데이터. CPU, 메모리, 요청 수, 에러율 등 저장."
+}

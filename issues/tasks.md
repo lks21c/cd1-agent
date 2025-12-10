@@ -97,8 +97,9 @@
 - **DAG 기능**:
   - Lambda 함수 호출 → 탐지 결과 확인 → 심각도 분기 → Step Functions 시작
 
-### 3. Evaluate DynamoDB necessity
-- **상태**: 보류 (On Hold)
+### ~~3. Evaluate DynamoDB necessity~~
+- **상태**: 완료
+- **완료일**: 2024-12-10
 - **설명**: DynamoDB 필수 여부 검토 및 대안 고려
 - **우선순위**: High
 - **관련 파일**: `docs/ARCHITECTURE.md`, `src/`
@@ -141,8 +142,9 @@
   - docs/COST_OPTIMIZATION.md: Bedrock API → LLM API
   - CLAUDE.md: Bedrock 언급 제거
 
-### 7. RDS 스키마 동적 로딩 구조 구현
-- **상태**: 대기
+### ~~7. RDS 스키마 동적 로딩 구조 구현~~
+- **상태**: 완료
+- **완료일**: 2024-12-10
 - **우선순위**: High
 - **설명**: 금융권 보안 환경에서 코드 반입 후 스키마 정보만 별도 관리하여 동적 조회 지원
 - **배경**:
@@ -150,54 +152,57 @@
   - Public (외부): mock 스키마로 고속 개발 및 테스트
   - Private (내부): 실제 production 스키마로 운영
   - 소스코드 자체는 보안 이슈 없이 반입 가능
-- **구현 방안**:
-  - `schema/` 디렉토리 생성 (위치: 프로젝트 루트 또는 `src/schema/`)
-  - 테이블 스키마를 JSON 형식으로 정의 (예: `schema/tables/*.json`)
-  - `.gitignore`에 `schema/` 추가 → Git 추적 제외
-  - 스키마 로더 모듈 구현 → 런타임에 JSON 파싱하여 동적 쿼리 생성
-  - Mock 스키마 예시 템플릿 제공 (`schema/README.md` 또는 `schema.example/`)
-- **예상 파일 구조**:
+- **파일 구조**:
   ```
-  schema/                    # .gitignore에 추가
+  schema/                    # .gitignore에 추가 (Git 추적 제외)
   ├── README.md              # 스키마 작성 가이드
   ├── tables/
-  │   ├── anomaly_logs.json
-  │   ├── metrics.json
-  │   └── ...
+  │   └── *.json
   └── views/
-      └── ...
   schema.example/            # Git 추적 (템플릿)
-  ├── tables/
-  │   └── sample_table.json
-  └── README.md
+  ├── README.md
+  └── tables/
+      ├── anomaly_logs.json
+      ├── service_metrics.json
+      └── remediation_history.json
   ```
-- **구현 항목** (예정):
-  - [ ] `schema/` 디렉토리 및 `.gitignore` 설정
-  - [ ] `schema.example/` 템플릿 생성
-  - [ ] `src/services/schema_loader.py`: 스키마 로더 모듈
-  - [ ] `src/services/rds_client.py`: RDS Data API 클라이언트 (Provider 추상화)
-  - [ ] `src/agent/tools/rds_tool.py`: 배치 에이전트용 RDS Tool
-  - [ ] `src/chat/tools/rds_tool.py`: **Chat 연동** - 대화형 RDS 쿼리 Tool
-  - [ ] `tests/test_schema_loader.py`: 단위 테스트
-- **Chat 연동 (Task #8)**:
-  - `src/chat/tools/rds_tool.py` 생성 시 자동 연동
-  - Chat에서 "최근 장애 로그 조회해줘" 등 자연어 요청 → 스키마 기반 동적 쿼리 생성
-  - 스키마 JSON 예시:
-    ```json
-    {
-      "table_name": "anomaly_logs",
-      "columns": [
-        {"name": "id", "type": "bigint", "description": "고유 ID"},
-        {"name": "timestamp", "type": "timestamp", "description": "발생 시간"},
-        {"name": "service_name", "type": "varchar(100)", "description": "서비스명"},
-        {"name": "anomaly_type", "type": "varchar(50)", "description": "이상 유형"},
-        {"name": "severity", "type": "varchar(20)", "description": "심각도"}
-      ],
-      "description": "이상 징후 로그 테이블"
-    }
-    ```
-- **관련 파일**: `src/services/`, `src/agent/tools/`, `src/chat/tools/`, `.gitignore`
-- **참고**: Public/Private 환경 간 코드 동기화는 Git으로, 스키마는 각자 수동 관리
+- **구현 항목**:
+  - [x] `.gitignore` 설정 (`schema/` 디렉토리 제외)
+  - [x] `schema/README.md`: 스키마 작성 가이드
+  - [x] `schema.example/`: 템플릿 3종 (anomaly_logs, service_metrics, remediation_history)
+  - [x] `src/services/schema_loader.py`: 스키마 로더 모듈
+    - `SchemaLoader`, `TableSchema`, `ColumnSchema` 클래스
+    - JSON 파싱, 캐싱, LLM 컨텍스트 생성
+  - [x] `src/services/rds_client.py`: RDS Data API 클라이언트
+    - `RDSClient`, `RDSProvider` (REAL/MOCK)
+    - `QueryResult` 클래스 (마크다운 테이블 출력)
+    - 스키마 로더 연동
+  - [x] `src/agent/rds_tools.py`: 배치 에이전트용 RDS Tool (5개 도구)
+    - `query_rds_anomalies`: 이상 징후 로그 조회
+    - `query_rds_metrics`: 서비스 메트릭 조회
+    - `query_rds_remediation_history`: 복구 조치 이력 조회
+    - `execute_rds_query`: 커스텀 SQL 쿼리 (SELECT만 허용)
+    - `get_rds_schema_info`: 스키마 정보 조회
+  - [x] `src/chat/tools/rds.py`: Chat용 RDS Tool (5개 도구)
+    - `query_anomalies`, `query_metrics`, `query_remediation_history`
+    - `get_schema_info`, `execute_custom_query`
+  - [x] `tests/test_schema_loader.py`: 단위 테스트 (35 passed, 5 skipped)
+- **사용 방법**:
+  ```python
+  # Schema Loader
+  from src.services.schema_loader import SchemaLoader
+  loader = SchemaLoader(schema_dir="schema")
+  schema = loader.load_table("anomaly_logs")
+  context = loader.get_llm_context()  # LLM 프롬프트용
+
+  # RDS Client (Mock)
+  from src.services.rds_client import RDSClient, RDSProvider
+  client = RDSClient(provider=RDSProvider.MOCK)
+  result = client.get_recent_anomalies(severity="HIGH", limit=10)
+  print(result.to_markdown_table())
+  ```
+- **관련 파일**: `.gitignore`, `schema/`, `schema.example/`, `src/services/schema_loader.py`, `src/services/rds_client.py`, `src/agent/rds_tools.py`, `src/chat/tools/rds.py`, `tests/test_schema_loader.py`
+- **참고**: Public/Private 환경 간 코드 동기화는 Git으로, 스키마는 각자 수동 관리 (`cp -r schema.example/* schema/`)
 
 ### ~~8. Interactive Chat Backend (ChatAgent Library)~~
 - **상태**: 완료

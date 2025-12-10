@@ -1,0 +1,132 @@
+{
+  "table_name": "remediation_history",
+  "database": "bdp_production",
+  "columns": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "nullable": false,
+      "primary_key": true,
+      "auto_increment": true,
+      "description": "고유 식별자"
+    },
+    {
+      "name": "anomaly_id",
+      "type": "bigint",
+      "nullable": false,
+      "description": "관련 이상 징후 ID (anomaly_logs.id 참조)"
+    },
+    {
+      "name": "timestamp",
+      "type": "timestamp",
+      "nullable": false,
+      "description": "조치 실행 시간"
+    },
+    {
+      "name": "action_type",
+      "type": "varchar(50)",
+      "nullable": false,
+      "description": "조치 유형: LAMBDA_RESTART, RDS_PARAMETER, AUTO_SCALING, NOTIFY, ESCALATE, INVESTIGATE"
+    },
+    {
+      "name": "action_target",
+      "type": "varchar(200)",
+      "nullable": false,
+      "description": "조치 대상 (Lambda ARN, RDS 인스턴스 ID 등)"
+    },
+    {
+      "name": "action_params",
+      "type": "json",
+      "nullable": true,
+      "description": "조치 파라미터 (상세 설정 값)"
+    },
+    {
+      "name": "status",
+      "type": "varchar(30)",
+      "nullable": false,
+      "description": "실행 상태: PENDING(대기), APPROVED(승인됨), EXECUTED(실행됨), FAILED(실패), REJECTED(거부됨)"
+    },
+    {
+      "name": "approved_by",
+      "type": "varchar(100)",
+      "nullable": true,
+      "description": "승인자 (이메일 또는 사용자 ID)"
+    },
+    {
+      "name": "approved_at",
+      "type": "timestamp",
+      "nullable": true,
+      "description": "승인 시간"
+    },
+    {
+      "name": "executed_at",
+      "type": "timestamp",
+      "nullable": true,
+      "description": "실행 완료 시간"
+    },
+    {
+      "name": "result",
+      "type": "json",
+      "nullable": true,
+      "description": "실행 결과 상세 정보"
+    },
+    {
+      "name": "error_message",
+      "type": "text",
+      "nullable": true,
+      "description": "실패 시 에러 메시지"
+    },
+    {
+      "name": "confidence_score",
+      "type": "decimal(3,2)",
+      "nullable": true,
+      "description": "LLM 분석 신뢰도 점수 (0.00 ~ 1.00)"
+    },
+    {
+      "name": "analysis_summary",
+      "type": "text",
+      "nullable": true,
+      "description": "LLM 분석 요약"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp",
+      "nullable": false,
+      "default": "CURRENT_TIMESTAMP",
+      "description": "레코드 생성 시간"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "idx_anomaly_id",
+      "columns": ["anomaly_id"],
+      "type": "btree"
+    },
+    {
+      "name": "idx_timestamp",
+      "columns": ["timestamp"],
+      "type": "btree"
+    },
+    {
+      "name": "idx_status",
+      "columns": ["status", "timestamp"],
+      "type": "btree"
+    },
+    {
+      "name": "idx_action_type",
+      "columns": ["action_type", "status"],
+      "type": "btree"
+    }
+  ],
+  "foreign_keys": [
+    {
+      "name": "fk_anomaly",
+      "columns": ["anomaly_id"],
+      "references": {
+        "table": "anomaly_logs",
+        "columns": ["id"]
+      }
+    }
+  ],
+  "description": "복구 조치 이력 테이블 - 이상 징후에 대한 모든 조치 기록. 승인 상태, 실행 결과, LLM 분석 정보 포함."
+}

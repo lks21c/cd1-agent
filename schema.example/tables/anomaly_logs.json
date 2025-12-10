@@ -1,0 +1,99 @@
+{
+  "table_name": "anomaly_logs",
+  "database": "bdp_production",
+  "columns": [
+    {
+      "name": "id",
+      "type": "bigint",
+      "nullable": false,
+      "primary_key": true,
+      "auto_increment": true,
+      "description": "고유 식별자"
+    },
+    {
+      "name": "timestamp",
+      "type": "timestamp",
+      "nullable": false,
+      "description": "이상 징후 발생 시간"
+    },
+    {
+      "name": "service_name",
+      "type": "varchar(100)",
+      "nullable": false,
+      "description": "서비스명 (예: api-gateway, payment-service, order-service)"
+    },
+    {
+      "name": "anomaly_type",
+      "type": "varchar(50)",
+      "nullable": false,
+      "description": "이상 유형: ERROR_SPIKE(에러 급증), LATENCY(지연), RESOURCE_EXHAUSTION(리소스 고갈), TRAFFIC_SPIKE(트래픽 급증)"
+    },
+    {
+      "name": "severity",
+      "type": "varchar(20)",
+      "nullable": false,
+      "description": "심각도: LOW(낮음), MEDIUM(중간), HIGH(높음), CRITICAL(심각)"
+    },
+    {
+      "name": "source",
+      "type": "varchar(50)",
+      "nullable": false,
+      "description": "탐지 소스: CLOUDWATCH, PROMETHEUS, COST_EXPLORER"
+    },
+    {
+      "name": "message",
+      "type": "text",
+      "nullable": true,
+      "description": "이상 징후 상세 메시지"
+    },
+    {
+      "name": "details",
+      "type": "json",
+      "nullable": true,
+      "description": "추가 상세 정보 (메트릭 값, 임계치 등)"
+    },
+    {
+      "name": "resolved",
+      "type": "boolean",
+      "nullable": false,
+      "default": false,
+      "description": "해결 여부"
+    },
+    {
+      "name": "resolved_at",
+      "type": "timestamp",
+      "nullable": true,
+      "description": "해결 시간"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp",
+      "nullable": false,
+      "default": "CURRENT_TIMESTAMP",
+      "description": "레코드 생성 시간"
+    }
+  ],
+  "indexes": [
+    {
+      "name": "idx_timestamp",
+      "columns": ["timestamp"],
+      "type": "btree"
+    },
+    {
+      "name": "idx_service_severity",
+      "columns": ["service_name", "severity"],
+      "type": "btree"
+    },
+    {
+      "name": "idx_source_type",
+      "columns": ["source", "anomaly_type"],
+      "type": "btree"
+    },
+    {
+      "name": "idx_resolved",
+      "columns": ["resolved", "timestamp"],
+      "type": "btree"
+    }
+  ],
+  "description": "이상 징후 로그 테이블 - BDP Agent가 탐지한 모든 이상 징후 기록. 서비스별, 유형별, 심각도별 조회 가능."
+}
