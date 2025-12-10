@@ -32,10 +32,14 @@
 - **관련 파일**: `README.md`, `docs/ARCHITECTURE.md`
 
 ### 3. Evaluate DynamoDB necessity
-- **상태**: 대기
+- **상태**: 보류 (On Hold)
 - **설명**: DynamoDB 필수 여부 검토 및 대안 고려
 - **우선순위**: High
 - **관련 파일**: `docs/ARCHITECTURE.md`, `src/`
+- **검토 결과** (2024-12-09):
+  - 대안 검토: S3 Select, Athena External Table
+  - 결론: 현행 DynamoDB 유지 (중복 제거 실시간 조회 필요)
+  - 향후: 비용 이슈 발생 시 하이브리드 구조 고려 (DynamoDB 1테이블 + S3/Athena)
 
 ### ~~4. Remove infra/cdk directory~~
 - **상태**: 완료
