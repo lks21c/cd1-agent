@@ -44,52 +44,46 @@ BDP Agent의 구성 드리프트 탐지 모듈은 AWS 관리형 서비스(EKS, M
 
 ## 아키텍처
 
-```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                     Configuration Drift Detection Architecture                │
-└──────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph trigger["MWAA (Daily Trigger)"]
+        mwaa["Scheduled Trigger"]
+    end
 
-                              ┌──────────────────┐
-                              │      MWAA        │
-                              │  (Daily Trigger) │
-                              └────────┬─────────┘
-                                       │
-                                       ▼
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                              Drift Detection Phase                            │
-│                                                                               │
-│   ┌──────────────┐                              ┌──────────────────────────┐ │
-│   │   GitLab     │                              │     AWS Managed Services │ │
-│   │  Repository  │                              │                          │ │
-│   │              │                              │  ┌─────┐ ┌─────┐ ┌─────┐ │ │
-│   │ baselines/   │                              │  │ EKS │ │ MSK │ │ S3  │ │ │
-│   │ ├── eks/     │                              │  └──┬──┘ └──┬──┘ └──┬──┘ │ │
-│   │ ├── msk/     │                              │     │       │       │    │ │
-│   │ ├── s3/      │                              │  ┌──┴───────┴───────┴──┐ │ │
-│   │ ├── emr/     │                              │  │ ┌─────┐     ┌─────┐ │ │ │
-│   │ └── mwaa/    │                              │  │ │ EMR │     │MWAA │ │ │ │
-│   └──────┬───────┘                              │  │ └─────┘     └─────┘ │ │ │
-│          │                                      │  └──────────┬──────────┘ │ │
-│          │ GitLab API                           │             │            │ │
-│          │ (GET /files)                         │  AWS Describe APIs       │ │
-│          ▼                                      │             ▼            │ │
-│   ┌──────────────────────────────────────────────────────────────────────┐ │ │
-│   │                  Lambda: bdp-drift-detection                          │ │ │
-│   │                                                                       │ │ │
-│   │  ┌─────────────┐   ┌─────────────┐   ┌─────────────┐   ┌───────────┐ │ │ │
-│   │  │  GitLab     │──▶│   Config    │──▶│    Drift    │──▶│  Alert    │ │ │ │
-│   │  │  Client     │   │   Fetcher   │   │  Detector   │   │  Publisher│ │ │ │
-│   │  └─────────────┘   └─────────────┘   └─────────────┘   └───────────┘ │ │ │
-│   └───────────────────────────────────────────────────────────────────────┘ │ │
-│                                    │                                         │ │
-└────────────────────────────────────┼─────────────────────────────────────────┘ │
-                                     │                                           │
-                    ┌────────────────┼────────────────┐                          │
-                    ▼                ▼                ▼                          │
-            ┌───────────┐    ┌───────────┐    ┌───────────┐                      │
-            │ DynamoDB  │    │EventBridge│    │Step Funcs │                      │
-            │  (Store)  │    │  (Alert)  │    │(Analysis) │                      │
-            └───────────┘    └───────────┘    └───────────┘                      │
+    subgraph detection["Drift Detection Phase"]
+        subgraph gitlab["GitLab Repository"]
+            baselines["baselines/<br/>├── eks/<br/>├── msk/<br/>├── s3/<br/>├── emr/<br/>└── mwaa/"]
+        end
+
+        subgraph aws["AWS Managed Services"]
+            eks["EKS"]
+            msk["MSK"]
+            s3["S3"]
+            emr["EMR"]
+            mwaaService["MWAA"]
+        end
+
+        subgraph lambda["Lambda: bdp-drift-detection"]
+            gitlabClient["GitLab<br/>Client"]
+            configFetcher["Config<br/>Fetcher"]
+            driftDetector["Drift<br/>Detector"]
+            alertPublisher["Alert<br/>Publisher"]
+
+            gitlabClient --> configFetcher --> driftDetector --> alertPublisher
+        end
+
+        baselines -->|"GitLab API<br/>(GET /files)"| gitlabClient
+        eks & msk & s3 & emr & mwaaService -->|"AWS Describe APIs"| configFetcher
+    end
+
+    subgraph outputs["Outputs"]
+        dynamodb["DynamoDB<br/>(Store)"]
+        eventbridge["EventBridge<br/>(Alert)"]
+        stepfuncs["Step Funcs<br/>(Analysis)"]
+    end
+
+    mwaa --> detection
+    alertPublisher --> dynamodb & eventbridge & stepfuncs
 ```
 
 ### 컴포넌트
@@ -107,52 +101,30 @@ BDP Agent의 구성 드리프트 탐지 모듈은 AWS 관리형 서비스(EKS, M
 
 ### 탐지 흐름
 
-```
-┌─────────────────┐              ┌─────────────────┐
-│  Baseline JSON  │              │  Current Config │
-│   (GitLab)      │              │    (AWS API)    │
-└────────┬────────┘              └────────┬────────┘
-         │                                 │
-         └──────────────┬──────────────────┘
-                        │
-                        ▼
-             ┌─────────────────────┐
-             │  1. Normalize JSON  │
-             │  - Sort keys        │
-             │  - Flatten nested   │
-             │  - Type coercion    │
-             └──────────┬──────────┘
-                        │
-                        ▼
-             ┌─────────────────────┐
-             │  2. Deep Compare    │
-             │  - Field by field   │
-             │  - Array comparison │
-             │  - Nested objects   │
-             └──────────┬──────────┘
-                        │
-                        ▼
-       ┌────────────────┼────────────────┐
-       │                │                │
-       ▼                ▼                ▼
-┌─────────────┐  ┌─────────────┐  ┌─────────────┐
-│   ADDED     │  │  MODIFIED   │  │   REMOVED   │
-│  (fields)   │  │  (fields)   │  │  (fields)   │
-└──────┬──────┘  └──────┬──────┘  └──────┬──────┘
-       │                │                │
-       └────────────────┼────────────────┘
-                        │
-                        ▼
-             ┌─────────────────────┐
-             │ 3. Apply Tolerance  │
-             │ - Ignore minor diffs│
-             │ - Exclude patterns  │
-             └──────────┬──────────┘
-                        │
-                        ▼
-             ┌─────────────────────┐
-             │ 4. Classify Severity│
-             └─────────────────────┘
+```mermaid
+flowchart TB
+    baseline["Baseline JSON<br/>(GitLab)"]
+    current["Current Config<br/>(AWS API)"]
+
+    baseline --> normalize
+    current --> normalize
+
+    normalize["1. Normalize JSON<br/>- Sort keys<br/>- Flatten nested<br/>- Type coercion"]
+    normalize --> compare
+
+    compare["2. Deep Compare<br/>- Field by field<br/>- Array comparison<br/>- Nested objects"]
+    compare --> added & modified & removed
+
+    added["ADDED<br/>(fields)"]
+    modified["MODIFIED<br/>(fields)"]
+    removed["REMOVED<br/>(fields)"]
+
+    added & modified & removed --> tolerance
+
+    tolerance["3. Apply Tolerance<br/>- Ignore minor diffs<br/>- Exclude patterns"]
+    tolerance --> classify
+
+    classify["4. Classify Severity"]
 ```
 
 ### 1. JSON 정규화 (Normalize)
