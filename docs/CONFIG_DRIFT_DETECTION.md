@@ -8,14 +8,15 @@
 
 1. [개요](#개요)
 2. [아키텍처](#아키텍처)
-3. [드리프트 탐지 알고리즘](#드리프트-탐지-알고리즘)
-4. [기준선 관리](#기준선-관리)
-5. [지원 리소스](#지원-리소스)
-6. [환경 변수](#환경-변수)
-7. [DynamoDB 테이블](#dynamodb-테이블)
-8. [EventBridge 이벤트](#eventbridge-이벤트)
-9. [사용법](#사용법)
-10. [Mock 테스트](#mock-테스트)
+3. [LLM 기반 원인 분석](#llm-기반-원인-분석)
+4. [드리프트 탐지 알고리즘](#드리프트-탐지-알고리즘)
+5. [기준선 관리](#기준선-관리)
+6. [지원 리소스](#지원-리소스)
+7. [환경 변수](#환경-변수)
+8. [DynamoDB 테이블](#dynamodb-테이블)
+9. [EventBridge 이벤트](#eventbridge-이벤트)
+10. [사용법](#사용법)
+11. [Mock 테스트](#mock-테스트)
 
 ---
 
@@ -94,6 +95,190 @@ flowchart TB
 | Config Fetcher | `src/agents/drift/services/config_fetcher.py` | AWS Describe API 추상화 |
 | Drift Detector | `src/agents/drift/services/drift_detector.py` | JSON Diff 기반 드리프트 탐지 엔진 |
 | Drift Detection Handler | `src/agents/drift/handler.py` | Lambda 핸들러 |
+| **Drift Analyzer** | `src/agents/drift/services/drift_analyzer.py` | **LLM 기반 원인 분석 (ReAct)** |
+
+---
+
+## LLM 기반 원인 분석
+
+### 개요
+
+드리프트 탐지 후 CRITICAL/HIGH 심각도의 드리프트에 대해 LLM을 통한 근본 원인 분석(Root Cause Analysis)을 수행합니다.
+ReAct(Reasoning + Acting) 패턴을 적용하여 분석 품질을 보장합니다.
+
+### ReAct 분석 플로우
+
+```mermaid
+flowchart TB
+    subgraph detection["Drift Detection"]
+        detect["드리프트 탐지"]
+        filter["CRITICAL/HIGH 필터"]
+    end
+
+    subgraph react["ReAct Analysis Loop"]
+        plan["PLAN<br/>분석 계획 수립"]
+        analyze["ANALYZE<br/>LLM 원인 분석"]
+        reflect["REFLECT<br/>분석 품질 평가"]
+
+        plan --> analyze --> reflect
+        reflect -->|"needs_replan<br/>(confidence < 0.7)"| plan
+        reflect -->|"complete<br/>(confidence ≥ 0.7)"| result
+    end
+
+    subgraph output["Output"]
+        result["분석 결과"]
+        store["DynamoDB 저장"]
+        event["EventBridge 발행"]
+    end
+
+    detect --> filter --> react
+    result --> store & event
+```
+
+### 원인 분류 카테고리
+
+| 카테고리 | 설명 | 예시 |
+|---------|------|------|
+| `MANUAL_CHANGE` | 콘솔/CLI를 통한 수동 변경 | AWS Console에서 인스턴스 타입 변경 |
+| `AUTO_SCALING` | ASG/HPA 등 자동 스케일링 | EKS 노드그룹 desired_size 변경 |
+| `MAINTENANCE_WINDOW` | AWS 자동 유지보수 | RDS 패치, 엔진 업그레이드 |
+| `DEPLOYMENT_DRIFT` | IaC 상태 불일치 | Terraform state와 실제 구성 차이 |
+| `SECURITY_PATCH` | 자동 보안 패치 | Lambda 런타임 업데이트 |
+| `OPERATOR_ERROR` | 운영자 실수 | 잘못된 구성 적용 |
+| `UNKNOWN` | 증거 부족 | 원인 파악 불가 |
+
+### 분석 결과 모델
+
+```python
+class DriftAnalysisResult(BaseModel):
+    """LLM 기반 드리프트 분석 결과."""
+
+    drift_id: str                           # EKS:production-cluster
+    resource_type: str                      # EKS
+    resource_id: str                        # production-cluster
+
+    # 원인 분석
+    cause_analysis: DriftCauseAnalysis      # 원인 카테고리, 근본 원인, 증거
+    impact_assessment: str                  # 영향도 평가
+    blast_radius: List[str]                 # 영향 받는 시스템 목록
+
+    # 신뢰도 점수
+    confidence_score: float                 # 0.0-1.0 (0.7 이상 권장)
+    urgency_score: float                    # 조치 긴급도
+
+    # 조치 권고
+    remediations: List[DriftRemediationAction]  # 조치 단계
+    requires_human_review: bool             # 사람 검토 필요 여부
+    review_reason: Optional[str]            # 검토 필요 사유
+```
+
+### 조치 권고 타입
+
+| 타입 | 설명 | 예시 명령 |
+|-----|------|----------|
+| `revert_to_baseline` | 기준선으로 롤백 | `terraform apply -target=...` |
+| `update_baseline` | 기준선 업데이트 | Git commit으로 기준선 갱신 |
+| `escalate` | 상위 에스컬레이션 | 보안팀 통보 |
+| `investigate` | 추가 조사 필요 | CloudTrail 로그 확인 |
+| `notify` | 알림만 필요 | 관련 팀 통보 |
+
+### ReAct 반복 조건
+
+```python
+# 분석 완료 조건
+while iteration <= MAX_ITERATIONS:
+    analysis = analyze(drift)
+    reflection = reflect(analysis)
+
+    if reflection.overall_confidence >= 0.7:
+        break  # 완료
+
+    if not reflection.needs_replan:
+        break  # 재분석 불필요
+
+    iteration += 1  # 재분석
+```
+
+### 신뢰도 점수 기준
+
+| 점수 범위 | 의미 | 조치 |
+|----------|------|------|
+| 0.85+ | 명확한 증거 | 자동 조치 가능 |
+| 0.70-0.84 | 강한 가설 | 검토 후 조치 |
+| 0.50-0.69 | 합리적 가설 | 추가 조사 필요 |
+| 0.50 미만 | 증거 부족 | 수동 분석 권장 |
+
+### 환경 변수 (분석 관련)
+
+| 변수명 | 설명 | 기본값 |
+|--------|------|--------|
+| `ENABLE_DRIFT_ANALYSIS` | LLM 분석 활성화 | `true` |
+| `LLM_PROVIDER` | LLM 제공자 (vllm/gemini/mock) | `mock` |
+| `VLLM_ENDPOINT` | vLLM 서버 엔드포인트 | - |
+| `LLM_MODEL` | 사용할 모델명 | - |
+| `MAX_ANALYSIS_ITERATIONS` | ReAct 최대 반복 횟수 | `3` |
+| `ANALYSIS_CONFIDENCE_THRESHOLD` | 완료 신뢰도 임계값 | `0.7` |
+| `MAX_DRIFTS_TO_ANALYZE` | 분석할 최대 드리프트 수 | `5` |
+
+### 분석 결과 저장
+
+DynamoDB에 분석 결과가 함께 저장됩니다:
+
+```json
+{
+  "pk": "DRIFT#EKS#production-eks",
+  "sk": "DRIFT#2024-01-15T10:30:00Z",
+  "type": "resource_drift",
+  "resource_type": "EKS",
+  "resource_id": "production-eks",
+  "severity": "HIGH",
+  "drifted_fields": [...],
+
+  // 분석 결과 필드
+  "analysis_cause_category": "manual_change",
+  "analysis_root_cause": "AWS Console에서 인스턴스 타입이 수동 변경됨",
+  "analysis_confidence": 0.85,
+  "analysis_urgency": 0.7,
+  "analysis_requires_review": true,
+  "analysis_remediations": [...]
+}
+```
+
+### 사용 예시
+
+```python
+from src.agents.drift.services.drift_analyzer import DriftAnalyzer
+from src.common.services.llm_client import LLMClient, LLMProvider
+
+# LLM 클라이언트 생성
+llm_client = LLMClient(
+    provider=LLMProvider.VLLM,
+    endpoint="http://localhost:8000",
+    model_name="mistral-7b"
+)
+
+# 분석기 생성
+analyzer = DriftAnalyzer(
+    llm_client=llm_client,
+    max_iterations=3,
+    confidence_threshold=0.7
+)
+
+# 드리프트 분석
+analysis = analyzer.analyze_drift(
+    drift_result=drift,
+    baseline_config=baseline,
+    current_config=current,
+    resource_context={
+        "resource_arn": "arn:aws:eks:...",
+        "region": "ap-northeast-2"
+    }
+)
+
+print(f"원인: {analysis.cause_analysis.category}")
+print(f"신뢰도: {analysis.confidence_score}")
+print(f"조치: {analysis.remediations}")
+```
 
 ---
 

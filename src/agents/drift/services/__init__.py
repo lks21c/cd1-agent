@@ -19,6 +19,14 @@ from src.agents.drift.services.baseline_loader import (
     BaselineProvider,
     BaselineFile,
 )
+from src.agents.drift.services.drift_analyzer import (
+    DriftAnalyzer,
+    BaseDriftAnalyzerProvider,
+    RealDriftAnalyzerProvider,
+    MockDriftAnalyzerProvider,
+    AnalysisState,
+    analyze_drift,
+)
 
 # Backward compatibility aliases
 GitLabClient = BaselineLoader
@@ -37,10 +45,17 @@ __all__ = [
     "DriftedField",
     "DriftResult",
     "AggregatedDriftResult",
-    # Baseline loader (new)
+    # Baseline loader
     "BaselineLoader",
     "BaselineProvider",
     "BaselineFile",
+    # Drift analyzer (LLM-based)
+    "DriftAnalyzer",
+    "BaseDriftAnalyzerProvider",
+    "RealDriftAnalyzerProvider",
+    "MockDriftAnalyzerProvider",
+    "AnalysisState",
+    "analyze_drift",
     # Backward compatibility aliases
     "GitLabClient",
     "GitLabProvider",
