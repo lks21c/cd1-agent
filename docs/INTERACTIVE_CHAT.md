@@ -161,6 +161,100 @@ flowchart TB
 
 ---
 
+## 4. Config Drift 분석 및 HITL
+
+```
+┌────────────────────────────────────────────────────────────────────────────┐
+│ User: "production-eks 클러스터 드리프트 분석해줘"                           │
+│                                                                             │
+│ Agent: [Plan] EKS 클러스터 드리프트 탐지 및 LLM 원인 분석 필요             │
+│        [Act]  analyze_config_drift(EKS, production-eks)                    │
+│        [Observe] 드리프트 감지됨 - instance_types, desired_size 변경       │
+│        [Reflect] HIGH 심각도, 복구 승인 필요                               │
+│                                                                             │
+│ Agent: 🔍 드리프트 분석 결과:                                              │
+│        - 리소스: EKS/production-eks                                        │
+│        - 최대 심각도: HIGH                                                 │
+│        - 변경된 필드:                                                      │
+│          • instance_types: ["m6i.xlarge"] → ["m5.large"] (HIGH)           │
+│          • desired_size: 5 → 3 (MEDIUM)                                   │
+│                                                                             │
+│        🤖 LLM 원인 분석:                                                   │
+│        - 원인 카테고리: MANUAL_CHANGE                                      │
+│        - 근본 원인: AWS Console에서 비용 절감 목적 수동 변경 추정          │
+│        - 신뢰도: 0.85                                                      │
+│        - 긴급도: 0.7                                                       │
+│                                                                             │
+│        ┌─────────────────────────────────────────────────────────────┐     │
+│        │ ⚠️ 권장 조치: 기준선으로 복원                                │     │
+│        │                                                              │     │
+│        │ 명령: terraform apply -target=module.eks                    │     │
+│        │ 예상 영향: 노드그룹 스케일업, 약 5분 소요                    │     │
+│        │                                                              │     │
+│        │ [승인]  [수정 후 승인]  [거부]  [추가 분석 요청]             │     │
+│        └─────────────────────────────────────────────────────────────┘     │
+│                                                                             │
+│ User: [승인]                                                                │
+│                                                                             │
+│ Agent: [Act]  approve_remediation(APPROVED)                                │
+│        ✅ 복구 작업이 승인되었습니다.                                      │
+│        Terraform 적용이 시작됩니다. 완료 후 상태를 확인해 드릴까요?        │
+│                                                                             │
+│ User: "네, 5분 후에 확인해줘"                                              │
+│                                                                             │
+│ Agent: 5분 후 EKS 클러스터 상태를 확인하겠습니다. ⏰                       │
+└────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Drift 도구 목록
+
+| 도구 | 함수명 | 설명 |
+|-----|--------|------|
+| **드리프트 분석** | `analyze_config_drift` | 기준선 대비 현재 설정 비교 + LLM 원인 분석 |
+| **상태 조회** | `check_drift_status` | 감지된 드리프트 목록 조회 |
+| **복구 계획** | `get_remediation_plan` | 드리프트별 복구 계획 조회 |
+| **승인 처리** | `approve_remediation` | 복구 작업 APPROVED/MODIFIED/REJECTED |
+
+### Drift 분석 플로우 (LangGraph)
+
+```mermaid
+flowchart TB
+    subgraph chat["ChatAgent"]
+        input["사용자 입력<br/>'드리프트 분석해줘'"]
+        plan["Plan Node"]
+        act["Act Node"]
+        observe["Observe Node"]
+        reflect["Reflect Node"]
+        hitl["Human Review Node"]
+        respond["Respond Node"]
+    end
+
+    subgraph drift["Drift Tools"]
+        analyze["analyze_config_drift()"]
+        approve["approve_remediation()"]
+    end
+
+    subgraph driftAgent["DriftAnalyzer"]
+        detector["ConfigDriftDetector"]
+        analyzer["ReAct Analyzer"]
+        llm["LLM Service"]
+    end
+
+    input --> plan --> act
+    act -->|"Tool 호출"| analyze
+    analyze --> detector --> analyzer
+    analyzer <--> llm
+    analyzer --> act
+    act --> observe --> reflect
+
+    reflect -->|"requires_human_review=true"| hitl
+    hitl -->|"APPROVED"| approve
+    approve --> respond
+    respond -->|"결과 전달"| input
+```
+
+---
+
 ## ReAct 자체 검증 패턴
 
 ### Reflect & Replan Loop
@@ -429,9 +523,11 @@ src/
 │   │   ├── reflect.py
 │   │   └── human_review.py
 │   ├── tools/                     # Chat용 Tool 래퍼
-│   │   ├── cloudwatch_tool.py
-│   │   ├── prometheus_tool.py
-│   │   ├── rds_tool.py
+│   │   ├── cloudwatch.py
+│   │   ├── prometheus.py
+│   │   ├── rds.py
+│   │   ├── drift.py               # 드리프트 분석 + HITL
+│   │   ├── service_health.py
 │   │   └── action_tool.py
 │   ├── components/                # Streamlit 컴포넌트
 │   │   ├── dashboard.py
@@ -462,6 +558,7 @@ src/
 ## 관련 문서
 
 - [Architecture Guide](ARCHITECTURE.md) - 전체 시스템 아키텍처
+- [Config Drift Detection](CONFIG_DRIFT_DETECTION.md) - 드리프트 탐지 및 LLM 분석 + HITL
 - [Task #7: RDS 스키마 동적 로딩](../issues/tasks.md) - 스키마 기반 동적 쿼리
 - [HDSP Detection](HDSP_DETECTION.md) - K8s 장애 감지 (Chat에서 조회 가능)
 - [Cost Anomaly Detection](COST_ANOMALY_DETECTION.md) - 비용 분석 (Chat에서 조회 가능)
@@ -479,4 +576,4 @@ src/
 
 ---
 
-*최종 업데이트: 2024-12-10*
+*최종 업데이트: 2025-12-19*

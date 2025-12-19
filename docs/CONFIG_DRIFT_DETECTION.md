@@ -9,14 +9,15 @@
 1. [개요](#개요)
 2. [아키텍처](#아키텍처)
 3. [LLM 기반 원인 분석](#llm-기반-원인-분석)
-4. [드리프트 탐지 알고리즘](#드리프트-탐지-알고리즘)
-5. [기준선 관리](#기준선-관리)
-6. [지원 리소스](#지원-리소스)
-7. [환경 변수](#환경-변수)
-8. [DynamoDB 테이블](#dynamodb-테이블)
-9. [EventBridge 이벤트](#eventbridge-이벤트)
-10. [사용법](#사용법)
-11. [Mock 테스트](#mock-테스트)
+4. [Human-in-the-Loop (HITL) 통합](#human-in-the-loop-hitl-통합)
+5. [드리프트 탐지 알고리즘](#드리프트-탐지-알고리즘)
+6. [기준선 관리](#기준선-관리)
+7. [지원 리소스](#지원-리소스)
+8. [환경 변수](#환경-변수)
+9. [DynamoDB 테이블](#dynamodb-테이블)
+10. [EventBridge 이벤트](#eventbridge-이벤트)
+11. [사용법](#사용법)
+12. [Mock 테스트](#mock-테스트)
 
 ---
 
@@ -323,6 +324,210 @@ print(f"원인: {analysis.cause_analysis.category}")
 print(f"신뢰도: {analysis.confidence_score}")
 print(f"조치: {analysis.remediations}")
 ```
+
+---
+
+## Human-in-the-Loop (HITL) 통합
+
+### 개요
+
+Drift Agent는 Streamlit 기반 대화형 인터페이스를 통해 Human-in-the-Loop(HITL) 워크플로우를 지원합니다.
+사용자는 프롬프트를 통해 드리프트 분석을 요청하고, 복구 작업에 대한 승인/수정/거부를 수행할 수 있습니다.
+
+### HITL 아키텍처
+
+```mermaid
+flowchart TB
+    subgraph ui["Streamlit UI"]
+        user["👤 사용자"]
+        chat["💬 Chat Interface"]
+        approval["✅ Approval Dialog"]
+    end
+
+    subgraph chatAgent["ChatAgent (LangGraph)"]
+        router["Router"]
+        tools["Drift Tools"]
+        humanReview["Human Review Node"]
+        respond["Respond Node"]
+    end
+
+    subgraph driftAgent["Drift Agent"]
+        analyzer["DriftAnalyzer<br/>(ReAct)"]
+        detector["DriftDetector"]
+    end
+
+    subgraph llm["LLM Service"]
+        vllm["vLLM / Gemini"]
+    end
+
+    user -->|"드리프트 분석 요청"| chat
+    chat --> router
+    router -->|"analyze_config_drift"| tools
+    tools --> detector --> analyzer
+    analyzer <-->|"ReAct Loop"| vllm
+    analyzer -->|"requires_human_review=true"| humanReview
+    humanReview -->|"승인 대기"| approval
+    approval -->|"APPROVED/MODIFIED/REJECTED"| humanReview
+    humanReview --> respond
+    respond --> chat
+    chat --> user
+```
+
+### Streamlit Chat 통합
+
+ChatAgent는 드리프트 분석 도구를 제공하여 대화형 드리프트 분석을 지원합니다.
+
+#### 사용 가능한 도구
+
+| 도구 | 설명 | HITL 여부 |
+|-----|------|----------|
+| `analyze_config_drift` | 드리프트 감지 및 LLM 원인 분석 | ✅ (복구 승인 시) |
+| `check_drift_status` | 드리프트 상태 조회 | ❌ |
+| `get_remediation_plan` | 복구 계획 조회 | ❌ |
+| `approve_remediation` | 복구 작업 승인/거부 | ✅ |
+
+#### 대화 예시
+
+```
+👤 User: production-eks 클러스터의 드리프트 상태를 확인해줘
+
+🤖 Assistant: EKS 클러스터 드리프트 분석을 시작합니다.
+
+[드리프트 분석 결과]
+- 리소스: EKS/production-eks
+- 드리프트 감지됨: ✅
+- 최대 심각도: HIGH
+- 변경된 필드:
+  - instance_types: ["m6i.xlarge"] → ["m5.large"] (HIGH)
+  - desired_size: 5 → 3 (MEDIUM)
+
+[LLM 원인 분석]
+- 원인 카테고리: MANUAL_CHANGE
+- 근본 원인: AWS Console에서 비용 절감 목적으로 수동 변경된 것으로 추정
+- 신뢰도: 0.85
+- 긴급도: 0.7
+
+⚠️ 복구 작업에 대한 승인이 필요합니다.
+
+권장 조치:
+1. [revert_to_baseline] Terraform으로 기준선 복원
+   명령: terraform apply -target=module.eks
+
+어떻게 진행할까요?
+[승인] [수정 후 승인] [거부] [추가 분석 요청]
+```
+
+### HITL 승인 플로우
+
+```mermaid
+sequenceDiagram
+    participant User as 👤 사용자
+    participant Chat as 💬 ChatAgent
+    participant Drift as 🔍 DriftAnalyzer
+    participant HITL as ✅ HumanReview
+
+    User->>Chat: "드리프트 분석 요청"
+    Chat->>Drift: analyze_config_drift()
+    Drift-->>Chat: DriftAnalysisResult<br/>(requires_human_review=true)
+    Chat->>HITL: 승인 대기 상태 전환
+    HITL-->>User: 승인 요청 표시
+
+    alt 승인 (APPROVED)
+        User->>HITL: "승인"
+        HITL->>Chat: approval_status=APPROVED
+        Chat->>Drift: execute_remediation()
+        Drift-->>Chat: 복구 완료
+        Chat-->>User: "복구가 완료되었습니다"
+    else 수정 후 승인 (MODIFIED)
+        User->>HITL: "수정 후 승인" + 수정 파라미터
+        HITL->>Chat: approval_status=MODIFIED
+        Chat->>Drift: execute_remediation(modified_params)
+        Drift-->>Chat: 수정된 복구 완료
+        Chat-->>User: "수정된 복구가 완료되었습니다"
+    else 거부 (REJECTED)
+        User->>HITL: "거부" + 사유
+        HITL->>Chat: approval_status=REJECTED
+        Chat-->>User: "복구가 거부되었습니다. 드리프트가 의도적 변경으로 처리됩니다."
+    end
+```
+
+### 승인 상태
+
+| 상태 | 설명 | 후속 처리 |
+|-----|------|----------|
+| `PENDING` | 사용자 승인 대기 | UI에 승인 다이얼로그 표시 |
+| `APPROVED` | 복구 승인됨 | 복구 작업 실행 |
+| `MODIFIED` | 수정 후 승인됨 | 수정된 파라미터로 복구 실행 |
+| `REJECTED` | 복구 거부됨 | 드리프트를 의도적 변경으로 기록 |
+
+### ChatAgent 도구 등록
+
+```python
+from src.common.chat.tools import create_chat_tools
+from src.common.services.llm_client import LLMClient, LLMProvider
+
+# LLM 클라이언트 생성
+llm_client = LLMClient(provider=LLMProvider.VLLM)
+
+# 드리프트 도구 포함 전체 도구 세트 생성
+tools = create_chat_tools(
+    aws_client=aws_client,
+    rds_client=rds_client,
+    llm_client=llm_client,  # 드리프트 분석용 LLM
+)
+
+# ChatAgent 생성
+agent = ChatAgent(
+    llm_client=llm_client,
+    tools=tools,
+)
+
+# 대화 실행
+response = agent.chat("production-eks 드리프트 분석해줘")
+```
+
+### 드리프트 도구 직접 사용
+
+```python
+from src.common.chat.tools.drift import (
+    analyze_config_drift,
+    check_drift_status,
+    get_remediation_plan,
+    approve_remediation,
+)
+
+# 드리프트 분석
+result = analyze_config_drift(
+    baseline_config=baseline,
+    current_config=current,
+    resource_type="EKS",
+    resource_id="production-eks",
+    include_analysis=True,  # LLM 분석 포함
+)
+
+# 분석 결과 확인
+if result["requires_approval"]:
+    print(f"승인 필요: {result['approval_context']['reason']}")
+
+    # 사용자 승인 처리
+    approval = approve_remediation(
+        drift_id="EKS:production-eks",
+        action_type="revert_to_baseline",
+        approval_status="APPROVED",
+        user_feedback="확인 후 승인합니다.",
+    )
+
+    print(f"승인 결과: {approval['message']}")
+```
+
+### HITL 환경 변수
+
+| 변수명 | 설명 | 기본값 |
+|--------|------|--------|
+| `DRIFT_HITL_ENABLED` | HITL 워크플로우 활성화 | `true` |
+| `DRIFT_AUTO_APPROVE_LOW` | LOW 심각도 자동 승인 | `false` |
+| `DRIFT_APPROVAL_TIMEOUT` | 승인 대기 타임아웃 (초) | `3600` |
+| `STREAMLIT_DRIFT_ENABLED` | Streamlit에서 드리프트 도구 활성화 | `true` |
 
 ---
 
