@@ -1,5 +1,5 @@
 """
-BDP Agent - AWS Lambda-based intelligent log analysis and auto-remediation system.
+CD1 Agent - AWS Lambda-based intelligent log analysis and auto-remediation system.
 
 This package provides:
 - LangGraph Agent framework for root cause analysis

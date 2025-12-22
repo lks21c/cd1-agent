@@ -1,5 +1,5 @@
 """
-Cost Anomaly Detector for BDP Agent.
+Cost Anomaly Detector for CD1 Agent.
 
 복합 이상 탐지 알고리즘:
 1. 비율 기반 (RATIO): 전 기간 대비 X% 이상 증가

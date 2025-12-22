@@ -1,1 +1,1 @@
-"""BDP Agent Test Suite."""
+"""CD1 Agent Test Suite."""

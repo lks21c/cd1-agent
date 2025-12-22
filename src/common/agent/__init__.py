@@ -1,5 +1,5 @@
 """
-BDP Agent LangGraph Implementation.
+CD1 Agent LangGraph Implementation.
 
 ReAct-based agent for root cause analysis and remediation.
 """

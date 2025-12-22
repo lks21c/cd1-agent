@@ -1,5 +1,5 @@
 """
-LangChain Tools for BDP Agent.
+LangChain Tools for CD1 Agent.
 
 Tool definitions for the ReAct agent workflow.
 """

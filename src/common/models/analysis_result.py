@@ -1,5 +1,5 @@
 """
-Analysis Result Models for BDP Agent.
+Analysis Result Models for CD1 Agent.
 
 Pydantic models for LLM analysis results and remediation actions.
 """

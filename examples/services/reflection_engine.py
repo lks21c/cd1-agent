@@ -1,5 +1,5 @@
 """
-Reflection Engine for BDP Agent.
+Reflection Engine for CD1 Agent.
 
 이 모듈은 LLM 분석 결과의 품질을 평가하고 신뢰도 점수를 계산합니다.
 hdsp_agent의 Reflection 패턴을 따릅니다.

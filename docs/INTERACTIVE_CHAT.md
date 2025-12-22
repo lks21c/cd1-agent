@@ -356,7 +356,7 @@ block-beta
     columns 1
 
     block:header
-        title["BDP Agent - Interactive Chat"]
+        title["CD1 Agent - Interactive Chat"]
         settings["[Settings]"]
     end
 
@@ -395,7 +395,7 @@ from src.chat.components import StatusDashboard, ChatHistory, ApprovalDialog
 
 def main():
     st.set_page_config(
-        page_title="BDP Agent - Interactive Chat",
+        page_title="CD1 Agent - Interactive Chat",
         page_icon="🤖",
         layout="wide"
     )
@@ -407,7 +407,7 @@ def main():
         st.session_state.messages = []
 
     # 헤더
-    st.title("🤖 BDP Agent - Interactive Chat")
+    st.title("🤖 CD1 Agent - Interactive Chat")
 
     # 상태 대시보드
     with st.container():

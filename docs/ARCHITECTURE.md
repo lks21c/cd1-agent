@@ -1,12 +1,12 @@
-# BDP Agent Architecture
+# CD1 Agent Architecture
 
 ## Overview
 
-BDP (Big Data Platform) Agent는 AWS Lambda 기반 서버리스 아키텍처로 구현된 **멀티 에이전트 이상 탐지 및 자동 복구 플랫폼**입니다.
+CD1 Agent는 AWS Lambda 기반 서버리스 아키텍처로 구현된 **멀티 에이전트 이상 탐지 및 자동 복구 플랫폼**입니다.
 
 ### 멀티 에이전트 아키텍처
 
-BDP Agent는 **4개의 독립적인 서브 에이전트**로 구성되어 있으며, 각 에이전트는 MWAA(Airflow)에서 5분 주기로 개별 호출됩니다.
+CD1 Agent는 **4개의 독립적인 서브 에이전트**로 구성되어 있으며, 각 에이전트는 MWAA(Airflow)에서 5분 주기로 개별 호출됩니다.
 
 | Agent | 대상 | 탐지 방식 | Lambda |
 |-------|------|----------|--------|
@@ -19,7 +19,7 @@ BDP Agent는 **4개의 독립적인 서브 에이전트**로 구성되어 있으
 
 ### Provider Abstraction Pattern
 
-BDP Agent는 Provider Abstraction 패턴을 사용하여 LLM과 AWS 서비스를 추상화합니다. 이를 통해 프로덕션(On-Premise/AWS)과 테스트(Public/Mock) 환경에서 동일한 코드로 동작합니다.
+CD1 Agent는 Provider Abstraction 패턴을 사용하여 LLM과 AWS 서비스를 추상화합니다. 이를 통해 프로덕션(On-Premise/AWS)과 테스트(Public/Mock) 환경에서 동일한 코드로 동작합니다.
 
 #### LLM Provider
 
@@ -593,7 +593,7 @@ LangGraph Agent는 Lambda 내부에서 실행되며, Step Functions는 외부 �
 
 ```json
 {
-  "Comment": "BDP Agent Hybrid Workflow",
+  "Comment": "CD1 Agent Hybrid Workflow",
   "StartAt": "DetectAnomalies",
   "States": {
     "DetectAnomalies": {
@@ -635,7 +635,7 @@ LangGraph Agent는 Lambda 내부에서 실행되며, Step Functions는 외부 �
 
 ### LangGraph vs 다른 Agent Framework 비교
 
-| Framework | 장점 | 단점 | BDP Agent 적합도 |
+| Framework | 장점 | 단점 | CD1 Agent 적합도 |
 |-----------|------|------|------------------|
 | **LangGraph** | 상태 기반 그래프, 루프 지원, LangChain 호환 | 학습 곡선 | ⭐⭐⭐ 최적 |
 | Claude Agent SDK | Anthropic 최적화, 간단한 API | Claude 전용 | ⭐⭐ vLLM 미지원 |
@@ -730,7 +730,7 @@ flowchart TB
 
 ### 개요
 
-BDP Agent는 Chat Agent 기반의 **대화형 Human-in-the-Loop 인터페이스**를 제공합니다. LangGraph ReAct 워크플로우 내에서 신뢰도 기반 승인 요청을 생성하고, 외부 Streamlit UI를 통해 사용자 승인/거부/수정을 처리합니다.
+CD1 Agent는 Chat Agent 기반의 **대화형 Human-in-the-Loop 인터페이스**를 제공합니다. LangGraph ReAct 워크플로우 내에서 신뢰도 기반 승인 요청을 생성하고, 외부 Streamlit UI를 통해 사용자 승인/거부/수정을 처리합니다.
 
 > **현재 상태**: HITL 백엔드 로직은 완전 구현됨. Streamlit UI는 설정만 존재하며 향후 구현 예정.
 
@@ -947,7 +947,7 @@ Streamlit UI에서 제공되는 빠른 액션 목록:
 
 | State Machine | Purpose |
 |---------------|---------|
-| bdp-main-workflow | BDP Agent 워크플로우 (detection → analysis → action) |
+| bdp-main-workflow | CD1 Agent 워크플로우 (detection → analysis → action) |
 | bdp-hdsp-workflow | HDSP Agent 워크플로우 (K8s 장애 감지) |
 | bdp-cost-workflow | Cost Agent 워크플로우 (비용 이상 탐지) |
 | bdp-drift-workflow | Drift Agent 워크플로우 (설정 드리프트 감지) |

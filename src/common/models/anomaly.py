@@ -1,5 +1,5 @@
 """
-Anomaly Models for BDP Agent.
+Anomaly Models for CD1 Agent.
 
 Pydantic models for representing detected anomalies and their metadata.
 """

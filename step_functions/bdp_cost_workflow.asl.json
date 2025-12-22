@@ -70,7 +70,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent.cost",
+            "Source": "cd1-agent.cost",
             "DetailType": "COST_ANOMALY_LOGGED",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -252,7 +252,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent.cost",
+            "Source": "cd1-agent.cost",
             "DetailType": "COST_MAX_REPLANS_REACHED",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -271,7 +271,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent.cost",
+            "Source": "cd1-agent.cost",
             "DetailType": "COST_ESCALATION_REQUIRED",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -291,7 +291,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent.cost",
+            "Source": "cd1-agent.cost",
             "DetailType": "COST_REMEDIATION_SUCCESS",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -319,7 +319,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent.cost",
+            "Source": "cd1-agent.cost",
             "DetailType": "COST_APPROVAL_REJECTED",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -342,7 +342,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent.cost",
+            "Source": "cd1-agent.cost",
             "DetailType": "COST_APPROVAL_TIMEOUT",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -360,7 +360,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent.cost",
+            "Source": "cd1-agent.cost",
             "DetailType": "COST_WORKFLOW_ERROR",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -379,7 +379,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent.cost",
+            "Source": "cd1-agent.cost",
             "DetailType": "COST_REMEDIATION_ERROR",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",

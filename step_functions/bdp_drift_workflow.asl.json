@@ -69,7 +69,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent.drift",
+            "Source": "cd1-agent.drift",
             "DetailType": "CONFIG_DRIFT_LOGGED",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -244,7 +244,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent.drift",
+            "Source": "cd1-agent.drift",
             "DetailType": "DRIFT_BASELINE_UPDATE_REQUIRED",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -288,7 +288,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent.drift",
+            "Source": "cd1-agent.drift",
             "DetailType": "DRIFT_MAX_REPLANS_REACHED",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -307,7 +307,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent.drift",
+            "Source": "cd1-agent.drift",
             "DetailType": "DRIFT_ESCALATION_REQUIRED",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -328,7 +328,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent.drift",
+            "Source": "cd1-agent.drift",
             "DetailType": "DRIFT_REMEDIATION_SUCCESS",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -356,7 +356,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent.drift",
+            "Source": "cd1-agent.drift",
             "DetailType": "DRIFT_APPROVAL_REJECTED",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -379,7 +379,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent.drift",
+            "Source": "cd1-agent.drift",
             "DetailType": "DRIFT_APPROVAL_TIMEOUT",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -397,7 +397,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent.drift",
+            "Source": "cd1-agent.drift",
             "DetailType": "DRIFT_WORKFLOW_ERROR",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -416,7 +416,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent.drift",
+            "Source": "cd1-agent.drift",
             "DetailType": "DRIFT_REMEDIATION_ERROR",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",

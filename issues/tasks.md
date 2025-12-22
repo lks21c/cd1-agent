@@ -1,4 +1,4 @@
-# BDP Agent Tasks
+# CD1 Agent Tasks
 
 ## 진행 상태
 - [ ] 대기 (Pending)

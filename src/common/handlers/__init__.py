@@ -1,4 +1,4 @@
-"""Common handlers for BDP Agent."""
+"""Common handlers for CD1 Agent."""
 
 from src.common.handlers.base_handler import BaseHandler, LambdaResponse
 from src.common.handlers.analysis_handler import AnalysisHandler, handler as analysis_handler

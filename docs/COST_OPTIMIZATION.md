@@ -1,8 +1,8 @@
-# BDP Agent Cost Optimization Guide
+# CD1 Agent Cost Optimization Guide
 
 ## Overview
 
-BDP Agent는 비용 효율성을 핵심 설계 원칙으로 삼아, 다양한 최적화 기법을 통해 AWS 비용을 최소화합니다.
+CD1 Agent는 비용 효율성을 핵심 설계 원칙으로 삼아, 다양한 최적화 기법을 통해 AWS 비용을 최소화합니다.
 
 ### LLM Provider별 비용 구조
 

@@ -1,7 +1,7 @@
 """
 Pytest Configuration and Fixtures.
 
-Shared fixtures for BDP Agent test suite.
+Shared fixtures for CD1 Agent test suite.
 """
 
 import os

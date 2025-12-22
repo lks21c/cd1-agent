@@ -199,7 +199,7 @@ query = '''
 
 ```json
 {
-  "source": "bdp-agent.hdsp",
+  "source": "cd1-agent.hdsp",
   "detail-type": "K8s Anomaly Detected",
   "detail": {
     "agent": "hdsp",

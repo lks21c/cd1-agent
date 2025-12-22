@@ -190,7 +190,7 @@ class MockBaselineProvider(BaseBaselineProvider):
             ],
             "tags": {
                 "Environment": "production",
-                "ManagedBy": "bdp-agent",
+                "ManagedBy": "cd1-agent",
             },
         })
 
@@ -459,7 +459,7 @@ class BaselineLoader:
             "sha": "local-file",
             "short_sha": "local",
             "message": "Local filesystem baselines",
-            "author_name": "BDP Agent",
+            "author_name": "CD1 Agent",
             "authored_date": datetime.utcnow().isoformat(),
             **info,
         }

@@ -1,4 +1,4 @@
-"""Common services for BDP Agent."""
+"""Common services for CD1 Agent."""
 
 from src.common.services.llm_client import LLMClient, LLMProvider, MockLLMProvider
 from src.common.services.aws_client import AWSClient, AWSProvider, MockAWSProvider

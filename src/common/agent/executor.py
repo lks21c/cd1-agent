@@ -1,5 +1,5 @@
 """
-Agent Executor for BDP Agent.
+Agent Executor for CD1 Agent.
 
 High-level interface for running the LangGraph agent.
 """
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 class AgentExecutor:
     """
-    High-level executor for the BDP Agent.
+    High-level executor for the CD1 Agent.
 
     Provides a simple interface to run the agent workflow
     with proper initialization and result handling.

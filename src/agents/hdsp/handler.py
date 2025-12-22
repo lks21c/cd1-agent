@@ -269,7 +269,7 @@ class HDSPDetectionHandler(BaseHandler):
 
             self.aws_client.put_eventbridge_event(
                 event_bus=self.config["event_bus"],
-                source="bdp-agent.hdsp",
+                source="cd1-agent.hdsp",
                 detail_type="K8s Anomaly Detected",
                 detail=anomaly_data,
             )

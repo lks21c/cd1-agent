@@ -1,5 +1,5 @@
 """
-AWS Client Abstraction Layer for BDP Agent.
+AWS Client Abstraction Layer for CD1 Agent.
 
 AWS (Production) 또는 Mock (Public Testing)을 지원하는 통합 AWS 클라이언트.
 환경 변수 AWS_MOCK으로 mock 모드를 활성화합니다.

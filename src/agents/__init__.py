@@ -1,1 +1,1 @@
-"""Agent implementations for BDP Agent."""
+"""Agent implementations for CD1 Agent."""

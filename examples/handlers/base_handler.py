@@ -1,5 +1,5 @@
 """
-Base Handler Pattern for BDP Agent Lambda Functions.
+Base Handler Pattern for CD1 Agent Lambda Functions.
 
 이 모듈은 모든 Lambda 핸들러의 기본 클래스를 제공합니다.
 - 일관된 에러 처리

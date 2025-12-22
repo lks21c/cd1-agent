@@ -1,7 +1,7 @@
 """
-BDP Agent Pydantic Models.
+CD1 Agent Pydantic Models.
 
-This module exports all data models used throughout the BDP Agent system.
+This module exports all data models used throughout the CD1 Agent system.
 """
 
 from src.common.models.anomaly import (

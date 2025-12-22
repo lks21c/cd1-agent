@@ -50,7 +50,7 @@ def after_reflection(state: AgentState) -> Literal["replan", "finalize"]:
 
 def create_agent_graph() -> StateGraph:
     """
-    Create the LangGraph StateGraph for BDP Agent.
+    Create the LangGraph StateGraph for CD1 Agent.
 
     The graph implements a ReAct loop:
     1. Think: Analyze current state, decide next action

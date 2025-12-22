@@ -1,10 +1,10 @@
-# BDP Agent
+# CD1 Agent
 
 AWS Lambda 기반 서버리스 멀티 에이전트 이상 탐지 및 자동 복구 플랫폼
 
 ## Overview
 
-BDP Agent는 **4개의 독립적인 서브 에이전트**로 구성된 이상 탐지 플랫폼입니다. 각 에이전트는 MWAA(Airflow)에서 5분 주기로 호출되며, 독립적인 Step Functions 워크플로우를 통해 탐지 → 분석 → 복구 조치를 수행합니다.
+CD1 Agent는 **4개의 독립적인 서브 에이전트**로 구성된 이상 탐지 플랫폼입니다. 각 에이전트는 MWAA(Airflow)에서 5분 주기로 호출되며, 독립적인 Step Functions 워크플로우를 통해 탐지 → 분석 → 복구 조치를 수행합니다.
 
 ### 서브 에이전트 구성
 
@@ -118,7 +118,7 @@ stateDiagram-v2
 ## Project Structure
 
 ```
-bdp-agent/
+cd1-agent/
 ├── docs/
 │   ├── ARCHITECTURE.md           # 상세 아키텍처 문서
 │   ├── PROMPTS.md                # 프롬프트 템플릿 설계
@@ -172,8 +172,8 @@ bdp-agent/
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/lks21c/bdp-agent.git
-cd bdp-agent
+git clone https://github.com/lks21c/cd1-agent.git
+cd cd1-agent
 
 # 2. Create virtual environment
 python -m venv .venv

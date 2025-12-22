@@ -1,5 +1,5 @@
 """
-Analysis Prompts for BDP Agent.
+Analysis Prompts for CD1 Agent.
 
 이 모듈은 LLM(vLLM/Gemini) 호출을 위한 프롬프트 템플릿을 제공합니다.
 hdsp_agent 패턴을 따라 프롬프트를 로직에서 분리합니다.

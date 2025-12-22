@@ -1,5 +1,5 @@
 """
-RDS Tools for BDP Agent.
+RDS Tools for CD1 Agent.
 
 LangChain tool definitions for querying RDS via Data API.
 Supports schema-aware dynamic query generation.

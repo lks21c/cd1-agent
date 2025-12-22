@@ -1,8 +1,8 @@
-# BDP Agent Prompt Design Guide
+# CD1 Agent Prompt Design Guide
 
 ## Overview
 
-BDP Agent의 프롬프트는 **hdsp_agent 패턴**을 따라 비즈니스 로직에서 분리되어 `src/prompts/` 디렉토리에서 관리됩니다.
+CD1 Agent의 프롬프트는 **hdsp_agent 패턴**을 따라 비즈니스 로직에서 분리되어 `src/prompts/` 디렉토리에서 관리됩니다.
 
 ### LLM Provider 호환성
 

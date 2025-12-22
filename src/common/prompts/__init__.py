@@ -1,5 +1,5 @@
 """
-BDP Agent Prompts Module.
+CD1 Agent Prompts Module.
 
 Prompt templates and utilities for LLM interactions.
 """

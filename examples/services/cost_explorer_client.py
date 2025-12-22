@@ -1,5 +1,5 @@
 """
-AWS Cost Explorer Client for BDP Agent.
+AWS Cost Explorer Client for CD1 Agent.
 
 AWS Cost Explorer (Production) 또는 Mock (Testing)을 지원하는 통합 클라이언트.
 Cross-Account AssumeRole을 통한 다중 계정 비용 조회 지원.

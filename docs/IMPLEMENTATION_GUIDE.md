@@ -1,8 +1,8 @@
-# BDP Agent Implementation Guide
+# CD1 Agent Implementation Guide
 
 ## Overview
 
-이 가이드는 BDP Agent의 단계별 구현 방법과 코드 예시를 제공합니다.
+이 가이드는 CD1 Agent의 단계별 구현 방법과 코드 예시를 제공합니다.
 
 ---
 
@@ -11,7 +11,7 @@
 ### 1.1 프로젝트 구조 설정
 
 ```
-bdp-agent/
+cd1-agent/
 ├── src/
 │   ├── common/                    # 공통 코드
 │   │   ├── handlers/              # 공통 Lambda 핸들러
@@ -1685,7 +1685,7 @@ Evaluate the quality of the following analysis.
 
 ```json
 {
-  "Comment": "BDP Agent Main Workflow - Detection, Analysis, Remediation",
+  "Comment": "CD1 Agent Main Workflow - Detection, Analysis, Remediation",
   "StartAt": "DetectAnomalies",
   "States": {
     "DetectAnomalies": {
@@ -1916,7 +1916,7 @@ Evaluate the quality of the following analysis.
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent",
+            "Source": "cd1-agent",
             "DetailType": "ESCALATION_REQUIRED",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -1935,7 +1935,7 @@ Evaluate the quality of the following analysis.
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent",
+            "Source": "cd1-agent",
             "DetailType": "REMEDIATION_SUCCESS",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -1967,7 +1967,7 @@ Evaluate the quality of the following analysis.
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent",
+            "Source": "cd1-agent",
             "DetailType": "APPROVAL_TIMEOUT",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id"
@@ -1984,7 +1984,7 @@ Evaluate the quality of the following analysis.
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent",
+            "Source": "cd1-agent",
             "DetailType": "WORKFLOW_ERROR",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -2002,7 +2002,7 @@ Evaluate the quality of the following analysis.
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent",
+            "Source": "cd1-agent",
             "DetailType": "REMEDIATION_ERROR",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -2029,7 +2029,7 @@ Evaluate the quality of the following analysis.
 
 ### 6.1 MWAA DAG 설정
 
-BDP Agent는 MWAA (Amazon Managed Workflows for Apache Airflow)를 통해 주기적으로 트리거됩니다.
+CD1 Agent는 MWAA (Amazon Managed Workflows for Apache Airflow)를 통해 주기적으로 트리거됩니다.
 
 ```python
 # dags/bdp_detection_dag.py
@@ -2065,7 +2065,7 @@ with DAG(
 # cloudformation/bdp-resources.yaml
 
 AWSTemplateFormatVersion: '2010-09-09'
-Description: BDP Agent Resources
+Description: CD1 Agent Resources
 
 Resources:
   # DynamoDB Tables
@@ -2296,7 +2296,7 @@ class TestReflectionEngine:
 
 ### 7.1 Why LangGraph?
 
-BDP Agent의 분석 단계에서는 동적인 ReAct 패턴과 Reflect/Replan 루프가 필요합니다. LangGraph를 선택한 이유:
+CD1 Agent의 분석 단계에서는 동적인 ReAct 패턴과 Reflect/Replan 루프가 필요합니다. LangGraph를 선택한 이유:
 
 | 요구사항 | LangGraph 지원 | 설명 |
 |---------|---------------|------|
@@ -2325,7 +2325,7 @@ class AnalysisContext(TypedDict):
 
 
 class AgentState(MessagesState):
-    """BDP Agent 상태 정의
+    """CD1 Agent 상태 정의
 
     LangGraph의 TypedDict 기반 상태 관리로
     분석 과정의 모든 컨텍스트를 추적합니다.

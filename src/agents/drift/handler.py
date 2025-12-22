@@ -510,7 +510,7 @@ class DriftDetectionHandler(BaseHandler):
 
             self.aws_client.put_eventbridge_event(
                 event_bus=self.config["event_bus"],
-                source="bdp-agent.drift",
+                source="cd1-agent.drift",
                 detail_type="Configuration Drift Detected",
                 detail=event_data,
             )

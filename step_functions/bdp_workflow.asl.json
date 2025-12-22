@@ -200,7 +200,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent",
+            "Source": "cd1-agent",
             "DetailType": "ESCALATION_REQUIRED",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -219,7 +219,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent",
+            "Source": "cd1-agent",
             "DetailType": "REMEDIATION_SUCCESS",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -251,7 +251,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent",
+            "Source": "cd1-agent",
             "DetailType": "APPROVAL_TIMEOUT",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id"
@@ -268,7 +268,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent",
+            "Source": "cd1-agent",
             "DetailType": "WORKFLOW_ERROR",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -286,7 +286,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent",
+            "Source": "cd1-agent",
             "DetailType": "REMEDIATION_ERROR",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",

@@ -23,7 +23,7 @@
 
 ## 개요
 
-BDP Agent의 구성 드리프트 탐지 모듈은 AWS 관리형 서비스(EKS, MSK, S3, EMR, MWAA)의 현재 구성을 로컬 `conf/baselines/` 디렉토리에 저장된 JSON 기준선 파일과 비교하여 의도치 않은 구성 변경을 감지합니다.
+CD1 Agent의 구성 드리프트 탐지 모듈은 AWS 관리형 서비스(EKS, MSK, S3, EMR, MWAA)의 현재 구성을 로컬 `conf/baselines/` 디렉토리에 저장된 JSON 기준선 파일과 비교하여 의도치 않은 구성 변경을 감지합니다.
 
 ### 주요 기능
 
@@ -813,7 +813,7 @@ eks_client.describe_nodegroup(
   ],
   "tags": {
     "Environment": "production",
-    "ManagedBy": "bdp-agent"
+    "ManagedBy": "cd1-agent"
   }
 }
 ```

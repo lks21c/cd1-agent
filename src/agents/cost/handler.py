@@ -286,7 +286,7 @@ class CostDetectionHandler(BaseHandler):
 
             self.aws_client.put_eventbridge_event(
                 event_bus=self.config["event_bus"],
-                source="bdp-agent.cost",
+                source="cd1-agent.cost",
                 detail_type="Cost Anomaly Detected",
                 detail=anomaly_data,
             )

@@ -1,5 +1,5 @@
 """
-LLM Client for BDP Agent.
+LLM Client for CD1 Agent.
 
 vLLM (On-Premise) 또는 Gemini (Public Mock)를 지원하는 통합 LLM 클라이언트.
 환경 변수 LLM_PROVIDER로 provider를 선택합니다.

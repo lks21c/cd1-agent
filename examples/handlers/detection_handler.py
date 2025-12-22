@@ -1,5 +1,5 @@
 """
-Detection Handler for BDP Agent.
+Detection Handler for CD1 Agent.
 
 이 핸들러는 주기적으로 로그와 메트릭을 분석하여 이상 현상을 감지합니다.
 - CloudWatch Anomaly Detection 결과 조회

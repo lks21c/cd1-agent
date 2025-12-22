@@ -377,7 +377,7 @@ class MockConfigProvider(BaseConfigProvider):
                 ],
                 "tags": {
                     "Environment": "production",
-                    "ManagedBy": "bdp-agent",
+                    "ManagedBy": "cd1-agent",
                 },
             },
         }

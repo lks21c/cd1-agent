@@ -16,7 +16,7 @@ from airflow.operators.empty import EmptyOperator
 
 
 default_args = {
-    "owner": "bdp-team",
+    "owner": "cd1-team",
     "depends_on_past": False,
     "email_on_failure": True,
     "email_on_retry": False,
@@ -51,7 +51,7 @@ with DAG(
     schedule_interval="*/5 * * * *",  # Every 5 minutes
     start_date=datetime(2024, 1, 1),
     catchup=False,
-    tags=["bdp-agent", "anomaly-detection", "cloudwatch"],
+    tags=["cd1-agent", "anomaly-detection", "cloudwatch"],
     max_active_runs=1,
 ) as dag:
 

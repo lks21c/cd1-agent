@@ -3,14 +3,14 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "bdp-agent"
+name = "cd1-agent"
 version = "0.1.0"
 description = "AWS Lambda-based intelligent log analysis and auto-remediation system"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.10"
 authors = [
-    {name = "BDP Team"}
+    {name = "CD1 Team"}
 ]
 keywords = ["aws", "lambda", "langgraph", "anomaly-detection", "remediation"]
 classifiers = [
@@ -50,9 +50,9 @@ gemini = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/example/bdp-agent"
-Documentation = "https://github.com/example/bdp-agent#readme"
-Repository = "https://github.com/example/bdp-agent"
+Homepage = "https://github.com/lks21c/cd1-agent"
+Documentation = "https://github.com/lks21c/cd1-agent#readme"
+Repository = "https://github.com/lks21c/cd1-agent"
 
 [tool.setuptools.packages.find]
 where = ["."]

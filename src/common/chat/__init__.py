@@ -1,5 +1,5 @@
 """
-BDP Agent Interactive Chat Module.
+CD1 Agent Interactive Chat Module.
 
 LangGraph 기반 대화형 에이전트 백엔드 라이브러리.
 

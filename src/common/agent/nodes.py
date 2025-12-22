@@ -1,5 +1,5 @@
 """
-LangGraph Nodes for BDP Agent.
+LangGraph Nodes for CD1 Agent.
 
 Node implementations for the ReAct workflow.
 """

@@ -68,7 +68,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent.hdsp",
+            "Source": "cd1-agent.hdsp",
             "DetailType": "K8S_ANOMALY_LOGGED",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -252,7 +252,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent.hdsp",
+            "Source": "cd1-agent.hdsp",
             "DetailType": "K8S_MAX_REPLANS_REACHED",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -271,7 +271,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent.hdsp",
+            "Source": "cd1-agent.hdsp",
             "DetailType": "K8S_ESCALATION_REQUIRED",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -292,7 +292,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent.hdsp",
+            "Source": "cd1-agent.hdsp",
             "DetailType": "K8S_REMEDIATION_SUCCESS",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -321,7 +321,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent.hdsp",
+            "Source": "cd1-agent.hdsp",
             "DetailType": "K8S_APPROVAL_REJECTED",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -345,7 +345,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent.hdsp",
+            "Source": "cd1-agent.hdsp",
             "DetailType": "K8S_APPROVAL_TIMEOUT",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -363,7 +363,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent.hdsp",
+            "Source": "cd1-agent.hdsp",
             "DetailType": "K8S_WORKFLOW_ERROR",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",
@@ -382,7 +382,7 @@
       "Parameters": {
         "Entries": [
           {
-            "Source": "bdp-agent.hdsp",
+            "Source": "cd1-agent.hdsp",
             "DetailType": "K8S_REMEDIATION_ERROR",
             "Detail": {
               "workflow_id.$": "$$.Execution.Id",

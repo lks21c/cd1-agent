@@ -1,5 +1,5 @@
 """
-Cost Detection Handler for BDP Agent.
+Cost Detection Handler for CD1 Agent.
 
 이 핸들러는 AWS Cost Explorer를 통해 비용 이상을 감지합니다.
 - Cross-Account AssumeRole 지원

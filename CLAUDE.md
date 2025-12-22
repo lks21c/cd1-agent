@@ -1,7 +1,7 @@
-# BDP Agent - Claude Code Instructions
+# CD1 Agent - Claude Code Instructions
 
 ## Project Overview
-BDP Agent는 AWS 환경에서 이상 탐지 및 자동 대응을 수행하는 LangGraph 기반 ReAct 에이전트입니다.
+CD1 Agent는 AWS 환경에서 이상 탐지 및 자동 대응을 수행하는 LangGraph 기반 ReAct 에이전트입니다.
 
 ## Task Management
 
