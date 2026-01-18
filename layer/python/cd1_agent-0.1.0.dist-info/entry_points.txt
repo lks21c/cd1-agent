@@ -1,0 +1,4 @@
+[console_scripts]
+cd1-agent = src.cli:main
+cd1-bdp = src.agents.bdp.handler:handler
+cd1-cost = src.agents.cost.handler:handler

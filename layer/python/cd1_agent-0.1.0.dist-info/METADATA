@@ -1,0 +1,407 @@
+Metadata-Version: 2.4
+Name: cd1-agent
+Version: 0.1.0
+Summary: AWS Lambda-based intelligent log analysis and auto-remediation system
+Author: CD1 Team
+License: MIT
+Project-URL: Homepage, https://github.com/lks21c/cd1-agent
+Project-URL: Documentation, https://github.com/lks21c/cd1-agent#readme
+Project-URL: Repository, https://github.com/lks21c/cd1-agent
+Keywords: aws,lambda,langgraph,anomaly-detection,remediation
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.13
+Requires-Python: >=3.13
+Description-Content-Type: text/markdown
+Requires-Dist: pydantic>=2.0.0
+Requires-Dist: langchain-core>=0.1.0
+Requires-Dist: langgraph>=0.0.30
+Requires-Dist: boto3>=1.28.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.0.0; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.21.0; extra == "dev"
+Requires-Dist: black>=23.0.0; extra == "dev"
+Requires-Dist: ruff>=0.1.0; extra == "dev"
+Requires-Dist: mypy>=1.0.0; extra == "dev"
+Requires-Dist: build>=1.0.0; extra == "dev"
+Requires-Dist: twine>=4.0.0; extra == "dev"
+Provides-Extra: luminol
+Requires-Dist: luminol>=0.4; extra == "luminol"
+Provides-Extra: vllm
+Requires-Dist: openai>=1.0.0; extra == "vllm"
+Requires-Dist: httpx>=0.25.0; extra == "vllm"
+Provides-Extra: gemini
+Requires-Dist: google-generativeai>=0.3.0; extra == "gemini"
+Provides-Extra: rds
+Requires-Dist: pymysql>=1.1.0; extra == "rds"
+Requires-Dist: cryptography>=41.0.0; extra == "rds"
+Provides-Extra: lambda-layer
+Requires-Dist: pydantic>=2.0.0; extra == "lambda-layer"
+Requires-Dist: langchain-core>=0.1.0; extra == "lambda-layer"
+Requires-Dist: langgraph>=0.0.30; extra == "lambda-layer"
+Requires-Dist: boto3>=1.28.0; extra == "lambda-layer"
+Provides-Extra: all
+Requires-Dist: cd1-agent[gemini,luminol,rds,vllm]; extra == "all"
+
+# CD1 Agent
+
+AWS Lambda 기반 서버리스 멀티 에이전트 이상 탐지 및 자동 복구 플랫폼
+
+## Overview
+
+CD1 Agent는 **4개의 독립적인 서브 에이전트**로 구성된 이상 탐지 플랫폼입니다. 각 에이전트는 MWAA(Airflow)에서 5분 주기로 호출되며, 독립적인 Step Functions 워크플로우를 통해 탐지 → 분석 → 복구 조치를 수행합니다.
+
+### 서브 에이전트 구성
+
+| Agent | 대상 | 탐지 방식 | 설명 |
+|-------|------|----------|------|
+| **BDP Agent** | AWS 인프라 | CloudWatch Logs/Metrics | 로그 패턴, 메트릭 이상, 에러 스파이크 감지 |
+| **HDSP Agent** | On-Prem K8s | Prometheus 메트릭 | Pod/Node 상태, CPU/Memory 이상, OOMKill 감지 |
+| **Cost Agent** | AWS 비용 | Cost Explorer + Luminol | 비용 이상, 서비스별 급증, 근본 원인 분석 |
+| **Drift Agent** | AWS 설정 | Git Baseline 비교 | 구성 드리프트, 보안 설정 변경 감지 |
+
+### Provider 구성
+
+#### LLM Provider
+
+| 환경 | Provider | 모델 | 용도 |
+|------|----------|------|------|
+| **On-Premise** | vLLM | 자체 호스팅 LLM | 프로덕션 분석 |
+| **Public (Mock)** | Google Gemini | Gemini 2.5 Pro/Flash | 개발/테스트 |
+| **로컬 테스트** | Mock LLM | 내장 Mock | AWS/LLM 없이 로직 테스트 |
+
+#### AWS Provider
+
+| 환경 | Provider | 용도 |
+|------|----------|------|
+| **Production** | AWS | 실제 AWS 서비스 호출 |
+| **Public/로컬** | Mock | AWS 없이 전체 로직 테스트 |
+
+### 주요 기능
+
+- **LangGraph Agent**: 동적 ReAct 루프 기반 분석 에이전트
+- **주기적 로그 감지**: 5-10분 간격으로 CloudWatch 및 RDS 통합 로그 분석
+- **AI 기반 근본 원인 분석**: vLLM 또는 Gemini를 활용한 ReAct 패턴 분석
+- **승인 기반 실행**:
+  - 0.5+ : 승인 요청 후 실행
+  - <0.5 : 담당자 에스컬레이션
+- **AWS 리소스 조정**: Lambda 재시작, RDS 파라미터 변경, Auto Scaling 조정
+- **EventBridge 알림**: 외부 시스템 연동 (Slack, Teams 등)
+
+## Architecture
+
+### Multi-Agent Orchestration
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         MWAA (Airflow DAGs) - 5분 주기                    │
+└────────┬────────────────┬────────────────┬────────────────┬─────────────┘
+         │                │                │                │
+         ▼                ▼                ▼                ▼
+┌────────────────┐ ┌────────────────┐ ┌────────────────┐ ┌────────────────┐
+│ BDP Agent      │ │ HDSP Agent     │ │ Cost Agent     │ │ Drift Agent    │
+│ (AWS 로그)     │ │ (Prometheus)   │ │ (Cost Explorer)│ │ (Git Baseline) │
+├────────────────┤ ├────────────────┤ ├────────────────┤ ├────────────────┤
+│ Detection      │ │ Detection      │ │ Detection      │ │ Detection      │
+│      ↓         │ │      ↓         │ │      ↓         │ │      ↓         │
+│ Step Functions │ │ Step Functions │ │ Step Functions │ │ Step Functions │
+│ (개별 WF)      │ │ (개별 WF)      │ │ (개별 WF)      │ │ (개별 WF)      │
+│      ↓         │ │      ↓         │ │      ↓         │ │      ↓         │
+│ Analysis       │ │ Analysis       │ │ Analysis       │ │ Analysis       │
+│      ↓         │ │      ↓         │ │      ↓         │ │      ↓         │
+│ Action         │ │ Action         │ │ Action         │ │ Action         │
+└────────────────┘ └────────────────┘ └────────────────┘ └────────────────┘
+         │                │                │                │
+         └────────────────┴────────────────┴────────────────┘
+                                   │
+                                   ▼
+                    ┌──────────────────────────┐
+                    │ 공통 컴포넌트            │
+                    │ - Analysis Agent (LLM)   │
+                    │ - Action Engine          │
+                    │ - EventBridge 알림       │
+                    └──────────────────────────┘
+```
+
+**핵심 설계 원칙**:
+- **독립적 워크플로우**: 각 에이전트는 개별 Step Functions 워크플로우 실행
+- **공통 분석 엔진**: LangGraph 기반 ReAct 루프를 모든 에이전트가 공유
+- **유연한 스케줄링**: MWAA DAG별 독립적인 실행 주기 설정 가능
+
+### 워크플로우 상세
+
+```mermaid
+stateDiagram-v2
+    [*] --> DetectAnomalies
+    DetectAnomalies --> CheckAnomalies
+
+    CheckAnomalies --> NoAnomalies: No Issues
+    CheckAnomalies --> AnalyzeRootCause: Issues Found
+
+    NoAnomalies --> [*]
+
+    AnalyzeRootCause --> EvaluateConfidence
+
+    EvaluateConfidence --> RequestApproval: >= 0.5
+    EvaluateConfidence --> Escalate: < 0.5
+
+    RequestApproval --> CheckApproval
+    CheckApproval --> ExecuteApproved: Approved
+    CheckApproval --> Rejected: Rejected
+    ExecuteApproved --> Reflect
+
+    Reflect --> Success: Resolved
+    Reflect --> Replan: Needs Retry
+    Replan --> AnalyzeRootCause: Attempt < 3
+    Replan --> Escalate: Max Attempts
+
+    Escalate --> [*]
+    Rejected --> [*]
+    Success --> [*]
+```
+
+## Project Structure
+
+```
+cd1-agent/
+├── docs/
+│   ├── ARCHITECTURE.md           # 상세 아키텍처 문서
+│   ├── PROMPTS.md                # 프롬프트 템플릿 설계
+│   ├── COST_OPTIMIZATION.md      # 비용 최적화 전략
+│   ├── IMPLEMENTATION_GUIDE.md   # 구현 가이드
+│   ├── HDSP_DETECTION.md         # HDSP Agent 문서
+│   ├── COST_ANOMALY_DETECTION.md # Cost Agent 문서
+│   └── CONFIG_DRIFT_DETECTION.md # Drift Agent 문서
+├── src/
+│   ├── common/                   # 공통 코드
+│   │   ├── handlers/             # 공통 핸들러 (base, analysis, remediation)
+│   │   ├── services/             # 공통 서비스 (llm_client, aws_client, rds_client)
+│   │   ├── models/               # 데이터 모델
+│   │   ├── prompts/              # 프롬프트 템플릿
+│   │   ├── agent/                # LangGraph Agent
+│   │   └── chat/                 # Interactive Chat
+│   └── agents/                   # Agent별 코드
+│       ├── bdp/                  # BDP Agent (AWS CloudWatch)
+│       │   └── handler.py
+│       ├── hdsp/                 # HDSP Agent (Prometheus/K8s)
+│       │   ├── handler.py
+│       │   └── services/         # prometheus_client, anomaly_detector
+│       ├── cost/                 # Cost Agent (AWS Cost Explorer)
+│       │   ├── handler.py
+│       │   └── services/         # cost_explorer_client, anomaly_detector
+│       └── drift/                # Drift Agent (GitLab Baseline)
+│           ├── handler.py
+│           └── services/         # config_fetcher, drift_detector, gitlab_client
+├── tests/
+│   ├── common/                   # 공통 코드 테스트
+│   │   ├── agent/                # LangGraph 테스트
+│   │   └── chat/                 # Chat 테스트
+│   └── agents/                   # Agent별 테스트
+│       ├── bdp/
+│       ├── hdsp/
+│       ├── cost/
+│       └── drift/
+├── step_functions/               # Step Functions 워크플로우
+│   └── bdp_workflow.asl.json
+└── dags/                         # Airflow DAG 파일
+```
+
+## Quick Start
+
+### Prerequisites
+
+- Python 3.12+
+- AWS CLI configured
+
+### Installation
+
+```bash
+# 1. Clone repository
+git clone https://github.com/lks21c/cd1-agent.git
+cd cd1-agent
+
+# 2. Create virtual environment
+python -m venv .venv
+source .venv/bin/activate  # Linux/Mac
+# .venv\Scripts\activate   # Windows
+
+# 3. Install dependencies
+pip install -r requirements.txt
+```
+
+### Configuration
+
+#### Environment Variables
+
+**Mock Mode (Public/Local Testing)**
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `AWS_MOCK` | AWS Mock 모드 활성화 (`true`/`false`) | `false` |
+| `LLM_MOCK` | LLM Mock 모드 활성화 (`true`/`false`) | `false` |
+
+**LLM Configuration**
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `LLM_PROVIDER` | LLM 제공자 (`vllm` 또는 `gemini`) | `vllm` |
+| `VLLM_BASE_URL` | vLLM 서버 엔드포인트 (On-Prem) | `http://localhost:8000/v1` |
+| `VLLM_MODEL_NAME` | vLLM 모델 이름 | Required (vllm 사용 시) |
+| `GEMINI_API_KEY` | Gemini API 키 (Public Mock) | Required (gemini 사용 시) |
+| `GEMINI_MODEL_ID` | Gemini 모델 ID | `gemini-2.5-flash` |
+
+**AWS Configuration**
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `RDS_CLUSTER_ARN` | RDS Aurora Serverless 클러스터 ARN | Required (AWS 모드) |
+| `RDS_SECRET_ARN` | RDS 접속 정보가 담긴 Secrets Manager ARN | Required (AWS 모드) |
+| `RDS_DATABASE` | 데이터베이스 이름 | `unified_logs` |
+| `DEDUP_TABLE` | DynamoDB 중복 제거 테이블 이름 | `bdp-anomaly-tracking` |
+
+**Quick Start for Mock Mode**
+
+```bash
+# AWS와 LLM 없이 로컬에서 로직 테스트
+export AWS_MOCK=true
+export LLM_MOCK=true
+python -m examples.services.aws_client  # AWS Mock 테스트
+python -m examples.services.llm_client  # LLM Mock 테스트
+```
+
+#### DynamoDB Tables
+
+| Table | Purpose | Key |
+|-------|---------|-----|
+| `bdp-anomaly-tracking` | 중복 제거 (TTL 7일) | `signature` |
+| `bdp-workflow-state` | 워크플로우 상태 | `workflow_id`, `timestamp` |
+| `bdp-action-history` | 복구 조치 감사 로그 | `action_id` |
+
+## Lambda Functions
+
+### Detection Lambda (에이전트별)
+
+| Function | Memory | Timeout | Trigger | Description |
+|----------|--------|---------|---------|-------------|
+| `bdp-detection` | 512MB | 60s | MWAA DAG | AWS CloudWatch 로그/메트릭 이상 감지 |
+| `bdp-hdsp-detection` | 512MB | 60s | MWAA DAG | On-Prem K8s Prometheus 메트릭 감지 |
+| `bdp-cost-detection` | 512MB | 60s | MWAA DAG | AWS Cost Explorer 비용 이상 감지 |
+| `bdp-drift-detection` | 512MB | 120s | MWAA DAG | AWS 설정 Git Baseline 드리프트 감지 |
+
+### 공통 Lambda
+
+| Function | Memory | Timeout | Trigger | Description |
+|----------|--------|---------|---------|-------------|
+| `bdp-analysis` | 1024MB | 120s | Step Functions | LLM 기반 근본 원인 분석 |
+| `bdp-action` | 512MB | 60s | Step Functions | 복구 조치 실행 |
+| `bdp-approval` | 256MB | 30s | API Gateway | 승인 요청 처리 |
+
+## MWAA DAG 구성
+
+| DAG | Schedule | Target Lambda | Description |
+|-----|----------|---------------|-------------|
+| `bdp_detection_dag` | `*/5 * * * *` | bdp-detection | AWS 로그/메트릭 감지 |
+| `bdp_hdsp_detection_dag` | `*/5 * * * *` | bdp-hdsp-detection | K8s 장애 감지 |
+| `bdp_cost_detection_dag` | `*/5 * * * *` | bdp-cost-detection | 비용 이상 감지 |
+| `bdp_drift_detection_dag` | `*/5 * * * *` | bdp-drift-detection | 설정 드리프트 감지 |
+
+## Cost Estimation
+
+### Monthly Cost (~$11/month for 1M events, excluding LLM)
+
+| Component | Cost |
+|-----------|------|
+| Lambda (ARM64) | ~$5 |
+| Step Functions | ~$3 |
+| DynamoDB (On-demand) | ~$2 |
+| EventBridge | ~$1 |
+
+### LLM 비용
+
+| Provider | 환경 | 비용 모델 |
+|----------|------|----------|
+| **vLLM (On-Prem)** | 프로덕션 | 자체 인프라 비용 (GPU 서버) |
+| **Gemini 2.5 Pro** | Mock/개발 | ~$0.00125/1K input, ~$0.005/1K output |
+| **Gemini 2.5 Flash** | Mock/개발 | ~$0.00015/1K input, ~$0.0006/1K output |
+
+### Cost Optimization Strategies
+
+1. **CloudWatch Field Indexing**: 67% 스캔 비용 감소
+2. **Hierarchical Summarization**: 80-90% 토큰 절감
+3. **ARM64/Graviton2**: 20-34% Lambda 비용 절감
+4. **Provisioned Concurrency**: Cold start 제거 (MWAA 트리거 사용 시)
+
+## Decision Flow
+
+모든 복구 조치는 **승인 후 실행** 방식으로 동작합니다.
+
+| Confidence | Action | Use Case |
+|------------|--------|----------|
+| >= 0.5 | Request Approval | 분석 완료, 승인 요청 |
+| < 0.5 | Escalate | 추가 분석 필요, 담당자 에스컬레이션 |
+
+> **Note**: 자동 실행(Auto Execute) 기능은 현재 비활성화되어 있습니다. 모든 조치는 담당자 승인 후 실행됩니다.
+
+## 지원 복구 조치 (Supported Actions)
+
+- `lambda_restart`: Lambda 함수 재시작
+- `rds_parameter`: RDS 파라미터 변경
+- `auto_scaling`: Auto Scaling 설정 조정
+- `eventbridge_event`: 이벤트 발행 (알림)
+- `investigate`: 추가 정보 수집 요청
+
+## Documentation
+
+### 시스템 문서
+- [Architecture Guide](docs/ARCHITECTURE.md) - 상세 시스템 아키텍처
+- [Prompt Templates](docs/PROMPTS.md) - AI 프롬프트 설계
+- [Cost Optimization](docs/COST_OPTIMIZATION.md) - 비용 최적화 전략
+- [Implementation Guide](docs/IMPLEMENTATION_GUIDE.md) - 단계별 구현 가이드
+
+### 에이전트별 문서
+- [HDSP Detection](docs/HDSP_DETECTION.md) - On-Prem K8s 장애 감지 (HDSP Agent)
+- [Cost Anomaly Detection](docs/COST_ANOMALY_DETECTION.md) - 비용 이상 탐지 (Cost Agent)
+- [Config Drift Detection](docs/CONFIG_DRIFT_DETECTION.md) - 설정 드리프트 감지 (Drift Agent)
+
+## Development
+
+### Running Tests
+
+```bash
+# Unit tests
+pytest tests/unit/
+
+# Integration tests
+pytest tests/integration/
+
+# All tests with coverage
+pytest --cov=src tests/
+```
+
+### Code Quality
+
+```bash
+# Linting
+ruff check src/
+
+# Type checking
+mypy src/
+
+# Formatting
+black src/
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
