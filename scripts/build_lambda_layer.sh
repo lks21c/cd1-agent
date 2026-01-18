@@ -47,7 +47,7 @@ python3 -m pip install \
     --platform manylinux2014_x86_64 \
     --target "$LAYER_DIR/python" \
     --implementation cp \
-    --python-version 3.10 \
+    --python-version 3.13 \
     --only-binary=:all: \
     --upgrade \
     pydantic boto3 langchain-core langgraph
@@ -59,7 +59,7 @@ if [ "$WITH_VLLM" = true ]; then
         --platform manylinux2014_x86_64 \
         --target "$LAYER_DIR/python" \
         --implementation cp \
-        --python-version 3.10 \
+        --python-version 3.13 \
         --only-binary=:all: \
         --upgrade \
         openai httpx
@@ -71,7 +71,7 @@ if [ "$WITH_GEMINI" = true ]; then
         --platform manylinux2014_x86_64 \
         --target "$LAYER_DIR/python" \
         --implementation cp \
-        --python-version 3.10 \
+        --python-version 3.13 \
         --only-binary=:all: \
         --upgrade \
         google-generativeai
@@ -83,15 +83,15 @@ if [ "$WITH_RDS" = true ]; then
         --platform manylinux2014_x86_64 \
         --target "$LAYER_DIR/python" \
         --implementation cp \
-        --python-version 3.10 \
+        --python-version 3.13 \
         --only-binary=:all: \
         --upgrade \
         pymysql cryptography
 fi
 
-# Install the package itself
+# Install the package itself (extract wheel directly to avoid Python version check)
 echo "[4/5] Installing cd1-agent package..."
-python3 -m pip install --target "$LAYER_DIR/python" --no-deps dist/*.whl
+unzip -q -o dist/*.whl -d "$LAYER_DIR/python/"
 
 # Create ZIP file
 echo "[5/5] Creating Lambda layer ZIP..."
@@ -112,4 +112,4 @@ echo "To upload to AWS:"
 echo "  aws lambda publish-layer-version \\"
 echo "    --layer-name cd1-agent \\"
 echo "    --zip-file fileb://dist/cd1-agent-layer.zip \\"
-echo "    --compatible-runtimes python3.10 python3.11 python3.12"
+echo "    --compatible-runtimes python3.13"
