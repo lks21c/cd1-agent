@@ -70,15 +70,34 @@ class BaseHandler(ABC):
     def _load_config(self) -> Dict[str, Any]:
         """Load configuration from environment variables."""
         return {
+            # Environment
             "environment": os.getenv("ENVIRONMENT", "dev"),
             "region": os.getenv("AWS_REGION", "ap-northeast-2"),
+            # Provider selection
             "llm_provider": os.getenv("LLM_PROVIDER", "mock"),
             "aws_provider": os.getenv("AWS_PROVIDER", "mock"),
+            # LLM Model Configuration
+            "llm_model": os.getenv("LLM_MODEL"),  # Auto-select based on provider if not set
+            # vLLM Configuration
+            "vllm_endpoint": os.getenv("VLLM_ENDPOINT", "http://localhost:8000"),
+            "vllm_model": os.getenv("VLLM_MODEL", "gpt-oss-120b"),
+            "vllm_api_key": os.getenv("VLLM_API_KEY", ""),
+            # Gemini Configuration
+            "gemini_model": os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
+            "gemini_api_key": os.getenv("GEMINI_API_KEY", ""),
+            # AWS Resources
             "dynamodb_table": os.getenv("DYNAMODB_TABLE", "cd1-agent-results"),
             "event_bus": os.getenv("EVENT_BUS", "cd1-agent-events"),
             "knowledge_base_id": os.getenv("KNOWLEDGE_BASE_ID", ""),
+            # Agent Parameters
             "max_iterations": int(os.getenv("MAX_ITERATIONS", "5")),
             "confidence_threshold": float(os.getenv("CONFIDENCE_THRESHOLD", "0.85")),
+            # RDS Configuration (for pattern detection)
+            "rds_host": os.getenv("RDS_HOST"),
+            "rds_port": int(os.getenv("RDS_PORT", "3306")),
+            "rds_database": os.getenv("RDS_DATABASE", "cd1_agent"),
+            "rds_user": os.getenv("RDS_USER"),
+            "rds_password": os.getenv("RDS_PASSWORD"),
         }
 
     def handle(self, event: Dict[str, Any], context: Any) -> Dict[str, Any]:

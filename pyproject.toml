@@ -30,6 +30,11 @@ dependencies = [
     "boto3>=1.28.0",
 ]
 
+[project.scripts]
+cd1-agent = "src.cli:main"
+cd1-bdp = "src.agents.bdp.handler:handler"
+cd1-cost = "src.agents.cost.handler:handler"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0.0",
@@ -38,15 +43,32 @@ dev = [
     "black>=23.0.0",
     "ruff>=0.1.0",
     "mypy>=1.0.0",
+    "build>=1.0.0",
+    "twine>=4.0.0",
 ]
 luminol = [
     "luminol>=0.4",
 ]
 vllm = [
-    # vLLM client dependencies
+    "openai>=1.0.0",  # vLLM uses OpenAI-compatible API
+    "httpx>=0.25.0",
 ]
 gemini = [
     "google-generativeai>=0.3.0",
+]
+rds = [
+    "pymysql>=1.1.0",
+    "cryptography>=41.0.0",
+]
+lambda-layer = [
+    # Minimal dependencies for Lambda Layer
+    "pydantic>=2.0.0",
+    "langchain-core>=0.1.0",
+    "langgraph>=0.0.30",
+    "boto3>=1.28.0",
+]
+all = [
+    "cd1-agent[luminol,vllm,gemini,rds]",
 ]
 
 [project.urls]

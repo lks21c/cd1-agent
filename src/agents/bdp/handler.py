@@ -10,9 +10,8 @@ from typing import Any, Dict, List, Optional
 from src.common.handlers.base_handler import BaseHandler
 from src.common.services.llm_client import LLMClient, LLMProvider
 from src.common.services.aws_client import AWSClient, AWSProvider
-from src.agents.cost.services.anomaly_detector import CostAnomalyDetector
-from src.agents.cost.services.cost_explorer_client import CostExplorerClient
 from src.common.prompts.detection_prompts import build_log_summarization_prompt
+from src.agents.bdp.services import DetectionPatternService, PatternExecutionResult
 
 
 class DetectionHandler(BaseHandler):
@@ -34,8 +33,7 @@ class DetectionHandler(BaseHandler):
 
         self.llm_client = LLMClient(provider=llm_provider)
         self.aws_client = AWSClient(provider=aws_provider)
-        self.cost_detector = CostAnomalyDetector(sensitivity=0.7)
-        self.cost_client = CostExplorerClient(
+        self.pattern_service = DetectionPatternService(
             use_mock=(aws_provider == AWSProvider.MOCK)
         )
 
@@ -47,7 +45,7 @@ class DetectionHandler(BaseHandler):
         if not detection_type:
             return "Missing required field: detection_type"
 
-        valid_types = ["log_anomaly", "metric_anomaly", "cost_anomaly", "scheduled"]
+        valid_types = ["log_anomaly", "metric_anomaly", "pattern_anomaly", "scheduled"]
         if detection_type not in valid_types:
             return f"Invalid detection_type. Must be one of: {valid_types}"
 
@@ -64,8 +62,8 @@ class DetectionHandler(BaseHandler):
             return self._detect_log_anomalies(body)
         elif detection_type == "metric_anomaly":
             return self._detect_metric_anomalies(body)
-        elif detection_type == "cost_anomaly":
-            return self._detect_cost_anomalies(body)
+        elif detection_type == "pattern_anomaly":
+            return self._detect_pattern_anomalies(body)
         elif detection_type == "scheduled":
             return self._run_scheduled_detection(body)
         else:
@@ -191,21 +189,30 @@ class DetectionHandler(BaseHandler):
 
         return result
 
-    def _detect_cost_anomalies(self, body: Dict[str, Any]) -> Dict[str, Any]:
-        """Detect cost anomalies using Luminol detector."""
-        days = body.get("days", 30)
+    def _detect_pattern_anomalies(self, body: Dict[str, Any]) -> Dict[str, Any]:
+        """Detect anomalies using RDS-based detection patterns.
 
-        # Get historical cost data
-        cost_data = self.cost_client.get_historical_costs_for_detector(days=days)
+        Args:
+            body: Request body containing optional target_service filter
 
-        if not cost_data:
+        Returns:
+            Detection result with pattern anomalies
+        """
+        target_service = body.get("target_service")
+        context = body.get("context", {})
+
+        # Execute all enabled patterns
+        results = self.pattern_service.execute_all_patterns(
+            target_service=target_service,
+            context=context,
+        )
+
+        if not results:
             return {
                 "anomalies_detected": False,
-                "message": "No cost data available",
+                "message": "No detection patterns configured",
+                "patterns_executed": 0,
             }
-
-        # Run anomaly detection
-        results = self.cost_detector.analyze_batch(cost_data)
 
         # Filter to actual anomalies
         anomalies = [r for r in results if r.is_anomaly]
@@ -213,19 +220,19 @@ class DetectionHandler(BaseHandler):
         if not anomalies:
             return {
                 "anomalies_detected": False,
-                "message": "No cost anomalies detected",
-                "services_analyzed": len(results),
+                "message": "No pattern anomalies detected",
+                "patterns_executed": len(results),
             }
 
-        # Create anomaly records for each
+        # Create anomaly records for each detected pattern
         anomaly_records = []
-        for anomaly in anomalies[:5]:  # Limit to top 5
-            record = self._create_cost_anomaly_record(anomaly)
+        for result in anomalies[:10]:  # Limit to top 10
+            record = self._create_pattern_anomaly_record(result)
             self._store_detection_result(record)
             anomaly_records.append(record)
 
-        # Trigger analysis for critical anomalies
-        critical = [a for a in anomalies if a.severity in ("critical", "high")]
+        # Trigger analysis for critical/high severity anomalies
+        critical = [r for r in anomalies if r.pattern.severity in ("critical", "high")]
         if critical:
             self._trigger_analysis(anomaly_records[0])
 
@@ -233,7 +240,7 @@ class DetectionHandler(BaseHandler):
             "anomalies_detected": True,
             "anomaly_count": len(anomalies),
             "anomaly_records": anomaly_records,
-            "services_analyzed": len(results),
+            "patterns_executed": len(results),
         }
 
     def _run_scheduled_detection(self, body: Dict[str, Any]) -> Dict[str, Any]:
@@ -241,7 +248,7 @@ class DetectionHandler(BaseHandler):
         results = {
             "log_detection": {},
             "metric_detection": {},
-            "cost_detection": {},
+            "pattern_detection": {},
             "total_anomalies": 0,
         }
 
@@ -265,15 +272,15 @@ class DetectionHandler(BaseHandler):
                 self.logger.error(f"Log detection failed for {service['name']}: {e}")
                 results["log_detection"][service["name"]] = {"error": str(e)}
 
-        # Cost detection
+        # Pattern-based detection (RDS patterns)
         try:
-            cost_result = self._detect_cost_anomalies({"days": 30})
-            results["cost_detection"] = cost_result
-            if cost_result.get("anomalies_detected"):
-                results["total_anomalies"] += cost_result.get("anomaly_count", 0)
+            pattern_result = self._detect_pattern_anomalies({})
+            results["pattern_detection"] = pattern_result
+            if pattern_result.get("anomalies_detected"):
+                results["total_anomalies"] += pattern_result.get("anomaly_count", 0)
         except Exception as e:
-            self.logger.error(f"Cost detection failed: {e}")
-            results["cost_detection"] = {"error": str(e)}
+            self.logger.error(f"Pattern detection failed: {e}")
+            results["pattern_detection"] = {"error": str(e)}
 
         return results
 
@@ -347,25 +354,30 @@ class DetectionHandler(BaseHandler):
             "severity": severity,
         }
 
-    def _create_cost_anomaly_record(self, anomaly) -> Dict[str, Any]:
-        """Create standardized cost anomaly record from detector result."""
+    def _create_pattern_anomaly_record(
+        self,
+        result: PatternExecutionResult,
+    ) -> Dict[str, Any]:
+        """Create standardized pattern anomaly record from execution result."""
+        pattern = result.pattern
+        now = datetime.utcnow().isoformat()
+
         return {
-            "signature": f"cost_{anomaly.service_name}_{anomaly.timestamp[:10]}",
-            "anomaly_type": "cost_anomaly",
-            "service_name": anomaly.service_name,
-            "first_seen": anomaly.timestamp,
-            "last_seen": anomaly.timestamp,
+            "signature": result.signature,
+            "anomaly_type": "pattern_anomaly",
+            "service_name": pattern.target_service or "global",
+            "pattern_name": pattern.pattern_name,
+            "pattern_type": pattern.pattern_type.value,
+            "first_seen": now,
+            "last_seen": now,
             "occurrence_count": 1,
-            "sample_logs": [],
+            "sample_logs": result.matched_data,
             "metrics_snapshot": {
-                "current_cost": anomaly.current_value,
-                "previous_cost": anomaly.previous_value,
-                "change_ratio": anomaly.change_ratio,
-                "confidence_score": anomaly.confidence_score,
-                "detected_methods": anomaly.detected_methods,
+                "current_value": result.current_value,
+                "threshold_value": result.threshold_value,
+                "execution_time_ms": result.execution_time_ms,
             },
-            "severity": anomaly.severity,
-            "analysis": anomaly.analysis,
+            "severity": pattern.severity,
         }
 
     def _store_detection_result(self, record: Dict[str, Any]) -> None:

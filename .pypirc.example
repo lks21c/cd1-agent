@@ -1,0 +1,24 @@
+# Example .pypirc for AWS CodeArtifact
+# Copy to ~/.pypirc and fill in your values
+
+[distutils]
+index-servers =
+    codeartifact
+
+[codeartifact]
+# Get these values from AWS CodeArtifact console or CLI
+# Run: aws codeartifact get-repository-endpoint --domain YOUR_DOMAIN --repository YOUR_REPO --format pypi
+
+repository = https://YOUR_DOMAIN-YOUR_ACCOUNT.d.codeartifact.YOUR_REGION.amazonaws.com/pypi/YOUR_REPO/
+
+# For authentication, use:
+# aws codeartifact login --tool twine --domain YOUR_DOMAIN --repository YOUR_REPO
+
+# Or set these manually (token expires in 12 hours):
+username = aws
+password = YOUR_AUTH_TOKEN_HERE
+
+# Alternative: PyPI (public)
+# [pypi]
+# username = __token__
+# password = pypi-YOUR_TOKEN_HERE
