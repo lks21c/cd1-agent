@@ -1,0 +1,97 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: cd1-cost-agent-hpa
+  namespace: cd1-agent
+  labels:
+    app.kubernetes.io/name: cd1-agent
+    app.kubernetes.io/component: cost-agent
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: cd1-cost-agent
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: cd1-hdsp-agent-hpa
+  namespace: cd1-agent
+  labels:
+    app.kubernetes.io/name: cd1-agent
+    app.kubernetes.io/component: hdsp-agent
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: cd1-hdsp-agent
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: cd1-bdp-agent-hpa
+  namespace: cd1-agent
+  labels:
+    app.kubernetes.io/name: cd1-agent
+    app.kubernetes.io/component: bdp-agent
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: cd1-bdp-agent
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: cd1-drift-agent-hpa
+  namespace: cd1-agent
+  labels:
+    app.kubernetes.io/name: cd1-agent
+    app.kubernetes.io/component: drift-agent
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: cd1-drift-agent
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70

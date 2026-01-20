@@ -2,6 +2,8 @@
 # Build, test, and deployment automation
 
 .PHONY: help install dev test lint format wheel layer build publish clean
+.PHONY: server-dev server-cost server-hdsp server-bdp server-drift server-all
+.PHONY: docker-server-build docker-server-up docker-server-down docker-server-logs
 
 # Default target
 help:
@@ -13,6 +15,19 @@ help:
 	@echo "  make test         Run tests with coverage"
 	@echo "  make lint         Run linting (ruff + mypy)"
 	@echo "  make format       Format code with black"
+	@echo ""
+	@echo "HTTP Server (K8s migration):"
+	@echo "  make server-dev       Install server dependencies"
+	@echo "  make server-cost      Run Cost agent server (port 8001)"
+	@echo "  make server-hdsp      Run HDSP agent server (port 8002)"
+	@echo "  make server-bdp       Run BDP agent server (port 8003)"
+	@echo "  make server-drift     Run Drift agent server (port 8004)"
+	@echo ""
+	@echo "Docker Server:"
+	@echo "  make docker-server-build   Build all agent Docker images"
+	@echo "  make docker-server-up      Start all servers with docker-compose"
+	@echo "  make docker-server-down    Stop all docker-compose services"
+	@echo "  make docker-server-logs    View server logs"
 	@echo ""
 	@echo "Build:"
 	@echo "  make wheel        Build wheel package"
@@ -32,6 +47,65 @@ install:
 
 dev:
 	pip install -e ".[dev,luminol,vllm,gemini,rds]"
+
+# HTTP Server Development
+server-dev:
+	pip install -e ".[all,server]"
+
+server-cost:
+	@echo "=== Starting Cost Agent Server on port 8001 ==="
+	AWS_PROVIDER=mock COST_PROVIDER=mock LLM_PROVIDER=mock DEBUG=true \
+		uvicorn src.agents.cost.server:app --reload --port 8001
+
+server-hdsp:
+	@echo "=== Starting HDSP Agent Server on port 8002 ==="
+	AWS_PROVIDER=mock LLM_PROVIDER=mock DEBUG=true \
+		uvicorn src.agents.hdsp.server:app --reload --port 8002
+
+server-bdp:
+	@echo "=== Starting BDP Agent Server on port 8003 ==="
+	AWS_PROVIDER=mock LLM_PROVIDER=mock RDS_PROVIDER=mock DEBUG=true \
+		uvicorn src.agents.bdp.server:app --reload --port 8003
+
+server-drift:
+	@echo "=== Starting Drift Agent Server on port 8004 ==="
+	AWS_PROVIDER=mock LLM_PROVIDER=mock DEBUG=true \
+		uvicorn src.agents.drift.server:app --reload --port 8004
+
+# Docker server commands
+docker-server-build:
+	@echo "=== Building all agent Docker images ==="
+	docker build --build-arg AGENT_NAME=cost -t cd1-agent-cost .
+	docker build --build-arg AGENT_NAME=hdsp -t cd1-agent-hdsp .
+	docker build --build-arg AGENT_NAME=bdp -t cd1-agent-bdp .
+	docker build --build-arg AGENT_NAME=drift -t cd1-agent-drift .
+	@echo "=== All images built ==="
+
+docker-server-up:
+	@echo "=== Starting all agent servers with docker-compose ==="
+	docker-compose -f docker-compose.server.yml up -d
+	@echo "Waiting for services to be healthy..."
+	@sleep 10
+	@echo ""
+	@echo "=== Services ready ==="
+	@echo "Cost Agent:  http://localhost:8001"
+	@echo "HDSP Agent:  http://localhost:8002 (profile: hdsp)"
+	@echo "BDP Agent:   http://localhost:8003 (profile: bdp)"
+	@echo "Drift Agent: http://localhost:8004 (profile: drift)"
+
+docker-server-down:
+	@echo "=== Stopping all docker-compose services ==="
+	docker-compose -f docker-compose.server.yml down -v
+
+docker-server-logs:
+	docker-compose -f docker-compose.server.yml logs -f
+
+docker-server-test:
+	@echo "=== Testing all agent health endpoints ==="
+	@curl -s http://localhost:8001/health | python3 -m json.tool 2>/dev/null || echo "Cost agent not available"
+	@curl -s http://localhost:8002/health | python3 -m json.tool 2>/dev/null || echo "HDSP agent not available"
+	@curl -s http://localhost:8003/health | python3 -m json.tool 2>/dev/null || echo "BDP agent not available"
+	@curl -s http://localhost:8004/health | python3 -m json.tool 2>/dev/null || echo "Drift agent not available"
 
 # Testing
 test:

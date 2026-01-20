@@ -1,0 +1,266 @@
+# CD1 Agent HTTP Servers Docker Compose
+# Runs all agent servers with LocalStack and MySQL for local development/testing
+#
+# Usage:
+#   docker-compose -f docker-compose.server.yml up --build           # Start all
+#   docker-compose -f docker-compose.server.yml up cost-agent        # Start cost only
+#   docker-compose -f docker-compose.server.yml down                 # Stop all
+
+version: "3.8"
+
+services:
+  # ==========================================================================
+  # Infrastructure Services
+  # ==========================================================================
+
+  localstack:
+    image: localstack/localstack:3.0
+    container_name: cd1-localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=cloudwatch,logs,dynamodb,events
+      - DEBUG=${LOCALSTACK_DEBUG:-0}
+      - DATA_DIR=/var/lib/localstack/data
+      - PERSISTENCE=1
+      - AWS_DEFAULT_REGION=ap-northeast-2
+    volumes:
+      - "./infra/localstack/init:/etc/localstack/init/ready.d"
+      - "localstack-data:/var/lib/localstack"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - cd1-network
+
+  mysql:
+    image: mysql:8.0
+    container_name: cd1-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=localstack
+      - MYSQL_DATABASE=cd1_agent
+      - MYSQL_USER=cd1_user
+      - MYSQL_PASSWORD=cd1_password
+    volumes:
+      - "./infra/localstack/init/hitl-schema.sql:/docker-entrypoint-initdb.d/01-hitl.sql:ro"
+      - "./infra/localstack/bdp/mysql-init:/docker-entrypoint-initdb.d/bdp"
+      - "mysql-data:/var/lib/mysql"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-plocalstack"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - cd1-network
+
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: cd1-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - "./infra/hdsp_agent/prometheus.yml:/etc/prometheus/prometheus.yml:ro"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9090/-/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - cd1-network
+    profiles:
+      - hdsp
+      - full
+
+  # ==========================================================================
+  # Agent Servers
+  # ==========================================================================
+
+  cost-agent:
+    build:
+      context: .
+      args:
+        AGENT_NAME: cost
+    container_name: cd1-cost-agent
+    ports:
+      - "8001:8000"
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+      - AWS_PROVIDER=localstack
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - AWS_REGION=ap-northeast-2
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - COST_PROVIDER=localstack
+      - DYNAMODB_TABLE=cd1-agent-results
+      - EVENT_BUS=cd1-agent-events
+      - RDS_HOST=mysql
+      - RDS_PORT=3306
+      - RDS_DATABASE=cd1_agent
+      - RDS_USER=cd1_user
+      - RDS_PASSWORD=cd1_password
+      - LLM_PROVIDER=mock
+    depends_on:
+      localstack:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - cd1-network
+    restart: unless-stopped
+
+  hdsp-agent:
+    build:
+      context: .
+      args:
+        AGENT_NAME: hdsp
+    container_name: cd1-hdsp-agent
+    ports:
+      - "8002:8000"
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+      - AWS_PROVIDER=localstack
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - AWS_REGION=ap-northeast-2
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - PROMETHEUS_URL=http://prometheus:9090
+      - DYNAMODB_TABLE=cd1-agent-results
+      - EVENT_BUS=cd1-agent-events
+      - RDS_HOST=mysql
+      - RDS_PORT=3306
+      - RDS_DATABASE=cd1_agent
+      - RDS_USER=cd1_user
+      - RDS_PASSWORD=cd1_password
+      - LLM_PROVIDER=mock
+    depends_on:
+      localstack:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - cd1-network
+    restart: unless-stopped
+    profiles:
+      - hdsp
+      - full
+
+  bdp-agent:
+    build:
+      context: .
+      args:
+        AGENT_NAME: bdp
+    container_name: cd1-bdp-agent
+    ports:
+      - "8003:8000"
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+      - AWS_PROVIDER=localstack
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - AWS_REGION=ap-northeast-2
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - DYNAMODB_TABLE=cd1-agent-results
+      - EVENT_BUS=cd1-agent-events
+      - RDS_HOST=mysql
+      - RDS_PORT=3306
+      - RDS_DATABASE=cd1_agent
+      - RDS_USER=cd1_user
+      - RDS_PASSWORD=cd1_password
+      - LLM_PROVIDER=mock
+    depends_on:
+      localstack:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - cd1-network
+    restart: unless-stopped
+    profiles:
+      - bdp
+      - full
+
+  drift-agent:
+    build:
+      context: .
+      args:
+        AGENT_NAME: drift
+    container_name: cd1-drift-agent
+    ports:
+      - "8004:8000"
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+      - AWS_PROVIDER=localstack
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - AWS_REGION=ap-northeast-2
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - DYNAMODB_TABLE=cd1-agent-results
+      - EVENT_BUS=cd1-agent-events
+      - RDS_HOST=mysql
+      - RDS_PORT=3306
+      - RDS_DATABASE=cd1_agent
+      - RDS_USER=cd1_user
+      - RDS_PASSWORD=cd1_password
+      - LLM_PROVIDER=mock
+      - ENABLE_DRIFT_ANALYSIS=false
+    depends_on:
+      localstack:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - cd1-network
+    restart: unless-stopped
+    profiles:
+      - drift
+      - full
+
+networks:
+  cd1-network:
+    driver: bridge
+
+volumes:
+  localstack-data:
+  mysql-data:

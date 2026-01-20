@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cd1-agent-config
+  namespace: cd1-agent
+  labels:
+    app.kubernetes.io/name: cd1-agent
+    app.kubernetes.io/component: config
+data:
+  # Environment
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  AWS_REGION: "ap-northeast-2"
+
+  # AWS Resources
+  DYNAMODB_TABLE: "cd1-agent-results"
+  EVENT_BUS: "cd1-agent-events"
+
+  # LLM Configuration
+  LLM_PROVIDER: "vllm"
+
+  # Server Configuration
+  PORT: "8000"
+  HOST: "0.0.0.0"
+
+  # Agent Parameters
+  MAX_ITERATIONS: "5"
+  CONFIDENCE_THRESHOLD: "0.85"
+
+  # HDSP Agent
+  PROMETHEUS_URL: "http://prometheus-server.monitoring:9090"
+
+  # Drift Agent
+  ENABLE_DRIFT_ANALYSIS: "true"
+  MAX_DRIFTS_TO_ANALYZE: "10"
+  ANALYSIS_CONFIDENCE_THRESHOLD: "0.7"

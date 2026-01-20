@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cd1-cost-agent
+  namespace: cd1-agent
+  labels:
+    app.kubernetes.io/name: cd1-agent
+    app.kubernetes.io/component: cost-agent
+    app.kubernetes.io/version: "1.0.0"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cd1-agent
+      app.kubernetes.io/component: cost-agent
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: cd1-agent
+        app.kubernetes.io/component: cost-agent
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: cd1-agent
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: cost-agent
+          image: cd1-agent-cost:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: cd1-agent-config
+            - secretRef:
+                name: cd1-agent-secrets
+          env:
+            - name: AGENT_NAME
+              value: "cost"
+            - name: COST_PROVIDER
+              value: "real"
+            - name: AWS_PROVIDER
+              value: "real"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/component: cost-agent
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cd1-cost-agent
+  namespace: cd1-agent
+  labels:
+    app.kubernetes.io/name: cd1-agent
+    app.kubernetes.io/component: cost-agent
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8000
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: cd1-agent
+    app.kubernetes.io/component: cost-agent
