@@ -1,0 +1,70 @@
+# Shared LocalStack Integration for CD1 Agent Testing
+# Provides AWS service mocks for all agents (BDP, Cost, HDSP, Drift)
+#
+# Usage:
+#   make up          # Start all services
+#   make down        # Stop all services
+#   make bdp-init    # Initialize BDP-specific resources
+#   make cost-init   # Initialize Cost-specific resources
+#   make test-all    # Run all agent tests
+
+version: "3.8"
+
+services:
+  localstack:
+    image: localstack/localstack:3.0
+    container_name: cd1-localstack
+    ports:
+      - "4566:4566"           # LocalStack Gateway
+      - "4510-4559:4510-4559" # External service ports
+    environment:
+      - SERVICES=cloudwatch,logs,dynamodb,events
+      - DEBUG=${LOCALSTACK_DEBUG:-0}
+      - DATA_DIR=/var/lib/localstack/data
+      - PERSISTENCE=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - AWS_DEFAULT_REGION=ap-northeast-2
+    volumes:
+      - "./init:/etc/localstack/init/ready.d"
+      - "./data:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - cd1-network
+
+  mysql:
+    image: mysql:8.0
+    container_name: cd1-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=localstack
+      - MYSQL_DATABASE=cd1_agent
+      - MYSQL_USER=cd1_user
+      - MYSQL_PASSWORD=cd1_password
+    volumes:
+      - "./bdp/mysql-init:/docker-entrypoint-initdb.d"
+      - "mysql-data:/var/lib/mysql"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-plocalstack"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - cd1-network
+    profiles:
+      - bdp
+      - full
+
+networks:
+  cd1-network:
+    driver: bridge
+
+volumes:
+  mysql-data:

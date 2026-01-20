@@ -41,9 +41,20 @@ class CostDetectionHandler(BaseHandler):
         aws_provider = AWSProvider(self.config["aws_provider"])
         self.aws_client = AWSClient(provider=aws_provider)
 
-        # Cost Explorer client - mock mode from environment
-        use_mock = os.getenv("COST_EXPLORER_MOCK", "true").lower() == "true"
-        self.cost_client = CostExplorerClient(use_mock=use_mock)
+        # Cost Explorer client - provider type from environment
+        # COST_PROVIDER: mock (default), real, localstack
+        cost_provider = os.getenv("COST_PROVIDER", "mock")
+        use_mock = cost_provider == "mock"
+
+        # Support legacy COST_EXPLORER_MOCK for backward compatibility
+        if os.getenv("COST_EXPLORER_MOCK", "").lower() == "false":
+            use_mock = False
+            cost_provider = "real"
+
+        self.cost_client = CostExplorerClient(
+            use_mock=use_mock,
+            provider_type=cost_provider,
+        )
 
         # Anomaly detector with configurable sensitivity
         sensitivity = float(os.getenv("COST_SENSITIVITY", "0.7"))

@@ -24,6 +24,7 @@ class BaselineProvider(str, Enum):
 
     REAL = "real"
     MOCK = "mock"
+    LOCALSTACK = "localstack"
 
 
 @dataclass
@@ -337,6 +338,150 @@ class MockBaselineProvider(BaseBaselineProvider):
         }
 
 
+class LocalStackBaselineProvider(BaseBaselineProvider):
+    """LocalStack DynamoDB-based baseline provider for testing."""
+
+    def __init__(
+        self,
+        region: Optional[str] = None,
+        endpoint_url: Optional[str] = None,
+    ):
+        """
+        Initialize LocalStack baseline provider.
+
+        Args:
+            region: AWS region
+            endpoint_url: LocalStack endpoint URL
+        """
+        import boto3
+
+        self.region = region or os.environ.get("AWS_REGION", "ap-northeast-2")
+        self.endpoint_url = endpoint_url or os.environ.get(
+            "LOCALSTACK_ENDPOINT", "http://localhost:4566"
+        )
+        self.table_name = os.environ.get(
+            "DRIFT_BASELINE_TABLE", "drift-baseline-configs"
+        )
+
+        self.dynamodb = boto3.client(
+            "dynamodb",
+            region_name=self.region,
+            endpoint_url=self.endpoint_url,
+        )
+
+        logger.info(
+            f"LocalStackBaselineProvider initialized: "
+            f"endpoint={self.endpoint_url}, table={self.table_name}"
+        )
+
+    def get_file(
+        self,
+        resource_type: str,
+        resource_id: str,
+    ) -> BaselineFile:
+        """
+        Get baseline from LocalStack DynamoDB.
+
+        Args:
+            resource_type: Resource type (eks, msk, s3, emr, mwaa)
+            resource_id: Resource identifier
+
+        Returns:
+            BaselineFile with configuration baseline
+        """
+        pk = f"RESOURCE#{resource_type}#{resource_id}"
+        logger.debug(f"LocalStack BaselineLoader get_file: {pk}")
+
+        try:
+            response = self.dynamodb.query(
+                TableName=self.table_name,
+                KeyConditionExpression="pk = :pk",
+                ExpressionAttributeValues={
+                    ":pk": {"S": pk}
+                },
+                ScanIndexForward=False,  # Descending (latest first)
+                Limit=1,
+            )
+
+            items = response.get("Items", [])
+            if not items:
+                raise FileNotFoundError(
+                    f"Baseline not found in LocalStack: {resource_type}/{resource_id}"
+                )
+
+            item = items[0]
+
+            # Parse config from JSON string
+            import json
+            config_str = item.get("config", {}).get("S", "{}")
+            config = json.loads(config_str)
+
+            return BaselineFile(
+                file_path=f"localstack://{self.table_name}/{resource_type}/{resource_id}",
+                content=config,
+                file_hash=item.get("config_hash", {}).get("S", "localstack"),
+                last_modified=item.get("timestamp", {}).get("S", ""),
+                baselines_dir=f"localstack://{self.table_name}",
+            )
+
+        except self.dynamodb.exceptions.ResourceNotFoundException:
+            raise FileNotFoundError(
+                f"DynamoDB table not found: {self.table_name}. "
+                "Run 'make drift-init' to create tables."
+            )
+
+    def list_files(
+        self,
+        resource_type: Optional[str] = None,
+    ) -> List[str]:
+        """
+        List baseline files from LocalStack DynamoDB.
+
+        Args:
+            resource_type: Filter by resource type
+
+        Returns:
+            List of baseline identifiers
+        """
+        logger.debug(f"LocalStack BaselineLoader list_files: {resource_type}")
+
+        try:
+            scan_kwargs = {
+                "TableName": self.table_name,
+                "ProjectionExpression": "pk, resource_type, resource_id",
+            }
+
+            if resource_type:
+                scan_kwargs["FilterExpression"] = "resource_type = :rt"
+                scan_kwargs["ExpressionAttributeValues"] = {
+                    ":rt": {"S": resource_type}
+                }
+
+            response = self.dynamodb.scan(**scan_kwargs)
+            items = response.get("Items", [])
+
+            files = []
+            for item in items:
+                rt = item.get("resource_type", {}).get("S", "")
+                rid = item.get("resource_id", {}).get("S", "")
+                if rt and rid:
+                    files.append(f"{rt}/{rid}.json")
+
+            return sorted(files)
+
+        except self.dynamodb.exceptions.ResourceNotFoundException:
+            logger.warning(f"DynamoDB table not found: {self.table_name}")
+            return []
+
+    def get_file_info(self) -> Dict[str, Any]:
+        """Get LocalStack baseline source information."""
+        return {
+            "source": "localstack",
+            "table": self.table_name,
+            "endpoint_url": self.endpoint_url,
+        }
+
+
 class BaselineLoader:
     """Baseline loader with automatic provider selection."""
 
@@ -344,6 +489,7 @@ class BaselineLoader:
         self,
         baselines_dir: str = "conf/baselines",
         provider: Optional[BaselineProvider] = None,
+        endpoint_url: Optional[str] = None,
     ):
         """
         Initialize baseline loader.
@@ -351,12 +497,16 @@ class BaselineLoader:
         Args:
             baselines_dir: Path to baseline files directory
             provider: Force specific provider (auto-detect if None)
+            endpoint_url: LocalStack endpoint URL (for LOCALSTACK provider)
         """
         self.baselines_dir = baselines_dir
 
-        # Auto-detect provider
+        # Auto-detect provider (DRIFT_PROVIDER takes precedence)
         if provider is None:
-            if os.environ.get("AWS_MOCK", "").lower() == "true":
+            drift_provider = os.environ.get("DRIFT_PROVIDER", "").lower()
+            if drift_provider == "localstack":
+                provider = BaselineProvider.LOCALSTACK
+            elif os.environ.get("AWS_MOCK", "").lower() == "true":
                 provider = BaselineProvider.MOCK
             elif os.environ.get("BASELINES_MOCK", "").lower() == "true":
                 provider = BaselineProvider.MOCK
@@ -365,7 +515,10 @@ class BaselineLoader:
 
         self.provider_type = provider
 
-        if provider == BaselineProvider.MOCK:
+        if provider == BaselineProvider.LOCALSTACK:
+            self._provider = LocalStackBaselineProvider(endpoint_url=endpoint_url)
+            logger.info("Using LocalStack Baseline Provider")
+        elif provider == BaselineProvider.MOCK:
             self._provider = MockBaselineProvider()
             logger.info("Using Mock Baseline Provider")
         else:

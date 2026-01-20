@@ -20,6 +20,7 @@ class ConfigProvider(str, Enum):
 
     REAL = "real"
     MOCK = "mock"
+    LOCALSTACK = "localstack"
 
 
 class ResourceType(str, Enum):
@@ -552,6 +553,173 @@ class MockConfigProvider(BaseConfigProvider):
         return self._get_config("MWAA", environment_name)
 
 
+class LocalStackConfigProvider(BaseConfigProvider):
+    """LocalStack DynamoDB-based config provider for testing."""
+
+    def __init__(
+        self,
+        region: Optional[str] = None,
+        endpoint_url: Optional[str] = None,
+    ):
+        """
+        Initialize LocalStack config provider.
+
+        Args:
+            region: AWS region
+            endpoint_url: LocalStack endpoint URL
+        """
+        import boto3
+
+        self.region = region or os.environ.get("AWS_REGION", "ap-northeast-2")
+        self.endpoint_url = endpoint_url or os.environ.get(
+            "LOCALSTACK_ENDPOINT", "http://localhost:4566"
+        )
+        self.table_name = os.environ.get(
+            "DRIFT_CURRENT_TABLE", "drift-current-configs"
+        )
+
+        self.dynamodb = boto3.client(
+            "dynamodb",
+            region_name=self.region,
+            endpoint_url=self.endpoint_url,
+        )
+
+        logger.info(
+            f"LocalStackConfigProvider initialized: "
+            f"endpoint={self.endpoint_url}, table={self.table_name}"
+        )
+
+    def _get_timestamp(self) -> str:
+        """Get current timestamp."""
+        from datetime import datetime
+        return datetime.utcnow().isoformat()
+
+    def _get_config_from_dynamodb(
+        self,
+        resource_type: str,
+        resource_id: str,
+    ) -> Dict[str, Any]:
+        """
+        Get current config from DynamoDB (most recent version).
+
+        Args:
+            resource_type: Resource type (eks, msk, s3, emr, mwaa)
+            resource_id: Resource identifier
+
+        Returns:
+            Dict with config, resource_arn, fetched_at
+        """
+        pk = f"RESOURCE#{resource_type}#{resource_id}"
+
+        try:
+            response = self.dynamodb.query(
+                TableName=self.table_name,
+                KeyConditionExpression="pk = :pk",
+                ExpressionAttributeValues={
+                    ":pk": {"S": pk}
+                },
+                ScanIndexForward=False,  # Descending (latest first)
+                Limit=1,
+            )
+
+            items = response.get("Items", [])
+            if not items:
+                raise ValueError(
+                    f"Config not found in LocalStack: {resource_type}/{resource_id}"
+                )
+
+            item = items[0]
+
+            # Parse config from JSON string
+            import json
+            config_str = item.get("config", {}).get("S", "{}")
+            config = json.loads(config_str)
+
+            return {
+                "config": config,
+                "resource_arn": item.get("resource_arn", {}).get("S", ""),
+                "fetched_at": item.get("fetched_at", {}).get("S", self._get_timestamp()),
+            }
+
+        except self.dynamodb.exceptions.ResourceNotFoundException:
+            raise ValueError(
+                f"DynamoDB table not found: {self.table_name}. "
+                "Run 'make drift-init' to create tables."
+            )
+
+    def get_eks_config(self, cluster_name: str) -> ResourceConfig:
+        """Get EKS cluster configuration from LocalStack DynamoDB."""
+        logger.debug(f"LocalStack ConfigFetcher get_eks_config: {cluster_name}")
+
+        data = self._get_config_from_dynamodb("eks", cluster_name)
+
+        return ResourceConfig(
+            resource_type=ResourceType.EKS,
+            resource_id=cluster_name,
+            resource_arn=data["resource_arn"] or f"arn:aws:eks:{self.region}:123456789012:cluster/{cluster_name}",
+            config=data["config"],
+            fetched_at=data["fetched_at"],
+        )
+
+    def get_msk_config(self, cluster_arn: str) -> ResourceConfig:
+        """Get MSK cluster configuration from LocalStack DynamoDB."""
+        # Extract cluster name from ARN for lookup
+        cluster_name = cluster_arn.split("/")[-1].split(":")[0] if "/" in cluster_arn else cluster_arn
+        logger.debug(f"LocalStack ConfigFetcher get_msk_config: {cluster_name}")
+
+        data = self._get_config_from_dynamodb("msk", cluster_name)
+
+        return ResourceConfig(
+            resource_type=ResourceType.MSK,
+            resource_id=cluster_name,
+            resource_arn=data["resource_arn"] or cluster_arn,
+            config=data["config"],
+            fetched_at=data["fetched_at"],
+        )
+
+    def get_s3_config(self, bucket_name: str) -> ResourceConfig:
+        """Get S3 bucket configuration from LocalStack DynamoDB."""
+        logger.debug(f"LocalStack ConfigFetcher get_s3_config: {bucket_name}")
+
+        data = self._get_config_from_dynamodb("s3", bucket_name)
+
+        return ResourceConfig(
+            resource_type=ResourceType.S3,
+            resource_id=bucket_name,
+            resource_arn=data["resource_arn"] or f"arn:aws:s3:::{bucket_name}",
+            config=data["config"],
+            fetched_at=data["fetched_at"],
+        )
+
+    def get_emr_config(self, cluster_id: str) -> ResourceConfig:
+        """Get EMR cluster configuration from LocalStack DynamoDB."""
+        logger.debug(f"LocalStack ConfigFetcher get_emr_config: {cluster_id}")
+
+        data = self._get_config_from_dynamodb("emr", cluster_id)
+
+        return ResourceConfig(
+            resource_type=ResourceType.EMR,
+            resource_id=cluster_id,
+            resource_arn=data["resource_arn"] or f"arn:aws:elasticmapreduce:{self.region}:123456789012:cluster/{cluster_id}",
+            config=data["config"],
+            fetched_at=data["fetched_at"],
+        )
+
+    def get_mwaa_config(self, environment_name: str) -> ResourceConfig:
+        """Get MWAA environment configuration from LocalStack DynamoDB."""
+        logger.debug(f"LocalStack ConfigFetcher get_mwaa_config: {environment_name}")
+
+        data = self._get_config_from_dynamodb("mwaa", environment_name)
+
+        return ResourceConfig(
+            resource_type=ResourceType.MWAA,
+            resource_id=environment_name,
+            resource_arn=data["resource_arn"] or f"arn:aws:airflow:{self.region}:123456789012:environment/{environment_name}",
+            config=data["config"],
+            fetched_at=data["fetched_at"],
+        )
+
+
 class ConfigFetcher:
     """Config fetcher with automatic provider selection."""
 
@@ -559,6 +727,7 @@ class ConfigFetcher:
         self,
         region: Optional[str] = None,
         provider: Optional[ConfigProvider] = None,
+        endpoint_url: Optional[str] = None,
     ):
         """
         Initialize config fetcher.
@@ -566,19 +735,29 @@ class ConfigFetcher:
         Args:
             region: AWS region for API calls
             provider: Force specific provider (auto-detect if None)
+            endpoint_url: LocalStack endpoint URL (for LOCALSTACK provider)
         """
         self.region = region or os.environ.get("AWS_REGION", "ap-northeast-2")
 
-        # Auto-detect provider
+        # Auto-detect provider (DRIFT_PROVIDER takes precedence)
         if provider is None:
-            if os.environ.get("AWS_MOCK", "").lower() == "true":
+            drift_provider = os.environ.get("DRIFT_PROVIDER", "").lower()
+            if drift_provider == "localstack":
+                provider = ConfigProvider.LOCALSTACK
+            elif os.environ.get("AWS_MOCK", "").lower() == "true":
                 provider = ConfigProvider.MOCK
             else:
                 provider = ConfigProvider.REAL
 
         self.provider_type = provider
 
-        if provider == ConfigProvider.MOCK:
+        if provider == ConfigProvider.LOCALSTACK:
+            self._provider = LocalStackConfigProvider(
+                region=self.region,
+                endpoint_url=endpoint_url,
+            )
+            logger.info("Using LocalStack Config Provider")
+        elif provider == ConfigProvider.MOCK:
             self._provider = MockConfigProvider()
             logger.info("Using Mock Config Provider")
         else:

@@ -2,12 +2,16 @@
 Cost Explorer Client with Provider Abstraction.
 
 Client for AWS Cost Explorer API with mock support for testing.
+Supports real AWS, mock, and LocalStack providers.
 """
 
 import os
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class BaseCostExplorerProvider(ABC):
@@ -177,6 +181,309 @@ class RealCostExplorerProvider(BaseCostExplorerProvider):
         return {"results": results, "next_token": response.get("NextPageToken")}
 
 
+class LocalStackCostExplorerProvider(BaseCostExplorerProvider):
+    """
+    LocalStack Cost Explorer provider.
+
+    Reads cost data from DynamoDB tables that simulate AWS Cost Explorer.
+    Cost Explorer API is not supported by LocalStack, so this provider
+    reads from the cost-service-history table populated by init scripts.
+
+    DynamoDB Schema (cost-service-history):
+        PK: SERVICE#{service_name}
+        SK: DATE#{yyyy-mm-dd}
+        Attributes: cost, usage_quantity, region, timestamp
+    """
+
+    def __init__(
+        self,
+        region: Optional[str] = None,
+        endpoint_url: Optional[str] = None,
+    ):
+        import boto3
+
+        self.region = region or os.getenv("AWS_REGION", "ap-northeast-2")
+        self.endpoint_url = endpoint_url or os.getenv(
+            "LOCALSTACK_ENDPOINT", "http://localhost:4566"
+        )
+        self.table_name = os.getenv("COST_HISTORY_TABLE", "cost-service-history")
+        self.forecast_table = os.getenv("COST_FORECAST_TABLE", "cost-forecast-data")
+        self.anomaly_table = os.getenv("COST_ANOMALY_TABLE", "cost-anomaly-tracking")
+
+        self.dynamodb = boto3.client(
+            "dynamodb",
+            region_name=self.region,
+            endpoint_url=self.endpoint_url,
+        )
+
+        logger.info(
+            f"LocalStackCostExplorerProvider initialized: "
+            f"endpoint={self.endpoint_url}, table={self.table_name}"
+        )
+
+    def get_cost_and_usage(
+        self,
+        start_date: str,
+        end_date: str,
+        granularity: str = "DAILY",
+        group_by: Optional[List[Dict[str, str]]] = None,
+        filter_expression: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Get cost and usage data from LocalStack DynamoDB.
+
+        Queries cost-service-history table and transforms to Cost Explorer format.
+        """
+        logger.debug(f"Querying cost data: {start_date} to {end_date}")
+
+        # Get all services (scan, then filter by date range)
+        try:
+            response = self.dynamodb.scan(
+                TableName=self.table_name,
+                FilterExpression="sk BETWEEN :start AND :end",
+                ExpressionAttributeValues={
+                    ":start": {"S": f"DATE#{start_date}"},
+                    ":end": {"S": f"DATE#{end_date}"},
+                },
+            )
+        except Exception as e:
+            logger.error(f"Failed to query cost data: {e}")
+            return {"results": [], "next_token": None}
+
+        items = response.get("Items", [])
+
+        # Organize by date
+        date_data: Dict[str, Dict[str, Any]] = {}
+
+        for item in items:
+            # Extract date from sk (DATE#yyyy-mm-dd)
+            sk = item.get("sk", {}).get("S", "")
+            date_str = sk.replace("DATE#", "") if sk.startswith("DATE#") else sk
+
+            service_name = item.get("service_name", {}).get("S", "Unknown")
+            cost = float(item.get("cost", {}).get("N", "0"))
+            usage = float(item.get("usage_quantity", {}).get("N", "0"))
+
+            if date_str not in date_data:
+                date_data[date_str] = {
+                    "total_cost": 0.0,
+                    "total_usage": 0.0,
+                    "groups": {},
+                }
+
+            date_data[date_str]["total_cost"] += cost
+            date_data[date_str]["total_usage"] += usage
+            date_data[date_str]["groups"][service_name] = {
+                "cost": cost,
+                "usage": usage,
+            }
+
+        # Convert to Cost Explorer response format
+        results = []
+        for date_str in sorted(date_data.keys()):
+            data = date_data[date_str]
+
+            # Calculate next date for end period
+            date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+            next_date = (date_obj + timedelta(days=1)).strftime("%Y-%m-%d")
+
+            period_data = {
+                "start": date_str,
+                "end": next_date,
+                "total": {
+                    "UnblendedCost": {"amount": data["total_cost"], "unit": "USD"},
+                    "UsageQuantity": {"amount": data["total_usage"], "unit": "N/A"},
+                },
+                "groups": [],
+            }
+
+            # Add groups if group_by is requested
+            if group_by:
+                for service, metrics in data["groups"].items():
+                    period_data["groups"].append(
+                        {
+                            "keys": [service],
+                            "metrics": {
+                                "UnblendedCost": {
+                                    "amount": metrics["cost"],
+                                    "unit": "USD",
+                                },
+                                "UsageQuantity": {
+                                    "amount": metrics["usage"],
+                                    "unit": "N/A",
+                                },
+                            },
+                        }
+                    )
+
+            results.append(period_data)
+
+        logger.info(f"Retrieved {len(results)} days of cost data from LocalStack")
+        return {"results": results, "next_token": None}
+
+    def get_cost_forecast(
+        self,
+        start_date: str,
+        end_date: str,
+        granularity: str = "DAILY",
+        metric: str = "UNBLENDED_COST",
+    ) -> Dict[str, Any]:
+        """
+        Get cost forecast from LocalStack DynamoDB.
+
+        If no forecast data exists, generates a simple projection based on
+        historical data.
+        """
+        logger.debug(f"Getting cost forecast: {start_date} to {end_date}")
+
+        # Try to read from forecast table
+        try:
+            response = self.dynamodb.scan(
+                TableName=self.forecast_table,
+                FilterExpression="pk BETWEEN :start AND :end",
+                ExpressionAttributeValues={
+                    ":start": {"S": f"FORECAST#{start_date}"},
+                    ":end": {"S": f"FORECAST#{end_date}"},
+                },
+            )
+            items = response.get("Items", [])
+
+            if items:
+                forecasts = []
+                for item in items:
+                    pk = item.get("pk", {}).get("S", "")
+                    date_str = pk.replace("FORECAST#", "")
+                    mean = float(item.get("mean", {}).get("N", "0"))
+                    min_val = float(item.get("min", {}).get("N", str(mean * 0.9)))
+                    max_val = float(item.get("max", {}).get("N", str(mean * 1.1)))
+
+                    forecasts.append(
+                        {
+                            "start": date_str,
+                            "end": date_str,
+                            "mean": mean,
+                            "min": min_val,
+                            "max": max_val,
+                        }
+                    )
+
+                total = sum(f["mean"] for f in forecasts)
+                return {
+                    "total_forecast": total,
+                    "unit": "USD",
+                    "forecast_by_time": forecasts,
+                }
+
+        except Exception as e:
+            logger.warning(f"Forecast table not available: {e}")
+
+        # Generate forecast from historical data
+        return self._generate_forecast_from_history(start_date, end_date)
+
+    def _generate_forecast_from_history(
+        self, start_date: str, end_date: str
+    ) -> Dict[str, Any]:
+        """Generate a simple forecast based on historical average."""
+        # Get last 14 days of historical data
+        end_historical = datetime.utcnow()
+        start_historical = end_historical - timedelta(days=14)
+
+        historical = self.get_cost_and_usage(
+            start_date=start_historical.strftime("%Y-%m-%d"),
+            end_date=end_historical.strftime("%Y-%m-%d"),
+        )
+
+        # Calculate daily average
+        total_costs = [
+            r["total"]["UnblendedCost"]["amount"]
+            for r in historical.get("results", [])
+            if r.get("total")
+        ]
+
+        if total_costs:
+            avg_daily = sum(total_costs) / len(total_costs)
+        else:
+            avg_daily = 500.0  # Default if no history
+
+        # Generate forecast
+        forecasts = []
+        current = datetime.strptime(start_date, "%Y-%m-%d")
+        end = datetime.strptime(end_date, "%Y-%m-%d")
+
+        while current < end:
+            next_date = current + timedelta(days=1)
+            forecasts.append(
+                {
+                    "start": current.strftime("%Y-%m-%d"),
+                    "end": next_date.strftime("%Y-%m-%d"),
+                    "mean": avg_daily,
+                    "min": avg_daily * 0.85,
+                    "max": avg_daily * 1.15,
+                }
+            )
+            current = next_date
+
+        return {
+            "total_forecast": sum(f["mean"] for f in forecasts),
+            "unit": "USD",
+            "forecast_by_time": forecasts,
+        }
+
+    def get_anomalies(
+        self,
+        start_date: str,
+        end_date: str,
+        monitor_arn: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        """
+        Get detected cost anomalies from LocalStack DynamoDB.
+
+        Reads from cost-anomaly-tracking table. Returns empty list if
+        no anomalies have been injected.
+        """
+        logger.debug(f"Querying anomalies: {start_date} to {end_date}")
+
+        try:
+            response = self.dynamodb.scan(
+                TableName=self.anomaly_table,
+                FilterExpression="sk BETWEEN :start AND :end",
+                ExpressionAttributeValues={
+                    ":start": {"S": f"COST#{start_date}"},
+                    ":end": {"S": f"COST#{end_date}"},
+                },
+            )
+
+            anomalies = []
+            for item in response.get("Items", []):
+                pk = item.get("pk", {}).get("S", "")
+                anomaly_id = pk.replace("ANOMALY#", "")
+
+                anomalies.append(
+                    {
+                        "anomaly_id": anomaly_id,
+                        "start_date": item.get("start_date", {}).get("S"),
+                        "end_date": item.get("end_date", {}).get("S"),
+                        "dimension_value": item.get("dimension_value", {}).get("S"),
+                        "root_causes": [],
+                        "impact": {
+                            "max_impact": float(
+                                item.get("max_impact", {}).get("N", "0")
+                            ),
+                            "total_impact": float(
+                                item.get("total_impact", {}).get("N", "0")
+                            ),
+                        },
+                        "feedback": item.get("feedback", {}).get("S"),
+                    }
+                )
+
+            return anomalies
+
+        except Exception as e:
+            logger.warning(f"Failed to query anomalies: {e}")
+            return []
+
+
 class MockCostExplorerProvider(BaseCostExplorerProvider):
     """Mock Cost Explorer provider for testing."""
 
@@ -328,6 +635,10 @@ class CostExplorerClient:
         # Mock for testing
         client = CostExplorerClient(use_mock=True, mock_data={...})
 
+        # LocalStack (via environment variable)
+        # Set COST_PROVIDER=localstack
+        client = CostExplorerClient(provider_type="localstack")
+
         # Get cost data
         costs = client.get_cost_and_usage(
             start_date="2024-01-01",
@@ -336,19 +647,43 @@ class CostExplorerClient:
 
         # Get cost by service
         costs = client.get_cost_by_service(days=30)
+
+    Provider types:
+        - mock: In-memory mock data (default for testing)
+        - real: Real AWS Cost Explorer API
+        - localstack: LocalStack DynamoDB-based simulation
     """
 
     def __init__(
         self,
         use_mock: bool = True,
+        provider_type: Optional[str] = None,
         region: Optional[str] = None,
         mock_data: Optional[Dict[str, Any]] = None,
+        endpoint_url: Optional[str] = None,
     ):
-        self.use_mock = use_mock
-        if use_mock:
-            self._provider: BaseCostExplorerProvider = MockCostExplorerProvider(mock_data)
-        else:
+        # Determine provider type from parameter or environment
+        self.provider_type = provider_type or os.getenv("COST_PROVIDER", "mock")
+
+        # Create appropriate provider based on type
+        if self.provider_type == "localstack":
+            self._provider: BaseCostExplorerProvider = LocalStackCostExplorerProvider(
+                region=region,
+                endpoint_url=endpoint_url,
+            )
+            self.use_mock = False
+            logger.info("CostExplorerClient using LocalStack provider")
+
+        elif self.provider_type == "real" or (not use_mock and self.provider_type != "mock"):
             self._provider = RealCostExplorerProvider(region)
+            self.use_mock = False
+            logger.info("CostExplorerClient using real AWS provider")
+
+        else:
+            # Default to mock
+            self._provider = MockCostExplorerProvider(mock_data)
+            self.use_mock = True
+            logger.debug("CostExplorerClient using mock provider")
 
     def get_cost_and_usage(
         self,
