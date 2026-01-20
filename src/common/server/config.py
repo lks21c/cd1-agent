@@ -78,6 +78,13 @@ class ServerSettings(BaseSettings):
     max_drifts_to_analyze: int = Field(default=10, description="Max drifts to analyze")
     analysis_confidence_threshold: float = Field(default=0.7, description="Analysis confidence threshold")
 
+    # BDP Compact Agent Specific
+    bdp_provider: str = Field(default="mock", description="BDP provider (mock, real, localstack)")
+    bdp_sensitivity: float = Field(default=0.7, description="BDP cost drift sensitivity")
+    bdp_currency: str = Field(default="KRW", description="BDP currency (KRW, USD)")
+    bdp_min_cost_threshold: float = Field(default=10000, description="BDP minimum cost threshold")
+    bdp_hitl_on_critical: bool = Field(default=True, description="Create HITL request on critical")
+
     # Metrics Configuration
     metrics_enabled: bool = Field(default=True, description="Enable Prometheus metrics")
     metrics_prefix: str = Field(default="cd1_agent", description="Metrics name prefix")
