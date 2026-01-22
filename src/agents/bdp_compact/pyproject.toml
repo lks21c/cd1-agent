@@ -22,19 +22,27 @@ classifiers = [
     "Topic :: System :: Monitoring",
 ]
 
+# Core dependencies (Lambda layer minimal)
 dependencies = [
-    "boto3>=1.34.0",
     "pydantic>=2.0.0",
-    "pyod>=2.0.0",
     "numpy>=1.24.0",
-    "scipy>=1.10.0",
 ]
 
 [project.optional-dependencies]
+# AWS SDK - excluded from Lambda layer (runtime provides boto3)
+aws = [
+    "boto3>=1.34.0",
+]
+# ML dependencies - PyOD ECOD anomaly detection (optional, has ratio fallback)
+ml = [
+    "pyod>=2.0.0",
+]
+# Server dependencies
 server = [
     "fastapi>=0.109.0",
     "uvicorn>=0.27.0",
 ]
+# Development dependencies
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
@@ -42,8 +50,13 @@ dev = [
     "ruff>=0.1.0",
     "mypy>=1.0.0",
 ]
+# Full installation for Container/Pod deployment
+full = [
+    "bdp-compact[aws,ml,server]",
+]
+# All including dev
 all = [
-    "bdp-compact[server,dev]",
+    "bdp-compact[full,dev]",
 ]
 
 [project.scripts]

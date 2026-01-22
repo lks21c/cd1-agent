@@ -28,6 +28,10 @@ rm -rf "$LAYER_DIR"
 mkdir -p "$LAYER_DIR/python"
 
 # Install dependencies for Lambda (manylinux platform)
+# NOTE: Lightweight Lambda layer optimization
+#   - boto3: Excluded - Lambda runtime provides boto3 1.28+ (Cost Explorer API supported)
+#   - pyod/scipy: Excluded - Optional ML dependencies, ratio-based fallback available
+#   - Only pydantic + numpy for core functionality
 echo "[3/5] Installing dependencies for Lambda..."
 python3 -m pip install \
     --platform manylinux2014_x86_64 \
@@ -36,12 +40,12 @@ python3 -m pip install \
     --python-version 3.11 \
     --only-binary=:all: \
     --upgrade \
-    boto3 pydantic pyod numpy scipy 2>/dev/null || {
+    pydantic numpy 2>/dev/null || {
     echo "Warning: manylinux wheel download failed, using local platform..."
     python3 -m pip install \
         --target "$LAYER_DIR/python" \
         --upgrade \
-        boto3 pydantic pyod numpy scipy
+        pydantic numpy
 }
 
 # Install the bdp-compact package
@@ -76,7 +80,10 @@ LAYER_SIZE_BYTES=$(stat -f%z "$LAYER_ZIP" 2>/dev/null || stat -c%s "$LAYER_ZIP" 
 cd "$PROJECT_DIR"
 rm -rf "$LAYER_DIR"
 
-# Lambda layer size limit: 250MB uncompressed, ~50MB compressed is reasonable
+# Lambda layer size limits:
+#   - Compressed: 50MB per layer
+#   - Uncompressed: 250MB total (all layers + deployment package)
+# Expected size after optimization: ~30-40MB (pydantic + numpy + bdp-compact)
 echo ""
 echo "=== Lambda Layer Build Complete ==="
 echo "Layer file: $LAYER_ZIP"
@@ -84,7 +91,11 @@ echo "Layer size: $LAYER_SIZE"
 
 if [ "$LAYER_SIZE_BYTES" -gt 52428800 ]; then  # 50MB
     echo ""
-    echo "Warning: Layer size exceeds 50MB, consider optimization"
+    echo "Warning: Layer size exceeds 50MB limit!"
+    echo "Consider further optimization or splitting layers"
+elif [ "$LAYER_SIZE_BYTES" -gt 41943040 ]; then  # 40MB
+    echo ""
+    echo "Note: Layer size is approaching 50MB limit"
 fi
 
 echo ""
