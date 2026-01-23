@@ -415,8 +415,17 @@ class KakaoNotifier:
         reasoning = self._build_reasoning(result)
         advice = self._build_advice(result)
 
+        # 날짜 정보 추출
+        alert_date = result.spike_start_date or (
+            result.timestamps[-1] if result.timestamps else "N/A"
+        )
+
         text_content = (
             f"{emoji} {summary.title}\n"
+            f"{'━' * 20}\n"
+            f"📅 날짜: {alert_date}\n"
+            f"🏷️ 서비스: {result.service_name}\n"
+            f"🏢 계정: {result.account_name} ({result.account_id})\n"
             f"{'━' * 20}\n\n"
             f"{reasoning}\n\n"
             f"{advice}\n\n"
