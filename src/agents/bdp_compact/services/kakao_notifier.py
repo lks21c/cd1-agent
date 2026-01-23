@@ -21,7 +21,7 @@ import os
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from urllib.parse import urlencode
 
 import requests
@@ -339,6 +339,58 @@ class KakaoNotifier:
 
         return self._send_memo(template_object)
 
+    def send_feed_with_items(
+        self,
+        title: str,
+        description: str,
+        items: List[Dict[str, str]],
+        image_url: Optional[str] = None,
+        link_url: Optional[str] = None,
+    ) -> bool:
+        """피드 B형 메시지 발송 (item_content 포함).
+
+        item_content를 사용하면 상세 항목을 최대 5개까지 표시할 수 있음.
+        description 2줄 제한 문제를 해결.
+
+        Args:
+            title: 메시지 제목
+            description: 간단한 설명
+            items: 상세 항목 리스트 [{"item": "항목명", "item_op": "값"}, ...]
+            image_url: 차트/이미지 URL
+            link_url: 클릭 시 이동할 URL
+
+        Returns:
+            발송 성공 여부
+        """
+        if not self.tokens:
+            logger.error("No tokens available. Call load_tokens() first.")
+            return False
+
+        template_object: Dict[str, Any] = {
+            "object_type": "feed",
+            "content": {
+                "title": title,
+                "description": description,
+                "link": {
+                    "web_url": link_url or "https://developers.kakao.com",
+                    "mobile_web_url": link_url or "https://developers.kakao.com",
+                },
+            },
+            "item_content": {
+                "items": items[:5],  # 최대 5개
+            },
+        }
+
+        if image_url:
+            template_object["content"]["image_url"] = image_url
+            # 이미지 터치 시 원본 이미지로 이동 (확대 보기)
+            template_object["content"]["image_link"] = {
+                "web_url": image_url,
+                "mobile_web_url": image_url,
+            }
+
+        return self._send_memo(template_object)
+
     def send_alert(
         self,
         result: CostDriftResult,
@@ -346,7 +398,9 @@ class KakaoNotifier:
     ) -> bool:
         """비용 드리프트 알람 발송.
 
-        EventPublisher.publish_alert()와 동일한 인터페이스.
+        2개의 메시지로 발송:
+        1. 텍스트 메시지: 장문 상세 내용 (잘림 없음)
+        2. 피드 메시지: 차트 이미지 (터치 시 확대)
 
         Args:
             result: 비용 드리프트 탐지 결과
@@ -357,21 +411,135 @@ class KakaoNotifier:
         """
         emoji = self.SEVERITY_EMOJI.get(result.severity, "📊")
 
-        # 피드 형식으로 발송
-        title = f"{emoji} {summary.title}"
+        # 1. 텍스트 메시지: 장문 상세 내용
+        reasoning = self._build_reasoning(result)
+        advice = self._build_advice(result)
 
-        description = (
-            f"{summary.message}\n\n"
+        text_content = (
+            f"{emoji} {summary.title}\n"
+            f"{'━' * 20}\n\n"
+            f"{reasoning}\n\n"
+            f"{advice}\n\n"
+            f"{'━' * 20}\n"
             f"💰 현재 비용: {result.current_cost:,.0f}원\n"
             f"📈 변화율: {result.change_percent:+.1f}%\n"
-            f"📊 신뢰도: {result.confidence_score:.1%}"
+            f"📊 신뢰도: {result.confidence_score:.1%}\n"
+            f"🔍 탐지 방법: {result.detection_method}"
         )
 
-        return self.send_feed_message(
-            title=title,
-            description=description,
-            image_url=summary.chart_url,
-        )
+        text_success = self.send_text_message(text_content)
+
+        # 2. 피드 메시지: 차트 이미지 (터치 시 확대)
+        image_success = True
+        if summary.chart_url:
+            image_success = self.send_image_message(
+                title="📊 비용 추이 차트",
+                description="이미지를 터치하면 확대됩니다",
+                image_url=summary.chart_url,
+            )
+
+        return text_success and image_success
+
+    def send_image_message(
+        self,
+        title: str,
+        description: str,
+        image_url: str,
+    ) -> bool:
+        """이미지 메시지 발송 (버튼으로 확대 보기).
+
+        Args:
+            title: 제목
+            description: 설명
+            image_url: 이미지 URL
+
+        Returns:
+            발송 성공 여부
+        """
+        if not self.tokens:
+            logger.error("No tokens available. Call load_tokens() first.")
+            return False
+
+        template_object: Dict[str, Any] = {
+            "object_type": "feed",
+            "content": {
+                "title": title,
+                "description": description,
+                "image_url": image_url,
+                "link": {
+                    "web_url": image_url,
+                    "mobile_web_url": image_url,
+                },
+            },
+            "buttons": [
+                {
+                    "title": "🔍 차트 확대 보기",
+                    "link": {
+                        "web_url": image_url,
+                        "mobile_web_url": image_url,
+                    },
+                },
+            ],
+        }
+
+        return self._send_memo(template_object)
+
+    def _build_reasoning(self, result: CostDriftResult) -> str:
+        """신뢰도에 대한 reasoning 생성.
+
+        Args:
+            result: 비용 드리프트 탐지 결과
+
+        Returns:
+            탐지 근거 문자열
+        """
+        reasons = []
+
+        # 변화율 기반
+        if abs(result.change_percent) >= 200:
+            reasons.append(f"평균 대비 {abs(result.change_percent):.0f}% 급변")
+        elif abs(result.change_percent) >= 100:
+            reasons.append(f"평균 대비 {abs(result.change_percent):.0f}% 상승")
+
+        # 탐지 방법 기반
+        if "ensemble" in result.detection_method:
+            reasons.append("ECOD+Ratio 이중 탐지")
+        elif "ecod" in result.detection_method:
+            reasons.append("ECOD 알고리즘 탐지")
+
+        # 지속 기간 기반
+        if result.spike_duration_days > 1:
+            reasons.append(f"{result.spike_duration_days}일 연속 상승")
+
+        if reasons:
+            return f"📋 탐지 근거: {', '.join(reasons)}"
+        return "📋 이상 패턴 감지"
+
+    def _build_advice(self, result: CostDriftResult) -> str:
+        """심각도별 자연어 조언 생성.
+
+        Args:
+            result: 비용 드리프트 탐지 결과
+
+        Returns:
+            조언 문자열
+        """
+        advice_map = {
+            Severity.CRITICAL: (
+                "⚠️ 즉시 확인이 필요합니다. "
+                "이 정도의 급격한 비용 증가는 설정 오류나 예상치 못한 사용량 급증을 의미할 수 있습니다."
+            ),
+            Severity.HIGH: (
+                "📢 빠른 확인을 권장합니다. "
+                "비용이 크게 증가했으니 원인을 파악해 보세요."
+            ),
+            Severity.MEDIUM: (
+                "📌 주의 깊게 모니터링해 주세요. "
+                "비용 추이를 관찰하며 원인을 확인해 보세요."
+            ),
+            Severity.LOW: "ℹ️ 참고용 알림입니다. 일시적인 변동일 수 있습니다.",
+        }
+        return advice_map.get(result.severity, "비용 변동이 감지되었습니다.")
 
     def _send_memo(self, template_object: Dict[str, Any]) -> bool:
         """나에게 메시지 발송 API 호출.
