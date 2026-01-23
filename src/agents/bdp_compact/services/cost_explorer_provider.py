@@ -13,51 +13,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-import urllib3
-from botocore.config import Config
-
-# Suppress SSL warnings when using proxy with verify=False
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
 logger = logging.getLogger(__name__)
-
-
-def _load_proxy_config() -> Optional[Config]:
-    """Load proxy configuration from JSON file.
-
-    Searches for proxy_config.json in the following locations:
-    1. src/agents/bdp_compact/conf/proxy_config.json
-    2. src/agents/bdp_compact/proxy_config.json
-    3. Current working directory
-
-    Returns:
-        botocore.config.Config with proxy settings, or None if no config found
-    """
-    config_paths = [
-        Path(__file__).parent.parent / "conf" / "proxy_config.json",
-        Path(__file__).parent.parent / "proxy_config.json",
-        Path.cwd() / "proxy_config.json",
-    ]
-
-    for config_path in config_paths:
-        if config_path.exists():
-            try:
-                with open(config_path) as f:
-                    proxy_data = json.load(f)
-
-                proxies = {}
-                if proxy_data.get("http"):
-                    proxies["http"] = proxy_data["http"]
-                if proxy_data.get("https"):
-                    proxies["https"] = proxy_data["https"]
-
-                if proxies:
-                    logger.info(f"Loaded proxy configuration from {config_path}")
-                    return Config(proxies=proxies)
-            except Exception as e:
-                logger.warning(f"Failed to load proxy config from {config_path}: {e}")
-
-    return None
 
 
 @dataclass
@@ -144,13 +100,7 @@ class CostExplorerProvider(BaseCostExplorerProvider):
         if self._account_id:
             return self._account_id
 
-        proxy_config = _load_proxy_config()
-        sts_client = self._session.client(
-            "sts",
-            region_name=self.region,
-            config=proxy_config,
-            verify=False if proxy_config else True,
-        )
+        sts_client = self._session.client("sts", region_name=self.region)
 
         response = sts_client.get_caller_identity()
         self._account_id = response["Account"]
@@ -180,12 +130,9 @@ class CostExplorerProvider(BaseCostExplorerProvider):
         """
         account_id = self._get_account_id()
 
-        proxy_config = _load_proxy_config()
         ce_client = self._session.client(
             "ce",
             region_name="us-east-1",  # Cost Explorer API only available in us-east-1
-            config=proxy_config,
-            verify=False if proxy_config else True,
         )
 
         end_date = datetime.utcnow()

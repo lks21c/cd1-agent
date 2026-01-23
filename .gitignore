@@ -73,7 +73,3 @@ layer/
 # LocalStack (BDP Agent)
 infra/bdp_agent/data/*
 !infra/bdp_agent/data/.gitkeep
-
-# Proxy configuration (contains sensitive URLs)
-proxy_config.json
-**/proxy_config.json

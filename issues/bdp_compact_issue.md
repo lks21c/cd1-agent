@@ -1,0 +1,2 @@
+- proxy_config 기능 없애기
+- conf 파일에 .template 확장자 없애기

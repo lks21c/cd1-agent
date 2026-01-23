@@ -149,22 +149,3 @@ Account B (222222222222)
 | 변수명 | 설명 | 기본값 |
 |--------|------|--------|
 | `LOCALSTACK_ENDPOINT` | LocalStack 엔드포인트 | `http://localhost:4566` |
-
-### 프록시 설정 (선택)
-
-기업 네트워크 환경에서 AWS API 호출시 프록시가 필요한 경우 JSON 파일로 설정합니다.
-
-**설정 파일 위치** (우선순위 순):
-1. `src/agents/bdp_compact/conf/proxy_config.json`
-2. `src/agents/bdp_compact/proxy_config.json`
-3. 현재 작업 디렉토리의 `proxy_config.json`
-
-**설정 파일 형식** (`proxy_config.json`):
-```json
-{
-  "http": "http://proxy.example.com:8080",
-  "https": "https://proxy.example.com:8080"
-}
-```
-
-> **주의**: `proxy_config.json`은 `.gitignore`에 포함되어 있어 커밋되지 않습니다.
