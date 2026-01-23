@@ -148,10 +148,14 @@ class TestKakaoNotifier:
     """KakaoNotifier 테스트."""
 
     def test_init_without_key(self):
-        """API 키 없이 초기화."""
+        """API 키 없이 초기화 (환경변수, 설정파일 모두 없음)."""
         with patch.dict(os.environ, {}, clear=True):
-            notifier = KakaoNotifier()
-            assert notifier.rest_api_key is None
+            # 설정 파일 로드도 빈 결과 반환하도록 mock
+            with patch.object(
+                KakaoNotifier, "_load_config", return_value={}
+            ):
+                notifier = KakaoNotifier()
+                assert notifier.rest_api_key is None
 
     def test_init_with_env_key(self):
         """환경변수에서 API 키 로드."""

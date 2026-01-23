@@ -26,15 +26,20 @@ class TestAthenaSpikAlert:
 
         시나리오:
         - 1월 8일 ~ 20일: 정상 (25만원 ± 약간의 변동)
-        - 1월 21일: 75만원 (200% 급등)
+        - 1월 21일: 76만원 (200%+ 급등, CRITICAL 임계값 초과)
+
+        Note:
+            change_percent = (current - avg) / avg * 100
+            avg ≈ 250692 (변동으로 인해 정확히 250000 아님)
+            760000으로 설정 시 change_percent ≈ 203% -> CRITICAL
         """
         # 1월 8일 ~ 20일: 정상 (25만원 ± 약간의 변동)
-        # 1월 21일: 75만원 (200% 급등)
+        # 1월 21일: 76만원 (200%+ 급등, avg보다 3배 이상)
         historical_costs = [
             250000, 252000, 248000, 251000, 253000,  # 1/8-12
             249000, 250000, 252000, 251000, 248000,  # 1/13-17
             253000, 250000, 252000,                  # 1/18-20
-            750000,                                  # 1/21 스파이크!
+            760000,                                  # 1/21 스파이크! (CRITICAL 보장)
         ]
         timestamps = [f"2025-01-{d:02d}" for d in range(8, 22)]
 
@@ -42,7 +47,7 @@ class TestAthenaSpikAlert:
             service_name="Amazon Athena",
             account_id="111111111111",
             account_name="hyundaicard-payer",
-            current_cost=750000,
+            current_cost=760000,
             historical_costs=historical_costs,
             timestamps=timestamps,
             currency="KRW",
@@ -74,7 +79,7 @@ class TestAthenaSpikAlert:
         # 서비스 정보 확인
         assert result.service_name == "Amazon Athena"
         assert result.account_name == "hyundaicard-payer"
-        assert result.current_cost == 750000
+        assert result.current_cost == 760000
 
     def test_generate_alert_summary_korean(self, jan21_athena_spike_data):
         """한글 알람 요약 생성 - 아테나, 75만원, 스파이크 정보 포함 확인."""
@@ -95,8 +100,8 @@ class TestAthenaSpikAlert:
         )
 
         # 메시지에 비용 정보 포함 확인
-        assert "75만원" in summary.message or "750,000" in summary.message, (
-            f"메시지에 75만원 포함되어야 함, 실제: {summary.message}"
+        assert "76만원" in summary.message or "760,000" in summary.message, (
+            f"메시지에 76만원 포함되어야 함, 실제: {summary.message}"
         )
 
         # 계정명 포함 확인
@@ -200,24 +205,31 @@ class TestAthenaSpikAlert:
         affected = event.affected_services[0]
         assert affected["service_name"] == "Amazon Athena"
         assert affected["account_id"] == "111111111111"
-        assert affected["current_cost"] == 750000
-        assert affected["change_percent"] >= 180
+        assert affected["current_cost"] == 760000
+        assert affected["change_percent"] >= 200  # CRITICAL 임계값
 
     def test_severity_levels(self):
-        """다양한 스파이크 강도에 대한 심각도 레벨 확인."""
+        """다양한 스파이크 강도에 대한 심각도 레벨 확인.
+
+        심각도 기준 (change_percent 또는 confidence 기반):
+        - CRITICAL: >= 200% 또는 confidence >= 0.9
+        - HIGH: >= 100% 또는 confidence >= 0.7
+        - MEDIUM: >= 50% 또는 confidence >= 0.5
+        - LOW: 그 외
+        """
         base_costs = [250000] * 13  # 1/8-20
 
         test_cases = [
-            # (마지막 날 비용, 예상 최소 심각도)
-            (750000, Severity.CRITICAL),   # 200% → CRITICAL
-            (500000, Severity.HIGH),       # 100% → HIGH
-            (375000, Severity.MEDIUM),     # 50% → MEDIUM
-            (300000, Severity.MEDIUM),     # 20% → MEDIUM (경계선)
+            # (마지막 날 비용, 예상 최소 심각도, 변화율 설명)
+            (760000, Severity.CRITICAL, "203%"),  # >= 200% → CRITICAL
+            (500000, Severity.HIGH, "100%"),       # >= 100% → HIGH
+            (375000, Severity.MEDIUM, "50%"),      # >= 50% → MEDIUM
+            (300000, Severity.LOW, "20%"),         # < 50% → LOW (신뢰도에 따라 달라질 수 있음)
         ]
 
         detector = CostDriftDetector(sensitivity=0.7)
 
-        for spike_cost, expected_min_severity in test_cases:
+        for spike_cost, expected_min_severity, desc in test_cases:
             historical_costs = base_costs + [spike_cost]
             timestamps = [f"2025-01-{d:02d}" for d in range(8, 22)]
 
@@ -239,6 +251,6 @@ class TestAthenaSpikAlert:
             expected_idx = severity_order.index(expected_min_severity)
 
             assert result_idx >= expected_idx, (
-                f"비용 {spike_cost}원: 심각도가 {expected_min_severity} 이상이어야 함, "
-                f"실제: {result.severity}"
+                f"비용 {spike_cost}원 ({desc}): 심각도가 {expected_min_severity} 이상이어야 함, "
+                f"실제: {result.severity}, 변화율: {result.change_percent}%, 신뢰도: {result.confidence_score}"
             )

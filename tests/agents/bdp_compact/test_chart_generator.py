@@ -116,8 +116,8 @@ class TestCostTrendChartGenerator:
 
         assert url is not None
         assert url.startswith("https://quickchart.io/chart")
-        assert "w=600" in url
-        assert "h=300" in url
+        assert "w=400" in url  # 카카오톡 최적화: 정사각형
+        assert "h=400" in url
         assert "bkg=white" in url
 
     def test_generate_chart_url_contains_encoded_config(
@@ -161,9 +161,9 @@ class TestCostTrendChartGenerator:
         assert "bkg=transparent" in url
 
     def test_default_config(self, generator):
-        """기본 설정 확인."""
-        assert generator.config.width == 600
-        assert generator.config.height == 300
+        """기본 설정 확인 - 카카오톡 최적화 정사각형."""
+        assert generator.config.width == 400  # 카카오톡 최적화
+        assert generator.config.height == 400  # 정사각형 (1:1)
         assert generator.config.background_color == "white"
 
     # =========================================================================
@@ -171,20 +171,23 @@ class TestCostTrendChartGenerator:
     # =========================================================================
 
     def test_format_date_labels(self, generator):
-        """날짜 레이블 포맷팅."""
+        """날짜 레이블 포맷팅 - show_every_n=1로 모든 날짜 표시."""
         timestamps = ["2025-01-08", "2025-01-09", "2025-01-10"]
-        labels = generator._format_date_labels(timestamps)
+        # show_every_n=1로 모든 날짜 표시
+        labels = generator._format_date_labels(timestamps, show_every_n=1)
 
         assert labels == ["1/8", "1/9", "1/10"]
 
     def test_format_date_labels_invalid_format(self, generator):
         """잘못된 날짜 형식 처리."""
         timestamps = ["invalid", "2025-01-09", ""]
-        labels = generator._format_date_labels(timestamps)
+        labels = generator._format_date_labels(timestamps, show_every_n=1)
 
         assert len(labels) == 3
-        # 파싱 실패 시 원본 문자열의 처음 5자 또는 "?"
-        assert "?" in labels[2]
+        # 파싱 실패 시 빈 문자열 반환
+        assert labels[0] == ""  # invalid -> ""
+        assert labels[1] == "1/9"  # 정상 파싱
+        assert labels[2] == ""  # 빈 문자열 -> ""
 
     # =========================================================================
     # 서비스명 처리 테스트
