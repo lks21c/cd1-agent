@@ -1,0 +1,46 @@
+{
+  "ensemble": {
+    "weights": {
+      "ecod": 0.4,
+      "ratio": 0.3,
+      "stddev": 0.3
+    }
+  },
+  "stddev": {
+    "z_score_threshold": 3.0,
+    "min_data_points": 7
+  },
+  "patterns": {
+    "enabled": true,
+    "mode": "active",
+    "max_adjustment": 0.4,
+    "day_of_week": {
+      "enabled": true,
+      "adjustment": -0.20,
+      "tolerance_ratio": 0.30
+    },
+    "trend": {
+      "enabled": true,
+      "adjustment": -0.15,
+      "deviation_threshold": 0.15
+    },
+    "month_cycle": {
+      "enabled": false,
+      "adjustment": -0.15,
+      "month_start_days": [1, 2, 3, 4, 5],
+      "month_end_days": [26, 27, 28, 29, 30, 31],
+      "tolerance_ratio": 0.30
+    },
+    "service_profile": {
+      "enabled": false,
+      "adjustment": -0.10,
+      "spike_normal_services": [
+        "AWS Lambda",
+        "AWS Batch",
+        "AWS Glue",
+        "Amazon Athena",
+        "AWS Step Functions"
+      ]
+    }
+  }
+}

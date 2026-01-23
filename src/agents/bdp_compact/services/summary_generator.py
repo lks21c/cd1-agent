@@ -325,3 +325,195 @@ class SummaryGenerator:
             return f"{dt.month}월 {dt.day}일"
         except (ValueError, TypeError):
             return date_str
+
+
+def generate_analysis(result: CostDriftResult, language: str = "ko") -> str:
+    """탐지 결과에 대한 자연어 분석 생성 (KakaoTalk용).
+
+    단순 현상 탐지가 아닌, 심각도/변화율/추세/패턴 컨텍스트/신뢰도에 대한
+    분석 문장을 생성합니다.
+
+    Args:
+        result: 비용 드리프트 탐지 결과
+        language: 언어 코드 ("ko" 또는 "en")
+
+    Returns:
+        분석 문장 (한글 또는 영어)
+    """
+    if language == "en":
+        return _generate_analysis_en(result)
+    return _generate_analysis_ko(result)
+
+
+def _generate_analysis_ko(result: CostDriftResult) -> str:
+    """한글 분석 문장 생성.
+
+    Args:
+        result: 비용 드리프트 탐지 결과
+
+    Returns:
+        한글 분석 문장
+    """
+    lines = []
+
+    # 1. 심각도 설명
+    severity_explanations = {
+        Severity.CRITICAL: "즉각적인 조치가 필요한 심각한 이상입니다.",
+        Severity.HIGH: "주의가 필요한 높은 수준의 이상입니다.",
+        Severity.MEDIUM: "모니터링이 필요한 중간 수준의 이상입니다.",
+        Severity.LOW: "참고용 낮은 수준의 변동입니다.",
+    }
+    lines.append(f"[심각도] {severity_explanations.get(result.severity, '알 수 없음')}")
+
+    # 2. 변화율 설명
+    change = result.change_percent
+    if abs(change) >= 200:
+        change_desc = "급격한"
+    elif abs(change) >= 100:
+        change_desc = "큰 폭의"
+    elif abs(change) >= 50:
+        change_desc = "상당한"
+    else:
+        change_desc = "소폭의"
+
+    direction = "상승" if change > 0 else "하락"
+    lines.append(f"[변화율] 평균 대비 {abs(change):.1f}% {direction} ({change_desc} 변화)")
+
+    # 3. 추세 설명
+    trend_descriptions = {
+        "increasing": "비용이 지속적으로 증가하는 추세입니다.",
+        "decreasing": "비용이 지속적으로 감소하는 추세입니다.",
+        "stable": "비용이 안정적인 추세를 보입니다.",
+    }
+    lines.append(f"[추세] {trend_descriptions.get(result.trend_direction, '분석 불가')}")
+
+    # 4. 지속 기간 설명
+    if result.spike_duration_days > 1:
+        lines.append(f"[지속] 이 변동이 {result.spike_duration_days}일간 지속되었습니다.")
+
+    # 5. 패턴 컨텍스트 설명
+    if result.pattern_contexts:
+        pattern_str = ", ".join(result.pattern_contexts)
+        lines.append(f"[패턴] 인식된 패턴: {pattern_str}")
+        lines.append("  → 패턴 인식으로 인해 신뢰도가 조정되었습니다.")
+
+    # 6. 신뢰도 설명
+    confidence = result.confidence_score
+    raw_confidence = result.raw_confidence_score
+
+    if confidence >= 0.9:
+        confidence_desc = "매우 높은 신뢰도로 탐지되었습니다."
+    elif confidence >= 0.7:
+        confidence_desc = "높은 신뢰도로 탐지되었습니다."
+    elif confidence >= 0.5:
+        confidence_desc = "중간 신뢰도로 탐지되었습니다."
+    else:
+        confidence_desc = "낮은 신뢰도로 탐지되었습니다."
+
+    confidence_line = f"[신뢰도] {confidence:.1%} - {confidence_desc}"
+    if raw_confidence and raw_confidence != confidence:
+        confidence_line += f" (원본: {raw_confidence:.1%})"
+    lines.append(confidence_line)
+
+    # 7. 탐지 방법 설명
+    method_descriptions = {
+        "ecod": "ECOD 알고리즘",
+        "ecod_lite": "경량 ECOD 알고리즘",
+        "ensemble": "앙상블 탐지 (ECOD+Ratio+Stddev)",
+        "ensemble_lite": "경량 앙상블 탐지",
+        "stddev": "Z-Score 기반 탐지",
+        "ratio": "비율 기반 탐지",
+        "insufficient_data": "데이터 부족",
+    }
+    method = result.detection_method
+    method_desc = method_descriptions.get(method, method)
+    lines.append(f"[탐지 방법] {method_desc}")
+
+    return "\n".join(lines)
+
+
+def _generate_analysis_en(result: CostDriftResult) -> str:
+    """영어 분석 문장 생성.
+
+    Args:
+        result: 비용 드리프트 탐지 결과
+
+    Returns:
+        영어 분석 문장
+    """
+    lines = []
+
+    # 1. Severity explanation
+    severity_explanations = {
+        Severity.CRITICAL: "Immediate action required - critical anomaly.",
+        Severity.HIGH: "High severity anomaly requiring attention.",
+        Severity.MEDIUM: "Medium severity anomaly - monitoring recommended.",
+        Severity.LOW: "Low severity variation - for reference.",
+    }
+    lines.append(f"[Severity] {severity_explanations.get(result.severity, 'Unknown')}")
+
+    # 2. Change rate explanation
+    change = result.change_percent
+    if abs(change) >= 200:
+        change_desc = "dramatic"
+    elif abs(change) >= 100:
+        change_desc = "significant"
+    elif abs(change) >= 50:
+        change_desc = "notable"
+    else:
+        change_desc = "minor"
+
+    direction = "increase" if change > 0 else "decrease"
+    lines.append(f"[Change] {abs(change):.1f}% {direction} from average ({change_desc} change)")
+
+    # 3. Trend explanation
+    trend_descriptions = {
+        "increasing": "Costs are showing an increasing trend.",
+        "decreasing": "Costs are showing a decreasing trend.",
+        "stable": "Costs are stable.",
+    }
+    lines.append(f"[Trend] {trend_descriptions.get(result.trend_direction, 'Unable to analyze')}")
+
+    # 4. Duration explanation
+    if result.spike_duration_days > 1:
+        lines.append(f"[Duration] This variation has persisted for {result.spike_duration_days} days.")
+
+    # 5. Pattern context explanation
+    if result.pattern_contexts:
+        pattern_str = ", ".join(result.pattern_contexts)
+        lines.append(f"[Patterns] Recognized patterns: {pattern_str}")
+        lines.append("  → Confidence adjusted based on pattern recognition.")
+
+    # 6. Confidence explanation
+    confidence = result.confidence_score
+    raw_confidence = result.raw_confidence_score
+
+    if confidence >= 0.9:
+        confidence_desc = "Detected with very high confidence."
+    elif confidence >= 0.7:
+        confidence_desc = "Detected with high confidence."
+    elif confidence >= 0.5:
+        confidence_desc = "Detected with moderate confidence."
+    else:
+        confidence_desc = "Detected with low confidence."
+
+    confidence_line = f"[Confidence] {confidence:.1%} - {confidence_desc}"
+    if raw_confidence and raw_confidence != confidence:
+        confidence_line += f" (raw: {raw_confidence:.1%})"
+    lines.append(confidence_line)
+
+    # 7. Detection method explanation
+    method_descriptions = {
+        "ecod": "ECOD algorithm",
+        "ecod_lite": "Lightweight ECOD algorithm",
+        "ensemble": "Ensemble detection (ECOD+Ratio+Stddev)",
+        "ensemble_lite": "Lightweight ensemble detection",
+        "stddev": "Z-Score based detection",
+        "ratio": "Ratio based detection",
+        "insufficient_data": "Insufficient data",
+    }
+    method = result.detection_method
+    method_desc = method_descriptions.get(method, method)
+    lines.append(f"[Method] {method_desc}")
+
+    return "\n".join(lines)

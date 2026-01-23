@@ -19,6 +19,10 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 
+from src.agents.bdp_compact.services.config_loader import (
+    DetectionConfig,
+    get_detection_config,
+)
 from src.agents.bdp_compact.services.cost_explorer_provider import ServiceCostData
 from src.agents.bdp_compact.services.pattern_recognizers import (
     PatternChain,
@@ -276,11 +280,20 @@ class CostDriftDetector:
         if len(historical) < self.min_data_points:
             return self._insufficient_data_result(service_data)
 
-        # ECOD 기반 탐지 시도 (PyOD 또는 경량 버전)
+        # 개별 탐지 방법 실행
         ecod_result = self._detect_ecod(historical)
-
-        # Ratio 기반 탐지 (fallback 또는 앙상블)
         ratio_result = self._detect_ratio(historical)
+        stddev_result = self._detect_stddev(historical)
+
+        # 앙상블 스코어 계산
+        ensemble_result = self._calculate_ensemble_score(
+            ecod_result, ratio_result, stddev_result
+        )
+
+        is_anomaly = ensemble_result["is_anomaly"]
+        raw_confidence = ensemble_result["confidence"]
+        raw_score = ensemble_result["raw_score"]
+        detection_method = ensemble_result["method"] + ensemble_result["method_suffix"]
 
         # 트렌드 분석
         trend_direction = self._analyze_trend(historical)
@@ -297,25 +310,6 @@ class CostDriftDetector:
             if historical_avg > 0
             else 0
         )
-
-        # 최종 판정 (ECOD 우선, Ratio fallback)
-        if ecod_result:
-            is_anomaly = ecod_result["is_anomaly"]
-            raw_confidence = ecod_result["confidence"]
-            raw_score = ecod_result["raw_score"]
-            # "ecod" for PyOD, "ecod_lite" for LightweightECOD
-            detection_method = "ecod" + ecod_result.get("method_suffix", "")
-        else:
-            is_anomaly = ratio_result["is_anomaly"]
-            raw_confidence = ratio_result["confidence"]
-            raw_score = ratio_result["ratio"]
-            detection_method = "ratio"
-
-        # 앙상블: 두 방법 모두 이상 탐지시 신뢰도 상승
-        if ecod_result and ecod_result["is_anomaly"] and ratio_result["is_anomaly"]:
-            raw_confidence = min(1.0, raw_confidence * 1.2)
-            # Preserve lite suffix in ensemble mode
-            detection_method = "ensemble" + ecod_result.get("method_suffix", "")
 
         # Pattern-Aware Detection: 패턴 인식 기반 신뢰도 조정
         adjusted_confidence = raw_confidence
@@ -478,6 +472,148 @@ class CostDriftDetector:
             "is_anomaly": is_anomaly,
             "confidence": confidence * self.sensitivity,
             "ratio": ratio,
+        }
+
+    def _detect_stddev(self, costs: List[float]) -> Optional[Dict[str, Any]]:
+        """Z-Score (표준편차) 기반 이상 탐지.
+
+        Args:
+            costs: 비용 시계열 데이터
+
+        Returns:
+            탐지 결과 dict 또는 None (탐지 실패시)
+        """
+        config = get_detection_config()
+        min_points = config.stddev.min_data_points
+        z_threshold = config.stddev.z_score_threshold
+
+        if len(costs) < min_points:
+            return None
+
+        try:
+            current = costs[-1]
+            historical = np.array(costs[:-1])
+
+            mean = np.mean(historical)
+            std = np.std(historical, ddof=1)  # Sample std
+
+            if std == 0:
+                return None
+
+            z_score = (current - mean) / std
+            abs_z = abs(z_score)
+
+            # Threshold adjusted by sensitivity (2.0 ~ 3.0 range)
+            adjusted_threshold = z_threshold - self.sensitivity
+
+            is_anomaly = abs_z > adjusted_threshold
+
+            # Confidence: min(1.0, abs(z_score) / 4.0) * sensitivity
+            confidence = min(1.0, abs_z / 4.0) * self.sensitivity
+
+            return {
+                "is_anomaly": is_anomaly,
+                "confidence": confidence,
+                "z_score": z_score,
+                "mean": mean,
+                "std": std,
+            }
+
+        except Exception as e:
+            logger.warning(f"Stddev detection failed: {e}")
+            return None
+
+    def _calculate_ensemble_score(
+        self,
+        ecod_result: Optional[Dict[str, Any]],
+        ratio_result: Dict[str, Any],
+        stddev_result: Optional[Dict[str, Any]],
+    ) -> Dict[str, Any]:
+        """가중치 기반 앙상블 스코어 계산.
+
+        Args:
+            ecod_result: ECOD 탐지 결과
+            ratio_result: Ratio 탐지 결과
+            stddev_result: Stddev 탐지 결과
+
+        Returns:
+            앙상블 결과 dict (is_anomaly, confidence, method)
+        """
+        config = get_detection_config()
+        weights = config.ensemble
+
+        # Collect valid results
+        valid_results = []
+        total_weight = 0.0
+
+        if ecod_result:
+            valid_results.append((ecod_result, weights.ecod_weight, "ecod"))
+            total_weight += weights.ecod_weight
+
+        if ratio_result:
+            valid_results.append((ratio_result, weights.ratio_weight, "ratio"))
+            total_weight += weights.ratio_weight
+
+        if stddev_result:
+            valid_results.append((stddev_result, weights.stddev_weight, "stddev"))
+            total_weight += weights.stddev_weight
+
+        if total_weight == 0 or not valid_results:
+            return {
+                "is_anomaly": False,
+                "confidence": 0.0,
+                "raw_score": 0.0,
+                "method": "insufficient_data",
+                "method_suffix": "",
+            }
+
+        # Normalize weights
+        normalized_weights = [(r, w / total_weight, m) for r, w, m in valid_results]
+
+        # Calculate weighted confidence
+        weighted_confidence = sum(
+            r["confidence"] * w for r, w, _ in normalized_weights
+        )
+
+        # Count anomaly votes (weighted)
+        anomaly_vote_weight = sum(
+            w for r, w, _ in normalized_weights if r.get("is_anomaly", False)
+        )
+
+        # Anomaly if majority of weight votes anomaly
+        is_anomaly = anomaly_vote_weight > 0.5
+
+        # Determine primary method and suffix
+        if ecod_result:
+            method_suffix = ecod_result.get("method_suffix", "")
+            if len([r for r, _, _ in normalized_weights if r.get("is_anomaly")]) >= 2:
+                method = "ensemble"
+            else:
+                method = "ecod"
+        elif stddev_result and stddev_result.get("is_anomaly"):
+            method = "stddev"
+            method_suffix = ""
+        else:
+            method = "ratio"
+            method_suffix = ""
+
+        # Raw score: use max score from available methods
+        raw_scores = []
+        if ecod_result:
+            raw_scores.append(ecod_result.get("raw_score", 0))
+        if ratio_result:
+            raw_scores.append(ratio_result.get("ratio", 0))
+        if stddev_result:
+            raw_scores.append(abs(stddev_result.get("z_score", 0)))
+
+        raw_score = max(raw_scores) if raw_scores else 0.0
+
+        return {
+            "is_anomaly": is_anomaly,
+            "confidence": weighted_confidence,
+            "raw_score": raw_score,
+            "method": method,
+            "method_suffix": method_suffix,
         }
 
     def _analyze_trend(self, costs: List[float]) -> str:

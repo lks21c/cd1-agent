@@ -336,3 +336,158 @@ class TestLightweightECOD:
         # Second to last (450000) might also be outlier
         # At least one of the last 3 values should be detected
         assert np.sum(clf.labels_[-3:]) >= 1
+
+
+class TestStddevDetection:
+    """Stddev (Z-Score) 탐지 테스트."""
+
+    @pytest.fixture
+    def detector(self):
+        """기본 탐지기."""
+        return CostDriftDetector(sensitivity=0.7)
+
+    def test_detects_high_z_score(self, detector):
+        """높은 Z-score를 가진 데이터 탐지."""
+        # 정상 데이터 + 명확한 이상치
+        costs = [100, 102, 98, 101, 99, 103, 100, 101, 99, 102, 100, 101, 98, 200]
+
+        result = detector._detect_stddev(costs)
+
+        assert result is not None
+        assert result["is_anomaly"] == True
+        assert result["z_score"] > 2.0
+        assert result["confidence"] > 0.5
+
+    def test_normal_data_no_anomaly(self, detector):
+        """정상 데이터에서 이상 탐지 안됨."""
+        costs = [100, 102, 98, 101, 99, 103, 100, 101, 99, 102, 100, 101, 98, 101]
+
+        result = detector._detect_stddev(costs)
+
+        assert result is not None
+        assert result["is_anomaly"] == False
+
+    def test_returns_none_for_insufficient_data(self, detector):
+        """데이터 부족 시 None 반환."""
+        costs = [100, 102, 98]
+
+        result = detector._detect_stddev(costs)
+
+        assert result is None
+
+    def test_returns_none_for_zero_std(self, detector):
+        """표준편차가 0일 때 None 반환."""
+        costs = [100, 100, 100, 100, 100, 100, 100, 100]
+
+        result = detector._detect_stddev(costs)
+
+        assert result is None
+
+    def test_sensitivity_affects_threshold(self):
+        """민감도가 임계값에 영향."""
+        costs = [100, 102, 98, 101, 99, 103, 100, 101, 99, 102, 100, 101, 98, 130]
+
+        low_sens = CostDriftDetector(sensitivity=0.3)
+        high_sens = CostDriftDetector(sensitivity=0.9)
+
+        low_result = low_sens._detect_stddev(costs)
+        high_result = high_sens._detect_stddev(costs)
+
+        # 높은 민감도 = 더 많은 탐지
+        if low_result and high_result:
+            assert high_result["confidence"] >= low_result["confidence"]
+
+
+class TestEnsembleScoring:
+    """앙상블 스코어 계산 테스트."""
+
+    @pytest.fixture
+    def detector(self):
+        """기본 탐지기."""
+        return CostDriftDetector(sensitivity=0.7)
+
+    def test_all_methods_agree_anomaly(self, detector):
+        """모든 방법이 이상으로 동의 시 높은 신뢰도."""
+        ecod_result = {"is_anomaly": True, "confidence": 0.8, "raw_score": 5.0, "method_suffix": ""}
+        ratio_result = {"is_anomaly": True, "confidence": 0.7, "ratio": 2.0}
+        stddev_result = {"is_anomaly": True, "confidence": 0.9, "z_score": 3.5}
+
+        result = detector._calculate_ensemble_score(ecod_result, ratio_result, stddev_result)
+
+        assert result["is_anomaly"] == True
+        assert result["confidence"] > 0.7
+        assert result["method"] == "ensemble"
+
+    def test_majority_determines_anomaly(self, detector):
+        """다수결로 이상 판정."""
+        ecod_result = {"is_anomaly": True, "confidence": 0.8, "raw_score": 5.0, "method_suffix": ""}
+        ratio_result = {"is_anomaly": True, "confidence": 0.7, "ratio": 2.0}
+        stddev_result = {"is_anomaly": False, "confidence": 0.3, "z_score": 1.5}
+
+        result = detector._calculate_ensemble_score(ecod_result, ratio_result, stddev_result)
+
+        # ECOD 0.4 + Ratio 0.3 = 0.7 > 0.5, so anomaly
+        assert result["is_anomaly"] == True
+
+    def test_ecod_failure_redistributes_weights(self, detector):
+        """ECOD 실패 시 가중치 재분배."""
+        ecod_result = None  # ECOD 실패
+        ratio_result = {"is_anomaly": True, "confidence": 0.7, "ratio": 2.0}
+        stddev_result = {"is_anomaly": True, "confidence": 0.8, "z_score": 3.0}
+
+        result = detector._calculate_ensemble_score(ecod_result, ratio_result, stddev_result)
+
+        assert result["is_anomaly"] == True
+        assert result["confidence"] > 0.7
+
+    def test_all_methods_agree_normal(self, detector):
+        """모든 방법이 정상으로 동의 시."""
+        ecod_result = {"is_anomaly": False, "confidence": 0.2, "raw_score": 1.0, "method_suffix": ""}
+        ratio_result = {"is_anomaly": False, "confidence": 0.1, "ratio": 1.1}
+        stddev_result = {"is_anomaly": False, "confidence": 0.15, "z_score": 0.5}
+
+        result = detector._calculate_ensemble_score(ecod_result, ratio_result, stddev_result)
+
+        assert result["is_anomaly"] == False
+
+    def test_lite_suffix_preserved(self, detector):
+        """경량 버전 suffix 보존."""
+        ecod_result = {"is_anomaly": True, "confidence": 0.8, "raw_score": 5.0, "method_suffix": "_lite"}
+        ratio_result = {"is_anomaly": True, "confidence": 0.7, "ratio": 2.0}
+        stddev_result = {"is_anomaly": True, "confidence": 0.9, "z_score": 3.5}
+
+        result = detector._calculate_ensemble_score(ecod_result, ratio_result, stddev_result)
+
+        assert result["method_suffix"] == "_lite"
+        assert result["method"] == "ensemble"
+
+
+class TestDetectionMethodInResult:
+    """탐지 방법이 결과에 포함되는지 테스트."""
+
+    @pytest.fixture
+    def detector(self):
+        """기본 탐지기."""
+        return CostDriftDetector(sensitivity=0.7)
+
+    @pytest.fixture
+    def spike_data(self):
+        """스파이크 패턴 서비스 데이터."""
+        return ServiceCostData(
+            service_name="Test Service",
+            account_id="111111111111",
+            account_name="test-account",
+            current_cost=580000,
+            historical_costs=[250000] * 11 + [350000, 450000, 580000],
+            timestamps=[f"2025-01-{i:02d}" for i in range(1, 15)],
+            currency="KRW",
+        )
+
+    def test_detection_method_in_result(self, detector, spike_data):
+        """탐지 방법이 결과에 포함."""
+        result = detector.analyze_service(spike_data)
+
+        assert result.detection_method in (
+            "ecod", "ecod_lite", "ratio", "stddev",
+            "ensemble", "ensemble_lite", "insufficient_data"
+        )
