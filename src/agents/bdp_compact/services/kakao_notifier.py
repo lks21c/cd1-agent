@@ -420,17 +420,28 @@ class KakaoNotifier:
             result.timestamps[-1] if result.timestamps else "N/A"
         )
 
+        # 전일 비용 추출
+        prev_cost = None
+        if result.historical_costs and len(result.historical_costs) >= 2:
+            prev_cost = result.historical_costs[-2]
+
         text_content = (
             f"{emoji} {summary.title}\n"
             f"{'━' * 20}\n"
             f"📅 날짜: {alert_date}\n"
             f"🏷️ 서비스: {result.service_name}\n"
-            f"🏢 계정: {result.account_name} ({result.account_id})\n"
+            f"🏢 계정: {result.account_name}\n"
             f"{'━' * 20}\n\n"
             f"{reasoning}\n\n"
             f"{advice}\n\n"
             f"{'━' * 20}\n"
             f"💰 현재 비용: {result.current_cost:,.0f}원\n"
+        )
+
+        if prev_cost is not None:
+            text_content += f"💰 전일 비용: {prev_cost:,.0f}원\n"
+
+        text_content += (
             f"📈 변화율: {result.change_percent:+.1f}%\n"
             f"📊 신뢰도: {result.confidence_score:.1%}\n"
             f"🔍 탐지 방법: {result.detection_method}"
