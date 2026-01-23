@@ -69,6 +69,7 @@ class KakaoNotifier:
     def __init__(
         self,
         rest_api_key: Optional[str] = None,
+        client_secret: Optional[str] = None,
         redirect_uri: str = "https://localhost:5000",
         token_path: Optional[str] = None,
     ):
@@ -76,10 +77,13 @@ class KakaoNotifier:
 
         Args:
             rest_api_key: Kakao REST API 키 (없으면 환경변수 또는 설정파일에서 로드)
+            client_secret: Kakao Client Secret (없으면 설정파일에서 로드)
             redirect_uri: OAuth redirect URI
             token_path: 토큰 저장 파일 경로
         """
-        self.rest_api_key = rest_api_key or self._load_rest_api_key()
+        config = self._load_config()
+        self.rest_api_key = rest_api_key or config.get("rest_api_key")
+        self.client_secret = client_secret or config.get("client_secret")
         self.redirect_uri = redirect_uri
         self.token_path = token_path or self._default_token_path()
         self.tokens: Optional[KakaoTokens] = None
@@ -95,31 +99,35 @@ class KakaoNotifier:
         module_dir = Path(__file__).parent.parent
         return str(module_dir / "conf" / "kakao_tokens.json")
 
-    def _load_rest_api_key(self) -> Optional[str]:
-        """REST API 키 로드 (환경변수 → 설정파일 순서).
+    def _load_config(self) -> Dict[str, Any]:
+        """설정 로드 (환경변수 → 설정파일 순서).
 
         Returns:
-            REST API 키 또는 None
+            설정 딕셔너리 (rest_api_key, client_secret 등)
         """
-        # 1. 환경변수에서 로드
-        key = os.getenv("KAKAO_REST_API_KEY")
-        if key:
-            return key
+        config: Dict[str, Any] = {}
 
-        # 2. 설정 파일에서 로드
+        # 1. 환경변수에서 로드
+        if os.getenv("KAKAO_REST_API_KEY"):
+            config["rest_api_key"] = os.getenv("KAKAO_REST_API_KEY")
+        if os.getenv("KAKAO_CLIENT_SECRET"):
+            config["client_secret"] = os.getenv("KAKAO_CLIENT_SECRET")
+
+        # 2. 설정 파일에서 로드 (환경변수가 없는 항목만)
         config_path = Path(__file__).parent.parent / "conf" / "kakao_config.json"
         if config_path.exists():
             try:
                 with open(config_path, encoding="utf-8") as f:
-                    config = json.load(f)
-                key = config.get("rest_api_key")
-                if key:
+                    file_config = json.load(f)
+                for key in ["rest_api_key", "client_secret"]:
+                    if key not in config and key in file_config:
+                        config[key] = file_config[key]
+                if config:
                     logger.info(f"Loaded REST API key from {config_path}")
-                    return key
             except Exception as e:
                 logger.warning(f"Failed to load kakao_config.json: {e}")
 
-        return None
+        return config
 
     # =========================================================================
     # Token Management
@@ -150,12 +158,15 @@ class KakaoNotifier:
         Returns:
             KakaoTokens 객체
         """
-        data = {
+        data: Dict[str, Any] = {
             "grant_type": "authorization_code",
             "client_id": self.rest_api_key,
             "redirect_uri": self.redirect_uri,
             "code": auth_code,
         }
+        # client_secret이 설정된 경우 추가 (카카오 정책상 필수)
+        if self.client_secret:
+            data["client_secret"] = self.client_secret
 
         response = requests.post(self.TOKEN_URL, data=data, timeout=10)
         response.raise_for_status()
@@ -182,11 +193,14 @@ class KakaoNotifier:
             logger.error("No refresh token available")
             return False
 
-        data = {
+        data: Dict[str, Any] = {
             "grant_type": "refresh_token",
             "client_id": self.rest_api_key,
             "refresh_token": self.tokens.refresh_token,
         }
+        # client_secret이 설정된 경우 추가 (카카오 정책상 필수)
+        if self.client_secret:
+            data["client_secret"] = self.client_secret
 
         try:
             response = requests.post(self.TOKEN_URL, data=data, timeout=10)
