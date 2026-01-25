@@ -49,7 +49,7 @@ MD3_COLORS: Dict[str, str] = {
 # Material Symbols 아이콘 매핑
 # =============================================================================
 MATERIAL_ICONS: Dict[str, Dict[str, str]] = {
-    # Resource Types
+    # Resource Types (AWS)
     "resource": {
         "glue": "folder_data",
         "athena": "query_stats",
@@ -60,6 +60,17 @@ MATERIAL_ICONS: Dict[str, Dict[str, str]] = {
         "msk": "stream",
         "lambda": "function",
         "default": "cloud",
+        # K8s Resources
+        "pod": "deployed_code",
+        "node": "dns",
+        "service": "hub",
+        "deployment": "rocket_launch",
+        "statefulset": "database",
+        "daemonset": "dynamic_feed",
+        "job": "task_alt",
+        "cronjob": "schedule",
+        "persistentvolume": "hard_drive",
+        "persistentvolumeclaim": "sd_card",
     },
     # Severity
     "severity": {
@@ -93,6 +104,17 @@ MATERIAL_ICONS: Dict[str, Dict[str, str]] = {
         "change": "swap_horiz",
         "chart": "show_chart",
         "timeline": "timeline",
+        # K8s/HDSP UI Elements
+        "cluster": "cloud",
+        "namespace": "folder",
+        "label": "label",
+        "duration": "timer",
+        "summary": "summarize",
+        "message": "chat",
+        "occurrence": "repeat",
+        "first_seen": "schedule",
+        "check": "check_circle",
+        "alert": "notifications",
     },
 }
 

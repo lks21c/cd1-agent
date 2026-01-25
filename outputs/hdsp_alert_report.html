@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HDSP Alert Monitoring Report</title>
+    <!-- Material Symbols Font (Google CDN) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <style>
         
         * {
@@ -14,8 +16,8 @@
 
         body {
             font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: #f9fafb;
-            color: #111827;
+            background-color: #F5F5F5;
+            color: #212121;
             line-height: 1.6;
         }
 
@@ -26,7 +28,7 @@
         }
 
         .card {
-            background: #ffffff;
+            background: #FFFFFF;
             border-radius: 8px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
@@ -34,7 +36,7 @@
         }
 
         .card-header {
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid #E0E0E0;
             padding-bottom: 12px;
             margin-bottom: 16px;
         }
@@ -42,7 +44,7 @@
         .card-title {
             font-size: 18px;
             font-weight: 600;
-            color: #111827;
+            color: #212121;
         }
 
         .badge {
@@ -54,27 +56,27 @@
         }
 
         .badge-critical {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #ef4444;
+            background: #FFEBEE;
+            color: #B71C1C;
+            border: 1px solid #D32F2F;
         }
 
         .badge-high {
-            background: #fef3c7;
-            color: #92400e;
-            border: 1px solid #f59e0b;
+            background: #FFF3E0;
+            color: #E65100;
+            border: 1px solid #F57C00;
         }
 
         .badge-medium {
-            background: #dbeafe;
-            color: #1e40af;
-            border: 1px solid #3b82f6;
+            background: #E3F2FD;
+            color: #1565C0;
+            border: 1px solid #1976D2;
         }
 
         .badge-low {
-            background: #f3f4f6;
-            color: #4b5563;
-            border: 1px solid #9ca3af;
+            background: #F5F5F5;
+            color: #757575;
+            border: 1px solid #BDBDBD;
         }
 
         .table {
@@ -86,16 +88,16 @@
         .table td {
             padding: 12px;
             text-align: left;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid #E0E0E0;
         }
 
         .table th {
-            background: #f9fafb;
+            background: #F5F5F5;
             font-weight: 600;
         }
 
         .table tr:hover {
-            background: #f9fafb;
+            background: #F5F5F5;
         }
 
         .stat-card {
@@ -106,12 +108,12 @@
         .stat-value {
             font-size: 32px;
             font-weight: 700;
-            color: #3b82f6;
+            color: #1976D2;
         }
 
         .stat-label {
             font-size: 14px;
-            color: #6b7280;
+            color: #757575;
             margin-top: 4px;
         }
 
@@ -172,27 +174,27 @@
 
         .nav-item {
             padding: 8px 16px;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
+            background: #FFFFFF;
+            border: 1px solid #E0E0E0;
             border-radius: 4px;
             cursor: pointer;
             transition: all 0.2s;
         }
 
         .nav-item:hover {
-            background: #f9fafb;
+            background: #F5F5F5;
         }
 
         .nav-item.active {
-            background: #3b82f6;
+            background: #1976D2;
             color: white;
-            border-color: #3b82f6;
+            border-color: #1976D2;
         }
 
         .header {
-            background: #ffffff;
+            background: #FFFFFF;
             padding: 24px;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid #E0E0E0;
             margin-bottom: 24px;
         }
 
@@ -203,7 +205,7 @@
 
         .header-subtitle {
             font-size: 14px;
-            color: #6b7280;
+            color: #757575;
             margin-top: 4px;
         }
 
@@ -239,12 +241,59 @@
         
         
         /* =========================================================
-           Alert Card - Self-contained card design
+           Material Symbols Icon Utilities
+           ========================================================= */
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+            vertical-align: middle;
+        }
+
+        /* Icon Sizes */
+        .icon-xs { font-size: 14px; }
+        .icon-sm { font-size: 18px; }
+        .icon-md { font-size: 24px; }
+        .icon-lg { font-size: 32px; }
+        .icon-xl { font-size: 48px; }
+
+        /* Icon Filled Style */
+        .icon-filled {
+            font-variation-settings: 'FILL' 1;
+        }
+
+        /* Icon Colors (MD3 Semantic) */
+        .icon-error { color: #D32F2F; }
+        .icon-warning { color: #F57C00; }
+        .icon-success { color: #388E3C; }
+        .icon-primary { color: #1976D2; }
+        .icon-muted { color: #757575; }
+        .icon-on-surface { color: #212121; }
+
+        /* Icon with text alignment helper */
+        .icon-inline {
+            vertical-align: -0.125em;
+            margin-right: 4px;
+        }
+        
+        
+        /* =========================================================
+           Alert Card - Self-contained card design (MD3)
            ========================================================= */
         .alert-card {
             margin-bottom: 20px;
             border-radius: 12px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid #E0E0E0;
             overflow: hidden;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
             transition: box-shadow 0.2s ease;
@@ -255,15 +304,15 @@
         }
 
         .alert-card.critical {
-            border-left: 4px solid #ef4444;
+            border-left: 4px solid #D32F2F;
         }
 
         .alert-card.high {
-            border-left: 4px solid #f59e0b;
+            border-left: 4px solid #F57C00;
         }
 
         .alert-card.medium {
-            border-left: 4px solid #3b82f6;
+            border-left: 4px solid #1976D2;
         }
 
         /* Card Header */
@@ -272,8 +321,8 @@
             justify-content: space-between;
             align-items: flex-start;
             padding: 16px 20px;
-            background: linear-gradient(to right, #f8fafc, #ffffff);
-            border-bottom: 1px solid #e5e7eb;
+            background: #F5F5F5;
+            border-bottom: 1px solid #E0E0E0;
         }
 
         .alert-card-header-left {
@@ -285,19 +334,19 @@
         .alert-card-title {
             font-size: 15px;
             font-weight: 600;
-            color: #1f2937;
+            color: #212121;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .alert-card-title .emoji {
+        .alert-card-title .icon {
             font-size: 18px;
         }
 
         .alert-card-meta {
             font-size: 12px;
-            color: #6b7280;
+            color: #757575;
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
@@ -320,9 +369,9 @@
         .alert-content-box {
             margin: 16px 20px;
             padding: 16px;
-            background: #f9fafb;
+            background: #F5F5F5;
             border-radius: 10px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid #E0E0E0;
         }
 
         .alert-content-header {
@@ -331,13 +380,13 @@
             align-items: center;
             margin-bottom: 12px;
             padding-bottom: 10px;
-            border-bottom: 1px dashed #e5e7eb;
+            border-bottom: 1px dashed #E0E0E0;
         }
 
         .alert-content-title {
             font-size: 14px;
             font-weight: 600;
-            color: #374151;
+            color: #757575;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -346,22 +395,22 @@
         /* Summary & Description */
         .alert-summary {
             font-size: 14px;
-            color: #1f2937;
+            color: #212121;
             margin-bottom: 12px;
             padding: 12px;
-            background: white;
+            background: #FFFFFF;
             border-radius: 8px;
-            border-left: 3px solid #6366f1;
+            border-left: 3px solid #1976D2;
             font-weight: 500;
         }
 
         .alert-description {
             font-size: 13px;
-            color: #4b5563;
+            color: #757575;
             padding: 12px;
-            background: white;
+            background: #FFFFFF;
             border-radius: 8px;
-            border-left: 3px solid #9ca3af;
+            border-left: 3px solid #BDBDBD;
             line-height: 1.6;
         }
 
@@ -372,7 +421,7 @@
             gap: 24px;
             margin-top: 16px;
             padding: 12px 16px;
-            background: linear-gradient(90deg, #f0f9ff 0%, #ffffff 100%);
+            background: #E3F2FD;
             border-radius: 8px;
         }
 
@@ -386,14 +435,14 @@
             font-size: 10px;
             text-transform: uppercase;
             font-weight: 600;
-            color: #6b7280;
+            color: #757575;
             margin-bottom: 2px;
         }
 
         .timeline-value {
             font-size: 13px;
             font-weight: 500;
-            color: #1f2937;
+            color: #212121;
         }
 
         .duration-badge {
@@ -404,17 +453,17 @@
         }
 
         .duration-badge.long {
-            background: #fee2e2;
-            color: #991b1b;
+            background: #FFEBEE;
+            color: #B71C1C;
         }
 
         .duration-badge.normal {
-            background: #dbeafe;
-            color: #1e40af;
+            background: #E3F2FD;
+            color: #1565C0;
         }
 
         /* =========================================================
-           GNB - Sticky Navigation
+           GNB - Sticky Navigation (MD3)
            ========================================================= */
         .severity-nav {
             position: sticky;
@@ -424,7 +473,7 @@
             flex-wrap: wrap;
             gap: 10px;
             padding: 15px;
-            background: white;
+            background: #FFFFFF;
             border-radius: 12px;
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
             margin-bottom: 20px;
@@ -433,9 +482,12 @@
 
         .severity-nav-label {
             font-weight: 600;
-            color: #374151;
+            color: #757575;
             padding: 8px 0;
             font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .severity-nav-link {
@@ -456,21 +508,21 @@
         }
 
         .severity-nav-link.critical {
-            background: linear-gradient(135deg, #fee2e2, #fecaca);
-            color: #991b1b;
-            border: 1px solid #fca5a5;
+            background: #FFEBEE;
+            color: #B71C1C;
+            border: 1px solid #D32F2F;
         }
 
         .severity-nav-link.high {
-            background: linear-gradient(135deg, #fef3c7, #fde68a);
-            color: #92400e;
-            border: 1px solid #fcd34d;
+            background: #FFF3E0;
+            color: #E65100;
+            border: 1px solid #F57C00;
         }
 
         .severity-nav-link.medium {
-            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-            color: #1e40af;
-            border: 1px solid #93c5fd;
+            background: #E3F2FD;
+            color: #1565C0;
+            border: 1px solid #1976D2;
         }
 
         /* Section anchor offset for sticky nav */
@@ -485,18 +537,18 @@
             gap: 10px;
             margin-bottom: 16px;
             padding-bottom: 12px;
-            border-bottom: 2px solid #e5e7eb;
+            border-bottom: 2px solid #E0E0E0;
         }
 
         .severity-section-title {
             font-size: 18px;
             font-weight: 600;
-            color: #1f2937;
+            color: #212121;
         }
 
         .severity-section-count {
-            background: #e5e7eb;
-            color: #4b5563;
+            background: #E0E0E0;
+            color: #757575;
             padding: 4px 10px;
             border-radius: 12px;
             font-size: 12px;
@@ -522,18 +574,18 @@
         }
 
         .severity-badge.critical {
-            background: #fee2e2;
-            color: #991b1b;
+            background: #FFEBEE;
+            color: #B71C1C;
         }
 
         .severity-badge.high {
-            background: #fef3c7;
-            color: #92400e;
+            background: #FFF3E0;
+            color: #E65100;
         }
 
         .severity-badge.medium {
-            background: #dbeafe;
-            color: #1e40af;
+            background: #E3F2FD;
+            color: #1565C0;
         }
 
         /* Resource Info Grid */
@@ -555,13 +607,14 @@
             align-items: center;
             gap: 8px;
             padding: 10px 12px;
-            background: white;
+            background: #FFFFFF;
             border-radius: 8px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid #E0E0E0;
         }
 
         .resource-info-icon {
             font-size: 18px;
+            color: #757575;
         }
 
         .resource-info-content {
@@ -572,21 +625,21 @@
         .resource-info-label {
             font-size: 10px;
             text-transform: uppercase;
-            color: #6b7280;
+            color: #757575;
             font-weight: 600;
         }
 
         .resource-info-value {
             font-size: 13px;
-            color: #1f2937;
+            color: #212121;
             font-weight: 500;
         }
 
         /* =========================================================
-           Timeline Visualization - Alert Causality Chart
+           Timeline Visualization - Alert Causality Chart (MD3)
            ========================================================= */
         .timeline-container {
-            background: white;
+            background: #FFFFFF;
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 24px;
@@ -600,13 +653,13 @@
             align-items: center;
             margin-bottom: 16px;
             padding-bottom: 12px;
-            border-bottom: 2px solid #e5e7eb;
+            border-bottom: 2px solid #E0E0E0;
         }
 
         .timeline-title {
             font-size: 18px;
             font-weight: 600;
-            color: #1f2937;
+            color: #212121;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -614,7 +667,7 @@
 
         .timeline-subtitle {
             font-size: 12px;
-            color: #6b7280;
+            color: #757575;
         }
 
         .timeline-legend {
@@ -636,15 +689,15 @@
         }
 
         .timeline-legend-dot.critical {
-            background: linear-gradient(90deg, #ef4444, #dc2626);
+            background: #D32F2F;
         }
 
         .timeline-legend-dot.high {
-            background: linear-gradient(90deg, #f59e0b, #d97706);
+            background: #F57C00;
         }
 
         .timeline-legend-dot.medium {
-            background: linear-gradient(90deg, #3b82f6, #2563eb);
+            background: #1976D2;
         }
 
         /* Time Scale (X-axis) */
@@ -653,14 +706,14 @@
             margin-left: 220px;
             margin-bottom: 12px;
             padding-bottom: 8px;
-            border-bottom: 2px solid #e5e7eb;
+            border-bottom: 2px solid #E0E0E0;
             position: relative;
         }
 
         .timeline-scale-mark {
             flex: 1;
             font-size: 11px;
-            color: #6b7280;
+            color: #757575;
             text-align: left;
             position: relative;
         }
@@ -672,7 +725,7 @@
             bottom: -10px;
             width: 1px;
             height: 6px;
-            background: #d1d5db;
+            background: #BDBDBD;
         }
 
         /* Timeline Rows */
@@ -688,7 +741,7 @@
         }
 
         .timeline-row:hover {
-            background: #f9fafb;
+            background: #F5F5F5;
             border-radius: 4px;
         }
 
@@ -706,7 +759,7 @@
             gap: 6px;
         }
 
-        .timeline-label .emoji {
+        .timeline-label .icon {
             font-size: 14px;
         }
 
@@ -714,7 +767,7 @@
         .timeline-track {
             flex: 1;
             height: 20px;
-            background: #f3f4f6;
+            background: #F5F5F5;
             border-radius: 4px;
             position: relative;
             overflow: hidden;
@@ -745,18 +798,18 @@
 
         /* Severity Colors */
         .timeline-bar.critical {
-            background: linear-gradient(90deg, #ef4444, #dc2626);
-            box-shadow: 0 1px 3px rgba(239, 68, 68, 0.4);
+            background: #D32F2F;
+            box-shadow: 0 1px 3px rgba(211, 47, 47, 0.4);
         }
 
         .timeline-bar.high {
-            background: linear-gradient(90deg, #f59e0b, #d97706);
-            box-shadow: 0 1px 3px rgba(245, 158, 11, 0.4);
+            background: #F57C00;
+            box-shadow: 0 1px 3px rgba(245, 124, 0, 0.4);
         }
 
         .timeline-bar.medium {
-            background: linear-gradient(90deg, #3b82f6, #2563eb);
-            box-shadow: 0 1px 3px rgba(59, 130, 246, 0.4);
+            background: #1976D2;
+            box-shadow: 0 1px 3px rgba(25, 118, 210, 0.4);
         }
 
         /* Tooltip */
@@ -766,8 +819,8 @@
             left: 50%;
             bottom: 100%;
             transform: translateX(-50%);
-            background: #1f2937;
-            color: white;
+            background: #212121;
+            color: #FFFFFF;
             padding: 6px 10px;
             border-radius: 6px;
             font-size: 11px;
@@ -787,10 +840,10 @@
         .timeline-causality-hint {
             margin-top: 16px;
             padding: 12px 16px;
-            background: linear-gradient(90deg, #f0f9ff 0%, #eff6ff 100%);
+            background: #E3F2FD;
             border-radius: 8px;
             font-size: 12px;
-            color: #374151;
+            color: #757575;
             display: flex;
             align-items: flex-start;
             gap: 8px;
@@ -799,6 +852,7 @@
         .timeline-causality-hint .hint-icon {
             font-size: 16px;
             flex-shrink: 0;
+            color: #1976D2;
         }
 
         .timeline-causality-hint .hint-text {
@@ -812,7 +866,7 @@
             top: 0;
             bottom: 0;
             width: 2px;
-            background: #10b981;
+            background: #388E3C;
         }
 
         .timeline-now-label {
@@ -820,7 +874,7 @@
             right: -4px;
             top: -20px;
             font-size: 10px;
-            color: #10b981;
+            color: #388E3C;
             font-weight: 600;
         }
 
@@ -834,20 +888,20 @@
             align-items: center;
             justify-content: space-between;
             padding: 12px 16px;
-            background: #f9fafb;
+            background: #F5F5F5;
             border-radius: 8px;
             cursor: pointer;
             transition: background 0.2s;
         }
 
         .collapsible-header:hover {
-            background: #f3f4f6;
+            background: #E0E0E0;
         }
 
         .collapsible-header-title {
             font-size: 15px;
             font-weight: 600;
-            color: #374151;
+            color: #757575;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -855,7 +909,7 @@
 
         .collapsible-toggle {
             font-size: 12px;
-            color: #6b7280;
+            color: #757575;
             display: flex;
             align-items: center;
             gap: 4px;
@@ -887,10 +941,10 @@
         }
 
         /* =========================================================
-           Grouped Timeline - Pod/Node Level Separation
+           Grouped Timeline - Pod/Node Level Separation (MD3)
            ========================================================= */
         .grouped-timeline-container {
-            background: white;
+            background: #FFFFFF;
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 24px;
@@ -903,13 +957,13 @@
             align-items: center;
             margin-bottom: 20px;
             padding-bottom: 12px;
-            border-bottom: 2px solid #e5e7eb;
+            border-bottom: 2px solid #E0E0E0;
         }
 
         .grouped-timeline-title {
             font-size: 18px;
             font-weight: 600;
-            color: #1f2937;
+            color: #212121;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -917,14 +971,14 @@
 
         .grouped-timeline-subtitle {
             font-size: 12px;
-            color: #6b7280;
+            color: #757575;
         }
 
         /* Group Section */
         .timeline-group {
             margin-bottom: 24px;
             padding: 16px;
-            background: #fafafa;
+            background: #F5F5F5;
             border-radius: 8px;
         }
 
@@ -938,23 +992,24 @@
             gap: 8px;
             margin-bottom: 12px;
             padding-bottom: 8px;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid #E0E0E0;
         }
 
         .timeline-group-icon {
             font-size: 16px;
+            color: #757575;
         }
 
         .timeline-group-title {
             font-size: 14px;
             font-weight: 600;
-            color: #374151;
+            color: #757575;
         }
 
         .timeline-group-count {
             font-size: 12px;
-            color: #6b7280;
-            background: #e5e7eb;
+            color: #757575;
+            background: #E0E0E0;
             padding: 2px 8px;
             border-radius: 10px;
         }
@@ -983,10 +1038,10 @@
             align-items: center;
             gap: 8px;
             padding: 8px 12px;
-            background: white;
+            background: #FFFFFF;
             border-radius: 6px;
             margin-bottom: 6px;
-            border-left: 3px solid #e5e7eb;
+            border-left: 3px solid #E0E0E0;
         }
 
         .timeline-alert-item:last-child {
@@ -994,39 +1049,41 @@
         }
 
         .timeline-alert-item.critical {
-            border-left-color: #ef4444;
+            border-left-color: #D32F2F;
         }
 
         .timeline-alert-item.high {
-            border-left-color: #f59e0b;
+            border-left-color: #F57C00;
         }
 
         .timeline-alert-item.medium {
-            border-left-color: #3b82f6;
+            border-left-color: #1976D2;
         }
 
         .timeline-alert-severity {
             font-size: 14px;
+            display: flex;
+            align-items: center;
         }
 
         .timeline-alert-name {
             font-size: 13px;
             font-weight: 500;
-            color: #1f2937;
+            color: #212121;
             flex: 1;
         }
 
         .timeline-alert-time {
             font-size: 11px;
-            color: #6b7280;
+            color: #757575;
             white-space: nowrap;
         }
 
         .timeline-alert-duration {
             font-size: 11px;
-            color: #9ca3af;
+            color: #757575;
             padding: 2px 6px;
-            background: #f3f4f6;
+            background: #F5F5F5;
             border-radius: 4px;
         }
 
@@ -1034,7 +1091,7 @@
         .timeline-no-data {
             text-align: center;
             padding: 40px 20px;
-            color: #6b7280;
+            color: #757575;
             font-size: 14px;
         }
 
@@ -1060,7 +1117,7 @@
         }
 
         .kakao-preview-content {
-            background: #f9f9f9;
+            background: #F5F5F5;
             padding: 12px;
         }
 
@@ -1071,7 +1128,7 @@
             white-space: pre-wrap;
             word-break: break-word;
             margin: 0;
-            color: #333;
+            color: #212121;
         }
         
     </style>
@@ -1080,40 +1137,40 @@
     <div class="header">
         <div class="container">
             <h1 class="header-title">HDSP Alert Monitoring Report</h1>
-            <p class="header-subtitle">Generated at 2026-01-25 21:09:00 UTC</p>
+            <p class="header-subtitle">Generated at 2026-01-25 21:30:38 UTC</p>
         </div>
     </div>
     <div class="container">
         
         <div class="card">
             <div class="card-header">
-                <span class="card-title">📊 알림 요약</span>
+                <span class="card-title"><span class="material-symbols-outlined icon-sm icon-muted icon-inline">dashboard</span> 알림 요약</span>
                 
             </div>
             
         <div class="alert alert-danger">
-            🚨 3건의 심각한 알림이 발생했습니다. 즉시 확인이 필요합니다.
+            <span class="material-symbols-outlined icon-sm icon-filled icon-error icon-inline">error</span> 3건의 심각한 알림이 발생했습니다. 즉시 확인이 필요합니다.
         </div>
         
         <div class="grid grid-4">
             
             <div class="card stat-card">
-                <div class="stat-value" style="color: #3b82f6;">13</div>
+                <div class="stat-value" style="color: #1976D2;">13</div>
                 <div class="stat-label">총 알림</div>
             </div>
             
             <div class="card stat-card">
-                <div class="stat-value" style="color: #ef4444;">3</div>
+                <div class="stat-value" style="color: #D32F2F;">3</div>
                 <div class="stat-label">심각</div>
             </div>
             
             <div class="card stat-card">
-                <div class="stat-value" style="color: #f59e0b;">5</div>
+                <div class="stat-value" style="color: #F57C00;">5</div>
                 <div class="stat-label">높음</div>
             </div>
             
             <div class="card stat-card">
-                <div class="stat-value" style="color: #3b82f6;">5</div>
+                <div class="stat-value" style="color: #1976D2;">5</div>
                 <div class="stat-label">보통</div>
             </div>
             
@@ -1126,10 +1183,10 @@
             <div class="grouped-timeline-header">
                 <div>
                     <div class="grouped-timeline-title">
-                        🐳 Pod Level 타임라인
+                        <span class="material-symbols-outlined icon-sm icon-muted">deployed_code</span> Pod Level 타임라인
                     </div>
                     <div class="grouped-timeline-subtitle">
-                        01/23 21:04 ~ 01/25 21:11 • 총 8건 • 5개 그룹
+                        01/23 21:25 ~ 01/25 21:32 • 총 8건 • 5개 그룹
                     </div>
                 </div>
                 <div class="timeline-legend">
@@ -1150,35 +1207,35 @@
             
         <div class="timeline-group">
             <div class="timeline-group-header">
-                <span class="timeline-group-icon">📁</span>
+                <span class="timeline-group-icon"><span class="material-symbols-outlined icon-sm icon-muted">folder</span></span>
                 <span class="timeline-group-title">production</span>
                 <span class="timeline-group-count">3건</span>
             </div>
             
             <div class="timeline-chart-wrapper">
-                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubePodOOMKilled%22%2C%20%22KubePodCrashLoopin%22%2C%20%22KubeHpaMaxedOut%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B10.0%2C%2015.0%2C%205.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B40.0%2C%2035.0%2C%2045.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%28239%2C%2068%2C%2068%2C%200.85%29%22%2C%20%22rgba%28239%2C%2068%2C%2068%2C%200.85%29%22%2C%20%22rgba%28245%2C%20158%2C%2011%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%2052.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2220%3A19%20%E2%86%92%2021%3A11%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=96&bkg=white&devicePixelRatio=2" alt="production Timeline" class="timeline-chart-img">
+                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubePodOOMKilled%22%2C%20%22KubePodCrashLoopin%22%2C%20%22KubeHpaMaxedOut%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B10.0%2C%2015.0%2C%205.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B40.0%2C%2035.0%2C%2045.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%28239%2C%2068%2C%2068%2C%200.85%29%22%2C%20%22rgba%28239%2C%2068%2C%2068%2C%200.85%29%22%2C%20%22rgba%28245%2C%20158%2C%2011%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%2052.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2220%3A40%20%E2%86%92%2021%3A32%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=96&bkg=white&devicePixelRatio=2" alt="production Timeline" class="timeline-chart-img">
             </div>
             
             <div class="timeline-alert-list">
                 
             <div class="timeline-alert-item critical">
-                <span class="timeline-alert-severity">🚨</span>
+                <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-filled icon-error">error</span></span>
                 <span class="timeline-alert-name">KubePodOOMKilled</span>
-                <span class="timeline-alert-time">01/25 20:29</span>
+                <span class="timeline-alert-time">01/25 20:50</span>
                 <span class="timeline-alert-duration">40m</span>
             </div>
             
             <div class="timeline-alert-item critical">
-                <span class="timeline-alert-severity">🚨</span>
+                <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-filled icon-error">error</span></span>
                 <span class="timeline-alert-name">KubePodCrashLooping</span>
-                <span class="timeline-alert-time">01/25 20:34</span>
+                <span class="timeline-alert-time">01/25 20:55</span>
                 <span class="timeline-alert-duration">35m</span>
             </div>
             
             <div class="timeline-alert-item high">
-                <span class="timeline-alert-severity">⚠️</span>
+                <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-filled icon-warning">warning</span></span>
                 <span class="timeline-alert-name">KubeHpaMaxedOut</span>
-                <span class="timeline-alert-time">01/25 20:24</span>
+                <span class="timeline-alert-time">01/25 20:45</span>
                 <span class="timeline-alert-duration">45m</span>
             </div>
             
@@ -1187,28 +1244,28 @@
         
         <div class="timeline-group">
             <div class="timeline-group-header">
-                <span class="timeline-group-icon">📁</span>
+                <span class="timeline-group-icon"><span class="material-symbols-outlined icon-sm icon-muted">folder</span></span>
                 <span class="timeline-group-title">staging</span>
                 <span class="timeline-group-count">2건</span>
             </div>
             
             <div class="timeline-chart-wrapper">
-                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubeDeploymentRepl%22%2C%20%22KubeQuotaAlmostFul%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B107.0%2C%205.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B18.0%2C%20120.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%28245%2C%20158%2C%2011%2C%200.85%29%22%2C%20%22rgba%2859%2C%20130%2C%20246%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%20127.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2219%3A04%20%E2%86%92%2021%3A11%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=74&bkg=white&devicePixelRatio=2" alt="staging Timeline" class="timeline-chart-img">
+                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubeDeploymentRepl%22%2C%20%22KubeQuotaAlmostFul%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B107.0%2C%205.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B18.0%2C%20120.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%28245%2C%20158%2C%2011%2C%200.85%29%22%2C%20%22rgba%2859%2C%20130%2C%20246%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%20127.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2219%3A25%20%E2%86%92%2021%3A32%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=74&bkg=white&devicePixelRatio=2" alt="staging Timeline" class="timeline-chart-img">
             </div>
             
             <div class="timeline-alert-list">
                 
             <div class="timeline-alert-item high">
-                <span class="timeline-alert-severity">⚠️</span>
+                <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-filled icon-warning">warning</span></span>
                 <span class="timeline-alert-name">KubeDeploymentReplicasMismatch</span>
-                <span class="timeline-alert-time">01/25 20:51</span>
+                <span class="timeline-alert-time">01/25 21:12</span>
                 <span class="timeline-alert-duration">18m</span>
             </div>
             
             <div class="timeline-alert-item medium">
-                <span class="timeline-alert-severity">📊</span>
+                <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-primary">info</span></span>
                 <span class="timeline-alert-name">KubeQuotaAlmostFull</span>
-                <span class="timeline-alert-time">01/25 19:09</span>
+                <span class="timeline-alert-time">01/25 19:30</span>
                 <span class="timeline-alert-duration">2h 0m</span>
             </div>
             
@@ -1217,21 +1274,21 @@
         
         <div class="timeline-group">
             <div class="timeline-group-header">
-                <span class="timeline-group-icon">📁</span>
+                <span class="timeline-group-icon"><span class="material-symbols-outlined icon-sm icon-muted">folder</span></span>
                 <span class="timeline-group-title">batch-jobs</span>
                 <span class="timeline-group-count">1건</span>
             </div>
             
             <div class="timeline-chart-wrapper">
-                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubeJobFailed%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B5.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B1560.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%2859%2C%20130%2C%20246%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%201567.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2201/24%2019%3A04%20%E2%86%92%2001/25%2021%3A11%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=60&bkg=white&devicePixelRatio=2" alt="batch-jobs Timeline" class="timeline-chart-img">
+                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubeJobFailed%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B5.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B1560.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%2859%2C%20130%2C%20246%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%201567.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2201/24%2019%3A25%20%E2%86%92%2001/25%2021%3A32%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=60&bkg=white&devicePixelRatio=2" alt="batch-jobs Timeline" class="timeline-chart-img">
             </div>
             
             <div class="timeline-alert-list">
                 
             <div class="timeline-alert-item medium">
-                <span class="timeline-alert-severity">📊</span>
+                <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-primary">info</span></span>
                 <span class="timeline-alert-name">KubeJobFailed</span>
-                <span class="timeline-alert-time">01/24 19:09</span>
+                <span class="timeline-alert-time">01/24 19:30</span>
                 <span class="timeline-alert-duration">26h 0m</span>
             </div>
             
@@ -1240,21 +1297,21 @@
         
         <div class="timeline-group">
             <div class="timeline-group-header">
-                <span class="timeline-group-icon">📁</span>
+                <span class="timeline-group-icon"><span class="material-symbols-outlined icon-sm icon-muted">folder</span></span>
                 <span class="timeline-group-title">cert-manager</span>
                 <span class="timeline-group-count">1건</span>
             </div>
             
             <div class="timeline-chart-wrapper">
-                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22CertificateExpirin%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B5.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B2880.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%2859%2C%20130%2C%20246%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%202887.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2201/23%2021%3A04%20%E2%86%92%2001/25%2021%3A11%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=60&bkg=white&devicePixelRatio=2" alt="cert-manager Timeline" class="timeline-chart-img">
+                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22CertificateExpirin%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B5.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B2880.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%2859%2C%20130%2C%20246%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%202887.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2201/23%2021%3A25%20%E2%86%92%2001/25%2021%3A32%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=60&bkg=white&devicePixelRatio=2" alt="cert-manager Timeline" class="timeline-chart-img">
             </div>
             
             <div class="timeline-alert-list">
                 
             <div class="timeline-alert-item medium">
-                <span class="timeline-alert-severity">📊</span>
+                <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-primary">info</span></span>
                 <span class="timeline-alert-name">CertificateExpiringSoon</span>
-                <span class="timeline-alert-time">01/23 21:09</span>
+                <span class="timeline-alert-time">01/23 21:30</span>
                 <span class="timeline-alert-duration">48h 0m</span>
             </div>
             
@@ -1263,21 +1320,21 @@
         
         <div class="timeline-group">
             <div class="timeline-group-header">
-                <span class="timeline-group-icon">📁</span>
+                <span class="timeline-group-icon"><span class="material-symbols-outlined icon-sm icon-muted">folder</span></span>
                 <span class="timeline-group-title">data-pipeline</span>
                 <span class="timeline-group-count">1건</span>
             </div>
             
             <div class="timeline-chart-wrapper">
-                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubePersistentVolu%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B5.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B22.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%28245%2C%20158%2C%2011%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%2029.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2220%3A42%20%E2%86%92%2021%3A11%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=60&bkg=white&devicePixelRatio=2" alt="data-pipeline Timeline" class="timeline-chart-img">
+                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubePersistentVolu%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B5.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B22.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%28245%2C%20158%2C%2011%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%2029.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2221%3A03%20%E2%86%92%2021%3A32%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=60&bkg=white&devicePixelRatio=2" alt="data-pipeline Timeline" class="timeline-chart-img">
             </div>
             
             <div class="timeline-alert-list">
                 
             <div class="timeline-alert-item high">
-                <span class="timeline-alert-severity">⚠️</span>
+                <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-filled icon-warning">warning</span></span>
                 <span class="timeline-alert-name">KubePersistentVolumeClaimPending</span>
-                <span class="timeline-alert-time">01/25 20:47</span>
+                <span class="timeline-alert-time">01/25 21:08</span>
                 <span class="timeline-alert-duration">22m</span>
             </div>
             
@@ -1291,10 +1348,10 @@
             <div class="grouped-timeline-header">
                 <div>
                     <div class="grouped-timeline-title">
-                        🖥️ Node Level 타임라인
+                        <span class="material-symbols-outlined icon-sm icon-muted">dns</span> Node Level 타임라인
                     </div>
                     <div class="grouped-timeline-subtitle">
-                        01/24 09:04 ~ 01/25 21:11 • 총 5건 • 3개 그룹
+                        01/24 09:25 ~ 01/25 21:32 • 총 5건 • 3개 그룹
                     </div>
                 </div>
                 <div class="timeline-legend">
@@ -1315,35 +1372,35 @@
             
         <div class="timeline-group">
             <div class="timeline-group-header">
-                <span class="timeline-group-icon">🏷️</span>
+                <span class="timeline-group-icon"><span class="material-symbols-outlined icon-sm icon-muted">label</span></span>
                 <span class="timeline-group-title">worker-group</span>
                 <span class="timeline-group-count">3건</span>
             </div>
             
             <div class="timeline-chart-wrapper">
-                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubeNodeNotReady%22%2C%20%22KubeNodeMemoryPres%22%2C%20%22KubeNodeDiskPressu%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B35.0%2C%205.0%2C%2030.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B25.0%2C%2055.0%2C%2030.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%28239%2C%2068%2C%2068%2C%200.85%29%22%2C%20%22rgba%28245%2C%20158%2C%2011%2C%200.85%29%22%2C%20%22rgba%2859%2C%20130%2C%20246%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%2062.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2220%3A09%20%E2%86%92%2021%3A11%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=96&bkg=white&devicePixelRatio=2" alt="worker-group Timeline" class="timeline-chart-img">
+                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubeNodeNotReady%22%2C%20%22KubeNodeMemoryPres%22%2C%20%22KubeNodeDiskPressu%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B35.0%2C%205.0%2C%2030.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B25.0%2C%2055.0%2C%2030.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%28239%2C%2068%2C%2068%2C%200.85%29%22%2C%20%22rgba%28245%2C%20158%2C%2011%2C%200.85%29%22%2C%20%22rgba%2859%2C%20130%2C%20246%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%2062.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2220%3A30%20%E2%86%92%2021%3A32%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=96&bkg=white&devicePixelRatio=2" alt="worker-group Timeline" class="timeline-chart-img">
             </div>
             
             <div class="timeline-alert-list">
                 
             <div class="timeline-alert-item critical">
-                <span class="timeline-alert-severity">🚨</span>
+                <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-filled icon-error">error</span></span>
                 <span class="timeline-alert-name">KubeNodeNotReady</span>
-                <span class="timeline-alert-time">01/25 20:44</span>
+                <span class="timeline-alert-time">01/25 21:05</span>
                 <span class="timeline-alert-duration">25m</span>
             </div>
             
             <div class="timeline-alert-item high">
-                <span class="timeline-alert-severity">⚠️</span>
+                <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-filled icon-warning">warning</span></span>
                 <span class="timeline-alert-name">KubeNodeMemoryPressure</span>
-                <span class="timeline-alert-time">01/25 20:14</span>
+                <span class="timeline-alert-time">01/25 20:35</span>
                 <span class="timeline-alert-duration">55m</span>
             </div>
             
             <div class="timeline-alert-item medium">
-                <span class="timeline-alert-severity">📊</span>
+                <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-primary">info</span></span>
                 <span class="timeline-alert-name">KubeNodeDiskPressure</span>
-                <span class="timeline-alert-time">01/25 20:39</span>
+                <span class="timeline-alert-time">01/25 21:00</span>
                 <span class="timeline-alert-duration">30m</span>
             </div>
             
@@ -1352,21 +1409,21 @@
         
         <div class="timeline-group">
             <div class="timeline-group-header">
-                <span class="timeline-group-icon">🏷️</span>
+                <span class="timeline-group-icon"><span class="material-symbols-outlined icon-sm icon-muted">label</span></span>
                 <span class="timeline-group-title">gpu-group</span>
                 <span class="timeline-group-count">1건</span>
             </div>
             
             <div class="timeline-chart-wrapper">
-                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22NodeGPUTemperature%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B5.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B15.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%28245%2C%20158%2C%2011%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%2022.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2220%3A49%20%E2%86%92%2021%3A11%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=60&bkg=white&devicePixelRatio=2" alt="gpu-group Timeline" class="timeline-chart-img">
+                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22NodeGPUTemperature%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B5.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B15.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%28245%2C%20158%2C%2011%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%2022.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2221%3A10%20%E2%86%92%2021%3A32%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=60&bkg=white&devicePixelRatio=2" alt="gpu-group Timeline" class="timeline-chart-img">
             </div>
             
             <div class="timeline-alert-list">
                 
             <div class="timeline-alert-item high">
-                <span class="timeline-alert-severity">⚠️</span>
+                <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-filled icon-warning">warning</span></span>
                 <span class="timeline-alert-name">NodeGPUTemperatureHigh</span>
-                <span class="timeline-alert-time">01/25 20:54</span>
+                <span class="timeline-alert-time">01/25 21:15</span>
                 <span class="timeline-alert-duration">15m</span>
             </div>
             
@@ -1375,21 +1432,21 @@
         
         <div class="timeline-group">
             <div class="timeline-group-header">
-                <span class="timeline-group-icon">🏷️</span>
+                <span class="timeline-group-icon"><span class="material-symbols-outlined icon-sm icon-muted">label</span></span>
                 <span class="timeline-group-title">infra-group</span>
                 <span class="timeline-group-count">1건</span>
             </div>
             
             <div class="timeline-chart-wrapper">
-                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubeCPUOvercommit%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B5.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B2160.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%2859%2C%20130%2C%20246%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%202167.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2201/24%2009%3A04%20%E2%86%92%2001/25%2021%3A11%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=60&bkg=white&devicePixelRatio=2" alt="infra-group Timeline" class="timeline-chart-img">
+                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubeCPUOvercommit%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B5.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B2160.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%2859%2C%20130%2C%20246%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%202167.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2201/24%2009%3A25%20%E2%86%92%2001/25%2021%3A32%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=60&bkg=white&devicePixelRatio=2" alt="infra-group Timeline" class="timeline-chart-img">
             </div>
             
             <div class="timeline-alert-list">
                 
             <div class="timeline-alert-item medium">
-                <span class="timeline-alert-severity">📊</span>
+                <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-primary">info</span></span>
                 <span class="timeline-alert-name">KubeCPUOvercommit</span>
-                <span class="timeline-alert-time">01/24 09:09</span>
+                <span class="timeline-alert-time">01/24 09:30</span>
                 <span class="timeline-alert-duration">36h 0m</span>
             </div>
             
@@ -1400,14 +1457,14 @@
         
 
         <div class="severity-nav">
-            <span class="severity-nav-label">📍 바로가기:</span>
-            <a href="#section-critical" class="severity-nav-link critical">🚨 심각 (3)</a> <a href="#section-high" class="severity-nav-link high">⚠️ 높음 (5)</a> <a href="#section-medium" class="severity-nav-link medium">📊 보통 (5)</a>
+            <span class="severity-nav-label"><span class="material-symbols-outlined icon-sm icon-muted">near_me</span> 바로가기:</span>
+            <a href="#section-critical" class="severity-nav-link critical"><span class="material-symbols-outlined icon-sm icon-filled icon-error">error</span> 심각 (3)</a> <a href="#section-high" class="severity-nav-link high"><span class="material-symbols-outlined icon-sm icon-filled icon-warning">warning</span> 높음 (5)</a> <a href="#section-medium" class="severity-nav-link medium"><span class="material-symbols-outlined icon-sm icon-primary">info</span> 보통 (5)</a>
         </div>
         
 
         <div id="section-critical" class="severity-section">
             <div class="severity-section-header">
-                <span style="font-size: 24px;">🚨</span>
+                <span class="material-symbols-outlined icon-lg icon-filled icon-error">error</span>
                 <span class="severity-section-title">심각 알림</span>
                 <span class="severity-section-count">3건</span>
             </div>
@@ -1416,50 +1473,50 @@
             <div class="alert-card-header">
                 <div class="alert-card-header-left">
                     <div class="alert-card-title">
-                        <span class="emoji">🚨</span>
+                        <span class="icon"><span class="material-symbols-outlined icon-sm icon-filled icon-error">error</span></span>
                         KubeNodeNotReady
                     </div>
                     <div class="alert-card-meta">
-                        <span class="alert-card-meta-item">🏢 hdsp-prod-01</span> <span class="alert-card-meta-item">📁 kube-system</span> <span class="alert-card-meta-item">🖥️ Node</span>
+                        <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span> hdsp-prod-01</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">folder</span> kube-system</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-sm icon-muted">dns</span> Node</span>
                     </div>
                 </div>
                 <div class="alert-card-header-right">
                     <span class="severity-badge critical">
-                        🚨 심각
+                        <span class="material-symbols-outlined icon-sm icon-filled icon-error">error</span> 심각
                     </span>
                 </div>
             </div>
             <div class="alert-content-box">
                 <div class="alert-content-header">
                     <span class="alert-content-title">
-                        🏷️ worker-node-03
+                        <span class="material-symbols-outlined icon-sm icon-muted">label</span> worker-node-03
                     </span>
                 </div>
                 
         <div class="resource-info-grid">
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏢</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">클러스터</span>
                     <span class="resource-info-value">hdsp-prod-01</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">📁</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">folder</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">네임스페이스</span>
                     <span class="resource-info-value">kube-system</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">🖥️</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">dns</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 타입</span>
                     <span class="resource-info-value">Node</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏷️</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">label</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 이름</span>
                     <span class="resource-info-value">worker-node-03</span>
@@ -1469,7 +1526,7 @@
         
                 
             <div class="alert-summary">
-                💬 노드 준비 안됨
+                <span class="material-symbols-outlined icon-sm icon-primary">chat</span> 노드 준비 안됨
             </div>
             
                 
@@ -1480,15 +1537,15 @@
                 
         <div class="alert-timeline">
             <div class="timeline-item">
-                <span class="timeline-label">🕐 최초 발생</span>
-                <span class="timeline-value">2026-01-25 20:44:00</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
+                <span class="timeline-value">2026-01-25 21:05:38</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
                 <span class="duration-badge long">25분</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">repeat</span> 발생 횟수</span>
                 <span class="timeline-value">8회</span>
             </div>
         </div>
@@ -1524,50 +1581,50 @@
             <div class="alert-card-header">
                 <div class="alert-card-header-left">
                     <div class="alert-card-title">
-                        <span class="emoji">🚨</span>
+                        <span class="icon"><span class="material-symbols-outlined icon-sm icon-filled icon-error">error</span></span>
                         KubePodCrashLooping
                     </div>
                     <div class="alert-card-meta">
-                        <span class="alert-card-meta-item">🏢 hdsp-prod-01</span> <span class="alert-card-meta-item">📁 production</span> <span class="alert-card-meta-item">🐳 Pod</span>
+                        <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span> hdsp-prod-01</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">folder</span> production</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-sm icon-muted">deployed_code</span> Pod</span>
                     </div>
                 </div>
                 <div class="alert-card-header-right">
                     <span class="severity-badge critical">
-                        🚨 심각
+                        <span class="material-symbols-outlined icon-sm icon-filled icon-error">error</span> 심각
                     </span>
                 </div>
             </div>
             <div class="alert-content-box">
                 <div class="alert-content-header">
                     <span class="alert-content-title">
-                        🏷️ api-server-7d9f8b6c5-x2k4m
+                        <span class="material-symbols-outlined icon-sm icon-muted">label</span> api-server-7d9f8b6c5-x2k4m
                     </span>
                 </div>
                 
         <div class="resource-info-grid">
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏢</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">클러스터</span>
                     <span class="resource-info-value">hdsp-prod-01</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">📁</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">folder</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">네임스페이스</span>
                     <span class="resource-info-value">production</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">🐳</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">deployed_code</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 타입</span>
                     <span class="resource-info-value">Pod</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏷️</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">label</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 이름</span>
                     <span class="resource-info-value">api-server-7d9f8b6c5-x2k4m</span>
@@ -1577,7 +1634,7 @@
         
                 
             <div class="alert-summary">
-                💬 Pod 크래시 루프 발생
+                <span class="material-symbols-outlined icon-sm icon-primary">chat</span> Pod 크래시 루프 발생
             </div>
             
                 
@@ -1588,15 +1645,15 @@
                 
         <div class="alert-timeline">
             <div class="timeline-item">
-                <span class="timeline-label">🕐 최초 발생</span>
-                <span class="timeline-value">2026-01-25 20:34:00</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
+                <span class="timeline-value">2026-01-25 20:55:38</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
                 <span class="duration-badge long">35분</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">repeat</span> 발생 횟수</span>
                 <span class="timeline-value">15회</span>
             </div>
         </div>
@@ -1632,50 +1689,50 @@ Pod production/api-server-7d9f8b6c5-x2k4m이 CrashLoopBackOff 상태입니다.
             <div class="alert-card-header">
                 <div class="alert-card-header-left">
                     <div class="alert-card-title">
-                        <span class="emoji">🚨</span>
+                        <span class="icon"><span class="material-symbols-outlined icon-sm icon-filled icon-error">error</span></span>
                         KubePodOOMKilled
                     </div>
                     <div class="alert-card-meta">
-                        <span class="alert-card-meta-item">🏢 hdsp-prod-01</span> <span class="alert-card-meta-item">📁 production</span> <span class="alert-card-meta-item">🐳 Pod</span>
+                        <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span> hdsp-prod-01</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">folder</span> production</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-sm icon-muted">deployed_code</span> Pod</span>
                     </div>
                 </div>
                 <div class="alert-card-header-right">
                     <span class="severity-badge critical">
-                        🚨 심각
+                        <span class="material-symbols-outlined icon-sm icon-filled icon-error">error</span> 심각
                     </span>
                 </div>
             </div>
             <div class="alert-content-box">
                 <div class="alert-content-header">
                     <span class="alert-content-title">
-                        🏷️ ml-inference-5c7d8e9f0-p3q2r
+                        <span class="material-symbols-outlined icon-sm icon-muted">label</span> ml-inference-5c7d8e9f0-p3q2r
                     </span>
                 </div>
                 
         <div class="resource-info-grid">
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏢</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">클러스터</span>
                     <span class="resource-info-value">hdsp-prod-01</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">📁</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">folder</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">네임스페이스</span>
                     <span class="resource-info-value">production</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">🐳</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">deployed_code</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 타입</span>
                     <span class="resource-info-value">Pod</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏷️</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">label</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 이름</span>
                     <span class="resource-info-value">ml-inference-5c7d8e9f0-p3q2r</span>
@@ -1685,7 +1742,7 @@ Pod production/api-server-7d9f8b6c5-x2k4m이 CrashLoopBackOff 상태입니다.
         
                 
             <div class="alert-summary">
-                💬 Pod OOM 종료됨
+                <span class="material-symbols-outlined icon-sm icon-primary">chat</span> Pod OOM 종료됨
             </div>
             
                 
@@ -1696,15 +1753,15 @@ Pod production/api-server-7d9f8b6c5-x2k4m이 CrashLoopBackOff 상태입니다.
                 
         <div class="alert-timeline">
             <div class="timeline-item">
-                <span class="timeline-label">🕐 최초 발생</span>
-                <span class="timeline-value">2026-01-25 20:29:00</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
+                <span class="timeline-value">2026-01-25 20:50:38</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
                 <span class="duration-badge long">40분</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">repeat</span> 발생 횟수</span>
                 <span class="timeline-value">5회</span>
             </div>
         </div>
@@ -1741,7 +1798,7 @@ Pod production/ml-inference-5c7d8e9f0-p3q2r이 OOMKilled 되었습니다.
 
         <div id="section-high" class="severity-section">
             <div class="severity-section-header">
-                <span style="font-size: 24px;">⚠️</span>
+                <span class="material-symbols-outlined icon-lg icon-filled icon-warning">warning</span>
                 <span class="severity-section-title">높음 알림</span>
                 <span class="severity-section-count">5건</span>
             </div>
@@ -1750,50 +1807,50 @@ Pod production/ml-inference-5c7d8e9f0-p3q2r이 OOMKilled 되었습니다.
             <div class="alert-card-header">
                 <div class="alert-card-header-left">
                     <div class="alert-card-title">
-                        <span class="emoji">⚠️</span>
+                        <span class="icon"><span class="material-symbols-outlined icon-sm icon-filled icon-warning">warning</span></span>
                         KubePersistentVolumeClaimPending
                     </div>
                     <div class="alert-card-meta">
-                        <span class="alert-card-meta-item">🏢 hdsp-prod-01</span> <span class="alert-card-meta-item">📁 data-pipeline</span> <span class="alert-card-meta-item">📀 PersistentVolumeClaim</span>
+                        <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span> hdsp-prod-01</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">folder</span> data-pipeline</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-sm icon-muted">sd_card</span> PersistentVolumeClaim</span>
                     </div>
                 </div>
                 <div class="alert-card-header-right">
                     <span class="severity-badge high">
-                        ⚠️ 높음
+                        <span class="material-symbols-outlined icon-sm icon-filled icon-warning">warning</span> 높음
                     </span>
                 </div>
             </div>
             <div class="alert-content-box">
                 <div class="alert-content-header">
                     <span class="alert-content-title">
-                        🏷️ etl-data-pvc
+                        <span class="material-symbols-outlined icon-sm icon-muted">label</span> etl-data-pvc
                     </span>
                 </div>
                 
         <div class="resource-info-grid">
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏢</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">클러스터</span>
                     <span class="resource-info-value">hdsp-prod-01</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">📁</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">folder</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">네임스페이스</span>
                     <span class="resource-info-value">data-pipeline</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">📀</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">sd_card</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 타입</span>
                     <span class="resource-info-value">PersistentVolumeClaim</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏷️</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">label</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 이름</span>
                     <span class="resource-info-value">etl-data-pvc</span>
@@ -1803,7 +1860,7 @@ Pod production/ml-inference-5c7d8e9f0-p3q2r이 OOMKilled 되었습니다.
         
                 
             <div class="alert-summary">
-                💬 PVC 대기 상태
+                <span class="material-symbols-outlined icon-sm icon-primary">chat</span> PVC 대기 상태
             </div>
             
                 
@@ -1814,15 +1871,15 @@ Pod production/ml-inference-5c7d8e9f0-p3q2r이 OOMKilled 되었습니다.
                 
         <div class="alert-timeline">
             <div class="timeline-item">
-                <span class="timeline-label">🕐 최초 발생</span>
-                <span class="timeline-value">2026-01-25 20:47:00</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
+                <span class="timeline-value">2026-01-25 21:08:38</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
                 <span class="duration-badge long">22분</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">repeat</span> 발생 횟수</span>
                 <span class="timeline-value">8회</span>
             </div>
         </div>
@@ -1858,50 +1915,50 @@ PVC data-pipeline/etl-data-pvc가 15분 이상 Pending 상태입니다.
             <div class="alert-card-header">
                 <div class="alert-card-header-left">
                     <div class="alert-card-title">
-                        <span class="emoji">⚠️</span>
+                        <span class="icon"><span class="material-symbols-outlined icon-sm icon-filled icon-warning">warning</span></span>
                         KubeNodeMemoryPressure
                     </div>
                     <div class="alert-card-meta">
-                        <span class="alert-card-meta-item">🏢 hdsp-prod-01</span> <span class="alert-card-meta-item">📁 kube-system</span> <span class="alert-card-meta-item">🖥️ Node</span>
+                        <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span> hdsp-prod-01</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">folder</span> kube-system</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-sm icon-muted">dns</span> Node</span>
                     </div>
                 </div>
                 <div class="alert-card-header-right">
                     <span class="severity-badge high">
-                        ⚠️ 높음
+                        <span class="material-symbols-outlined icon-sm icon-filled icon-warning">warning</span> 높음
                     </span>
                 </div>
             </div>
             <div class="alert-content-box">
                 <div class="alert-content-header">
                     <span class="alert-content-title">
-                        🏷️ worker-node-01
+                        <span class="material-symbols-outlined icon-sm icon-muted">label</span> worker-node-01
                     </span>
                 </div>
                 
         <div class="resource-info-grid">
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏢</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">클러스터</span>
                     <span class="resource-info-value">hdsp-prod-01</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">📁</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">folder</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">네임스페이스</span>
                     <span class="resource-info-value">kube-system</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">🖥️</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">dns</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 타입</span>
                     <span class="resource-info-value">Node</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏷️</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">label</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 이름</span>
                     <span class="resource-info-value">worker-node-01</span>
@@ -1911,7 +1968,7 @@ PVC data-pipeline/etl-data-pvc가 15분 이상 Pending 상태입니다.
         
                 
             <div class="alert-summary">
-                💬 노드 메모리 압박
+                <span class="material-symbols-outlined icon-sm icon-primary">chat</span> 노드 메모리 압박
             </div>
             
                 
@@ -1922,15 +1979,15 @@ PVC data-pipeline/etl-data-pvc가 15분 이상 Pending 상태입니다.
                 
         <div class="alert-timeline">
             <div class="timeline-item">
-                <span class="timeline-label">🕐 최초 발생</span>
-                <span class="timeline-value">2026-01-25 20:14:00</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
+                <span class="timeline-value">2026-01-25 20:35:38</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
                 <span class="duration-badge long">55분</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">repeat</span> 발생 횟수</span>
                 <span class="timeline-value">18회</span>
             </div>
         </div>
@@ -1966,50 +2023,50 @@ PVC data-pipeline/etl-data-pvc가 15분 이상 Pending 상태입니다.
             <div class="alert-card-header">
                 <div class="alert-card-header-left">
                     <div class="alert-card-title">
-                        <span class="emoji">⚠️</span>
+                        <span class="icon"><span class="material-symbols-outlined icon-sm icon-filled icon-warning">warning</span></span>
                         NodeGPUTemperatureHigh
                     </div>
                     <div class="alert-card-meta">
-                        <span class="alert-card-meta-item">🏢 hdsp-prod-01</span> <span class="alert-card-meta-item">📁 kube-system</span> <span class="alert-card-meta-item">🖥️ Node</span>
+                        <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span> hdsp-prod-01</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">folder</span> kube-system</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-sm icon-muted">dns</span> Node</span>
                     </div>
                 </div>
                 <div class="alert-card-header-right">
                     <span class="severity-badge high">
-                        ⚠️ 높음
+                        <span class="material-symbols-outlined icon-sm icon-filled icon-warning">warning</span> 높음
                     </span>
                 </div>
             </div>
             <div class="alert-content-box">
                 <div class="alert-content-header">
                     <span class="alert-content-title">
-                        🏷️ gpu-node-01
+                        <span class="material-symbols-outlined icon-sm icon-muted">label</span> gpu-node-01
                     </span>
                 </div>
                 
         <div class="resource-info-grid">
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏢</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">클러스터</span>
                     <span class="resource-info-value">hdsp-prod-01</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">📁</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">folder</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">네임스페이스</span>
                     <span class="resource-info-value">kube-system</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">🖥️</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">dns</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 타입</span>
                     <span class="resource-info-value">Node</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏷️</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">label</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 이름</span>
                     <span class="resource-info-value">gpu-node-01</span>
@@ -2019,7 +2076,7 @@ PVC data-pipeline/etl-data-pvc가 15분 이상 Pending 상태입니다.
         
                 
             <div class="alert-summary">
-                💬 GPU 온도 높음
+                <span class="material-symbols-outlined icon-sm icon-primary">chat</span> GPU 온도 높음
             </div>
             
                 
@@ -2030,15 +2087,15 @@ PVC data-pipeline/etl-data-pvc가 15분 이상 Pending 상태입니다.
                 
         <div class="alert-timeline">
             <div class="timeline-item">
-                <span class="timeline-label">🕐 최초 발생</span>
-                <span class="timeline-value">2026-01-25 20:54:00</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
+                <span class="timeline-value">2026-01-25 21:15:38</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
                 <span class="duration-badge normal">15분</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">repeat</span> 발생 횟수</span>
                 <span class="timeline-value">5회</span>
             </div>
         </div>
@@ -2074,50 +2131,50 @@ gpu-node-01 GPU 온도 85°C, 임계값 80°C 초과.
             <div class="alert-card-header">
                 <div class="alert-card-header-left">
                     <div class="alert-card-title">
-                        <span class="emoji">⚠️</span>
+                        <span class="icon"><span class="material-symbols-outlined icon-sm icon-filled icon-warning">warning</span></span>
                         KubeHpaMaxedOut
                     </div>
                     <div class="alert-card-meta">
-                        <span class="alert-card-meta-item">🏢 hdsp-prod-01</span> <span class="alert-card-meta-item">📁 production</span> <span class="alert-card-meta-item">📦 Deployment</span>
+                        <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span> hdsp-prod-01</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">folder</span> production</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-sm icon-muted">rocket_launch</span> Deployment</span>
                     </div>
                 </div>
                 <div class="alert-card-header-right">
                     <span class="severity-badge high">
-                        ⚠️ 높음
+                        <span class="material-symbols-outlined icon-sm icon-filled icon-warning">warning</span> 높음
                     </span>
                 </div>
             </div>
             <div class="alert-content-box">
                 <div class="alert-content-header">
                     <span class="alert-content-title">
-                        🏷️ order-service
+                        <span class="material-symbols-outlined icon-sm icon-muted">label</span> order-service
                     </span>
                 </div>
                 
         <div class="resource-info-grid">
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏢</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">클러스터</span>
                     <span class="resource-info-value">hdsp-prod-01</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">📁</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">folder</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">네임스페이스</span>
                     <span class="resource-info-value">production</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">📦</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">rocket_launch</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 타입</span>
                     <span class="resource-info-value">Deployment</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏷️</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">label</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 이름</span>
                     <span class="resource-info-value">order-service</span>
@@ -2127,7 +2184,7 @@ gpu-node-01 GPU 온도 85°C, 임계값 80°C 초과.
         
                 
             <div class="alert-summary">
-                💬 HPA 최대 용량 도달
+                <span class="material-symbols-outlined icon-sm icon-primary">chat</span> HPA 최대 용량 도달
             </div>
             
                 
@@ -2138,15 +2195,15 @@ gpu-node-01 GPU 온도 85°C, 임계값 80°C 초과.
                 
         <div class="alert-timeline">
             <div class="timeline-item">
-                <span class="timeline-label">🕐 최초 발생</span>
-                <span class="timeline-value">2026-01-25 20:24:00</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
+                <span class="timeline-value">2026-01-25 20:45:38</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
                 <span class="duration-badge long">45분</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">repeat</span> 발생 횟수</span>
                 <span class="timeline-value">15회</span>
             </div>
         </div>
@@ -2182,50 +2239,50 @@ HPA production/order-service가 최대 레플리카(20개)로 운영 중입니�
             <div class="alert-card-header">
                 <div class="alert-card-header-left">
                     <div class="alert-card-title">
-                        <span class="emoji">⚠️</span>
+                        <span class="icon"><span class="material-symbols-outlined icon-sm icon-filled icon-warning">warning</span></span>
                         KubeDeploymentReplicasMismatch
                     </div>
                     <div class="alert-card-meta">
-                        <span class="alert-card-meta-item">🏢 hdsp-staging-01</span> <span class="alert-card-meta-item">📁 staging</span> <span class="alert-card-meta-item">📦 Deployment</span>
+                        <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span> hdsp-staging-01</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">folder</span> staging</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-sm icon-muted">rocket_launch</span> Deployment</span>
                     </div>
                 </div>
                 <div class="alert-card-header-right">
                     <span class="severity-badge high">
-                        ⚠️ 높음
+                        <span class="material-symbols-outlined icon-sm icon-filled icon-warning">warning</span> 높음
                     </span>
                 </div>
             </div>
             <div class="alert-content-box">
                 <div class="alert-content-header">
                     <span class="alert-content-title">
-                        🏷️ web-frontend
+                        <span class="material-symbols-outlined icon-sm icon-muted">label</span> web-frontend
                     </span>
                 </div>
                 
         <div class="resource-info-grid">
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏢</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">클러스터</span>
                     <span class="resource-info-value">hdsp-staging-01</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">📁</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">folder</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">네임스페이스</span>
                     <span class="resource-info-value">staging</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">📦</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">rocket_launch</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 타입</span>
                     <span class="resource-info-value">Deployment</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏷️</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">label</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 이름</span>
                     <span class="resource-info-value">web-frontend</span>
@@ -2235,7 +2292,7 @@ HPA production/order-service가 최대 레플리카(20개)로 운영 중입니�
         
                 
             <div class="alert-summary">
-                💬 Deployment 레플리카 불일치
+                <span class="material-symbols-outlined icon-sm icon-primary">chat</span> Deployment 레플리카 불일치
             </div>
             
                 
@@ -2246,15 +2303,15 @@ HPA production/order-service가 최대 레플리카(20개)로 운영 중입니�
                 
         <div class="alert-timeline">
             <div class="timeline-item">
-                <span class="timeline-label">🕐 최초 발생</span>
-                <span class="timeline-value">2026-01-25 20:51:00</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
+                <span class="timeline-value">2026-01-25 21:12:38</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
                 <span class="duration-badge long">18분</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">repeat</span> 발생 횟수</span>
                 <span class="timeline-value">6회</span>
             </div>
         </div>
@@ -2291,7 +2348,7 @@ Deployment staging/web-frontend: 요청 5개, 현재 3개, 가용 2개.
 
         <div id="section-medium" class="severity-section">
             <div class="severity-section-header">
-                <span style="font-size: 24px;">📊</span>
+                <span class="material-symbols-outlined icon-lg icon-primary">info</span>
                 <span class="severity-section-title">보통 알림</span>
                 <span class="severity-section-count">5건</span>
             </div>
@@ -2300,50 +2357,50 @@ Deployment staging/web-frontend: 요청 5개, 현재 3개, 가용 2개.
             <div class="alert-card-header">
                 <div class="alert-card-header-left">
                     <div class="alert-card-title">
-                        <span class="emoji">📊</span>
+                        <span class="icon"><span class="material-symbols-outlined icon-sm icon-primary">info</span></span>
                         KubeJobFailed
                     </div>
                     <div class="alert-card-meta">
-                        <span class="alert-card-meta-item">🏢 hdsp-prod-01</span> <span class="alert-card-meta-item">📁 batch-jobs</span> <span class="alert-card-meta-item">⚙️ Job</span>
+                        <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span> hdsp-prod-01</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">folder</span> batch-jobs</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-sm icon-muted">task_alt</span> Job</span>
                     </div>
                 </div>
                 <div class="alert-card-header-right">
                     <span class="severity-badge medium">
-                        📊 보통
+                        <span class="material-symbols-outlined icon-sm icon-primary">info</span> 보통
                     </span>
                 </div>
             </div>
             <div class="alert-content-box">
                 <div class="alert-content-header">
                     <span class="alert-content-title">
-                        🏷️ nightly-etl-20250125
+                        <span class="material-symbols-outlined icon-sm icon-muted">label</span> nightly-etl-20250125
                     </span>
                 </div>
                 
         <div class="resource-info-grid">
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏢</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">클러스터</span>
                     <span class="resource-info-value">hdsp-prod-01</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">📁</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">folder</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">네임스페이스</span>
                     <span class="resource-info-value">batch-jobs</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">⚙️</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">task_alt</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 타입</span>
                     <span class="resource-info-value">Job</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏷️</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">label</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 이름</span>
                     <span class="resource-info-value">nightly-etl-20250125</span>
@@ -2353,7 +2410,7 @@ Deployment staging/web-frontend: 요청 5개, 현재 3개, 가용 2개.
         
                 
             <div class="alert-summary">
-                💬 Job 실패
+                <span class="material-symbols-outlined icon-sm icon-primary">chat</span> Job 실패
             </div>
             
                 
@@ -2364,15 +2421,15 @@ Deployment staging/web-frontend: 요청 5개, 현재 3개, 가용 2개.
                 
         <div class="alert-timeline">
             <div class="timeline-item">
-                <span class="timeline-label">🕐 최초 발생</span>
-                <span class="timeline-value">2026-01-24 19:09:00</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
+                <span class="timeline-value">2026-01-24 19:30:38</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
                 <span class="duration-badge long">26시간 0분</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">repeat</span> 발생 횟수</span>
                 <span class="timeline-value">3회</span>
             </div>
         </div>
@@ -2408,50 +2465,50 @@ Job batch-jobs/nightly-etl-20250125가 3회 시도 후 실패했습니다.
             <div class="alert-card-header">
                 <div class="alert-card-header-left">
                     <div class="alert-card-title">
-                        <span class="emoji">📊</span>
+                        <span class="icon"><span class="material-symbols-outlined icon-sm icon-primary">info</span></span>
                         CertificateExpiringSoon
                     </div>
                     <div class="alert-card-meta">
-                        <span class="alert-card-meta-item">🏢 hdsp-prod-01</span> <span class="alert-card-meta-item">📁 cert-manager</span> <span class="alert-card-meta-item">🌐 Service</span>
+                        <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span> hdsp-prod-01</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">folder</span> cert-manager</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-sm icon-muted">hub</span> Service</span>
                     </div>
                 </div>
                 <div class="alert-card-header-right">
                     <span class="severity-badge medium">
-                        📊 보통
+                        <span class="material-symbols-outlined icon-sm icon-primary">info</span> 보통
                     </span>
                 </div>
             </div>
             <div class="alert-content-box">
                 <div class="alert-content-header">
                     <span class="alert-content-title">
-                        🏷️ api.hdsp.example.com
+                        <span class="material-symbols-outlined icon-sm icon-muted">label</span> api.hdsp.example.com
                     </span>
                 </div>
                 
         <div class="resource-info-grid">
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏢</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">클러스터</span>
                     <span class="resource-info-value">hdsp-prod-01</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">📁</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">folder</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">네임스페이스</span>
                     <span class="resource-info-value">cert-manager</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">🌐</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">hub</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 타입</span>
                     <span class="resource-info-value">Service</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏷️</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">label</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 이름</span>
                     <span class="resource-info-value">api.hdsp.example.com</span>
@@ -2461,7 +2518,7 @@ Job batch-jobs/nightly-etl-20250125가 3회 시도 후 실패했습니다.
         
                 
             <div class="alert-summary">
-                💬 인증서 곧 만료
+                <span class="material-symbols-outlined icon-sm icon-primary">chat</span> 인증서 곧 만료
             </div>
             
                 
@@ -2472,15 +2529,15 @@ Job batch-jobs/nightly-etl-20250125가 3회 시도 후 실패했습니다.
                 
         <div class="alert-timeline">
             <div class="timeline-item">
-                <span class="timeline-label">🕐 최초 발생</span>
-                <span class="timeline-value">2026-01-23 21:09:00</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
+                <span class="timeline-value">2026-01-23 21:30:38</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
                 <span class="duration-badge long">48시간 0분</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">repeat</span> 발생 횟수</span>
                 <span class="timeline-value">48회</span>
             </div>
         </div>
@@ -2516,50 +2573,50 @@ api.hdsp.example.com 인증서가 7일 후 만료됩니다.
             <div class="alert-card-header">
                 <div class="alert-card-header-left">
                     <div class="alert-card-title">
-                        <span class="emoji">📊</span>
+                        <span class="icon"><span class="material-symbols-outlined icon-sm icon-primary">info</span></span>
                         KubeCPUOvercommit
                     </div>
                     <div class="alert-card-meta">
-                        <span class="alert-card-meta-item">🏢 hdsp-prod-01</span> <span class="alert-card-meta-item">📁 kube-system</span> <span class="alert-card-meta-item">🖥️ Node</span>
+                        <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span> hdsp-prod-01</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">folder</span> kube-system</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-sm icon-muted">dns</span> Node</span>
                     </div>
                 </div>
                 <div class="alert-card-header-right">
                     <span class="severity-badge medium">
-                        📊 보통
+                        <span class="material-symbols-outlined icon-sm icon-primary">info</span> 보통
                     </span>
                 </div>
             </div>
             <div class="alert-content-box">
                 <div class="alert-content-header">
                     <span class="alert-content-title">
-                        🏷️ infra-node-01
+                        <span class="material-symbols-outlined icon-sm icon-muted">label</span> infra-node-01
                     </span>
                 </div>
                 
         <div class="resource-info-grid">
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏢</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">클러스터</span>
                     <span class="resource-info-value">hdsp-prod-01</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">📁</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">folder</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">네임스페이스</span>
                     <span class="resource-info-value">kube-system</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">🖥️</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">dns</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 타입</span>
                     <span class="resource-info-value">Node</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏷️</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">label</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 이름</span>
                     <span class="resource-info-value">infra-node-01</span>
@@ -2569,7 +2626,7 @@ api.hdsp.example.com 인증서가 7일 후 만료됩니다.
         
                 
             <div class="alert-summary">
-                💬 클러스터 CPU 초과 할당
+                <span class="material-symbols-outlined icon-sm icon-primary">chat</span> 클러스터 CPU 초과 할당
             </div>
             
                 
@@ -2580,15 +2637,15 @@ api.hdsp.example.com 인증서가 7일 후 만료됩니다.
                 
         <div class="alert-timeline">
             <div class="timeline-item">
-                <span class="timeline-label">🕐 최초 발생</span>
-                <span class="timeline-value">2026-01-24 09:09:00</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
+                <span class="timeline-value">2026-01-24 09:30:38</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
                 <span class="duration-badge long">36시간 0분</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">repeat</span> 발생 횟수</span>
                 <span class="timeline-value">30회</span>
             </div>
         </div>
@@ -2624,50 +2681,50 @@ api.hdsp.example.com 인증서가 7일 후 만료됩니다.
             <div class="alert-card-header">
                 <div class="alert-card-header-left">
                     <div class="alert-card-title">
-                        <span class="emoji">📊</span>
+                        <span class="icon"><span class="material-symbols-outlined icon-sm icon-primary">info</span></span>
                         KubeNodeDiskPressure
                     </div>
                     <div class="alert-card-meta">
-                        <span class="alert-card-meta-item">🏢 hdsp-prod-01</span> <span class="alert-card-meta-item">📁 kube-system</span> <span class="alert-card-meta-item">🖥️ Node</span>
+                        <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span> hdsp-prod-01</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">folder</span> kube-system</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-sm icon-muted">dns</span> Node</span>
                     </div>
                 </div>
                 <div class="alert-card-header-right">
                     <span class="severity-badge medium">
-                        📊 보통
+                        <span class="material-symbols-outlined icon-sm icon-primary">info</span> 보통
                     </span>
                 </div>
             </div>
             <div class="alert-content-box">
                 <div class="alert-content-header">
                     <span class="alert-content-title">
-                        🏷️ worker-node-02
+                        <span class="material-symbols-outlined icon-sm icon-muted">label</span> worker-node-02
                     </span>
                 </div>
                 
         <div class="resource-info-grid">
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏢</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">클러스터</span>
                     <span class="resource-info-value">hdsp-prod-01</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">📁</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">folder</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">네임스페이스</span>
                     <span class="resource-info-value">kube-system</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">🖥️</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">dns</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 타입</span>
                     <span class="resource-info-value">Node</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏷️</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">label</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 이름</span>
                     <span class="resource-info-value">worker-node-02</span>
@@ -2677,7 +2734,7 @@ api.hdsp.example.com 인증서가 7일 후 만료됩니다.
         
                 
             <div class="alert-summary">
-                💬 노드 디스크 압박
+                <span class="material-symbols-outlined icon-sm icon-primary">chat</span> 노드 디스크 압박
             </div>
             
                 
@@ -2688,15 +2745,15 @@ api.hdsp.example.com 인증서가 7일 후 만료됩니다.
                 
         <div class="alert-timeline">
             <div class="timeline-item">
-                <span class="timeline-label">🕐 최초 발생</span>
-                <span class="timeline-value">2026-01-25 20:39:00</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
+                <span class="timeline-value">2026-01-25 21:00:38</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
                 <span class="duration-badge long">30분</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">repeat</span> 발생 횟수</span>
                 <span class="timeline-value">10회</span>
             </div>
         </div>
@@ -2732,50 +2789,50 @@ api.hdsp.example.com 인증서가 7일 후 만료됩니다.
             <div class="alert-card-header">
                 <div class="alert-card-header-left">
                     <div class="alert-card-title">
-                        <span class="emoji">📊</span>
+                        <span class="icon"><span class="material-symbols-outlined icon-sm icon-primary">info</span></span>
                         KubeQuotaAlmostFull
                     </div>
                     <div class="alert-card-meta">
-                        <span class="alert-card-meta-item">🏢 hdsp-staging-01</span> <span class="alert-card-meta-item">📁 staging</span> <span class="alert-card-meta-item">🐳 Pod</span>
+                        <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span> hdsp-staging-01</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-xs icon-muted">folder</span> staging</span> <span class="alert-card-meta-item"><span class="material-symbols-outlined icon-sm icon-muted">deployed_code</span> Pod</span>
                     </div>
                 </div>
                 <div class="alert-card-header-right">
                     <span class="severity-badge medium">
-                        📊 보통
+                        <span class="material-symbols-outlined icon-sm icon-primary">info</span> 보통
                     </span>
                 </div>
             </div>
             <div class="alert-content-box">
                 <div class="alert-content-header">
                     <span class="alert-content-title">
-                        🏷️ staging-quota
+                        <span class="material-symbols-outlined icon-sm icon-muted">label</span> staging-quota
                     </span>
                 </div>
                 
         <div class="resource-info-grid">
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏢</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">cloud</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">클러스터</span>
                     <span class="resource-info-value">hdsp-staging-01</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">📁</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-xs icon-muted">folder</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">네임스페이스</span>
                     <span class="resource-info-value">staging</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">🐳</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">deployed_code</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 타입</span>
                     <span class="resource-info-value">Pod</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏷️</span>
+                <span class="resource-info-icon"><span class="material-symbols-outlined icon-sm icon-muted">label</span></span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 이름</span>
                     <span class="resource-info-value">staging-quota</span>
@@ -2785,7 +2842,7 @@ api.hdsp.example.com 인증서가 7일 후 만료됩니다.
         
                 
             <div class="alert-summary">
-                💬 리소스 쿼터 임계치 도달
+                <span class="material-symbols-outlined icon-sm icon-primary">chat</span> 리소스 쿼터 임계치 도달
             </div>
             
                 
@@ -2796,15 +2853,15 @@ api.hdsp.example.com 인증서가 7일 후 만료됩니다.
                 
         <div class="alert-timeline">
             <div class="timeline-item">
-                <span class="timeline-label">🕐 최초 발생</span>
-                <span class="timeline-value">2026-01-25 19:09:00</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
+                <span class="timeline-value">2026-01-25 19:30:38</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
                 <span class="duration-badge long">2시간 0분</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">repeat</span> 발생 횟수</span>
                 <span class="timeline-value">20회</span>
             </div>
         </div>

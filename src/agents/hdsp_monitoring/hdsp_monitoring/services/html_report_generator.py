@@ -16,7 +16,13 @@ from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import quote
 
 from src.agents.bdp_common.reports.base import HTMLReportBase
-from src.agents.bdp_common.reports.styles import ReportStyles, SEVERITY_COLORS
+from src.agents.bdp_common.reports.styles import (
+    ReportStyles,
+    SEVERITY_COLORS,
+    MD3_COLORS,
+    MATERIAL_ICONS,
+    get_material_icon,
+)
 from src.agents.hdsp_monitoring.hdsp_monitoring.services.models import (
     ProcessedAlert,
     AlertSeverity,
@@ -40,23 +46,25 @@ class AlertHTMLReportGenerator(HTMLReportBase):
         "medium": "보통",
     }
 
-    SEVERITY_EMOJI = {
-        "critical": "🚨",
-        "high": "⚠️",
-        "medium": "📊",
+    # Material Icons for severity (icon name, filled, color)
+    SEVERITY_ICON = {
+        "critical": {"icon": "error", "filled": True, "color": "error"},
+        "high": {"icon": "warning", "filled": True, "color": "warning"},
+        "medium": {"icon": "info", "filled": False, "color": "primary"},
     }
 
-    RESOURCE_TYPE_EMOJI = {
-        "Pod": "🐳",
-        "Node": "🖥️",
-        "Service": "🌐",
-        "Deployment": "📦",
-        "StatefulSet": "📚",
-        "DaemonSet": "👹",
-        "Job": "⚙️",
-        "CronJob": "⏰",
-        "PersistentVolume": "💾",
-        "PersistentVolumeClaim": "📀",
+    # Material Icons for K8s resource types
+    RESOURCE_TYPE_ICON = {
+        "Pod": "deployed_code",
+        "Node": "dns",
+        "Service": "hub",
+        "Deployment": "rocket_launch",
+        "StatefulSet": "database",
+        "DaemonSet": "dynamic_feed",
+        "Job": "task_alt",
+        "CronJob": "schedule",
+        "PersistentVolume": "hard_drive",
+        "PersistentVolumeClaim": "sd_card",
     }
 
     def __init__(self):
@@ -67,187 +75,187 @@ class AlertHTMLReportGenerator(HTMLReportBase):
         )
 
     def _get_additional_css(self) -> str:
-        """추가 CSS 스타일 반환."""
-        return """
+        """추가 CSS 스타일 반환 (MD3 색상 팔레트)."""
+        return f"""
         /* =========================================================
-           Alert Card - Self-contained card design
+           Alert Card - Self-contained card design (MD3)
            ========================================================= */
-        .alert-card {
+        .alert-card {{
             margin-bottom: 20px;
             border-radius: 12px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid {MD3_COLORS['outline_variant']};
             overflow: hidden;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
             transition: box-shadow 0.2s ease;
-        }
+        }}
 
-        .alert-card:hover {
+        .alert-card:hover {{
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        }
+        }}
 
-        .alert-card.critical {
-            border-left: 4px solid #ef4444;
-        }
+        .alert-card.critical {{
+            border-left: 4px solid {MD3_COLORS['error']};
+        }}
 
-        .alert-card.high {
-            border-left: 4px solid #f59e0b;
-        }
+        .alert-card.high {{
+            border-left: 4px solid {MD3_COLORS['warning']};
+        }}
 
-        .alert-card.medium {
-            border-left: 4px solid #3b82f6;
-        }
+        .alert-card.medium {{
+            border-left: 4px solid {MD3_COLORS['primary']};
+        }}
 
         /* Card Header */
-        .alert-card-header {
+        .alert-card-header {{
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             padding: 16px 20px;
-            background: linear-gradient(to right, #f8fafc, #ffffff);
-            border-bottom: 1px solid #e5e7eb;
-        }
+            background: {MD3_COLORS['surface_variant']};
+            border-bottom: 1px solid {MD3_COLORS['outline_variant']};
+        }}
 
-        .alert-card-header-left {
+        .alert-card-header-left {{
             display: flex;
             flex-direction: column;
             gap: 4px;
-        }
+        }}
 
-        .alert-card-title {
+        .alert-card-title {{
             font-size: 15px;
             font-weight: 600;
-            color: #1f2937;
+            color: {MD3_COLORS['on_surface']};
             display: flex;
             align-items: center;
             gap: 8px;
-        }
+        }}
 
-        .alert-card-title .emoji {
+        .alert-card-title .icon {{
             font-size: 18px;
-        }
+        }}
 
-        .alert-card-meta {
+        .alert-card-meta {{
             font-size: 12px;
-            color: #6b7280;
+            color: {MD3_COLORS['on_surface_variant']};
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
-        }
+        }}
 
-        .alert-card-meta-item {
+        .alert-card-meta-item {{
             display: inline-flex;
             align-items: center;
             gap: 4px;
-        }
+        }}
 
-        .alert-card-header-right {
+        .alert-card-header-right {{
             display: flex;
             flex-direction: column;
             align-items: flex-end;
             gap: 4px;
-        }
+        }}
 
         /* Alert Content Box */
-        .alert-content-box {
+        .alert-content-box {{
             margin: 16px 20px;
             padding: 16px;
-            background: #f9fafb;
+            background: {MD3_COLORS['surface_variant']};
             border-radius: 10px;
-            border: 1px solid #e5e7eb;
-        }
+            border: 1px solid {MD3_COLORS['outline_variant']};
+        }}
 
-        .alert-content-header {
+        .alert-content-header {{
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 12px;
             padding-bottom: 10px;
-            border-bottom: 1px dashed #e5e7eb;
-        }
+            border-bottom: 1px dashed {MD3_COLORS['outline_variant']};
+        }}
 
-        .alert-content-title {
+        .alert-content-title {{
             font-size: 14px;
             font-weight: 600;
-            color: #374151;
+            color: {MD3_COLORS['on_surface_variant']};
             display: flex;
             align-items: center;
             gap: 8px;
-        }
+        }}
 
         /* Summary & Description */
-        .alert-summary {
+        .alert-summary {{
             font-size: 14px;
-            color: #1f2937;
+            color: {MD3_COLORS['on_surface']};
             margin-bottom: 12px;
             padding: 12px;
-            background: white;
+            background: {MD3_COLORS['surface']};
             border-radius: 8px;
-            border-left: 3px solid #6366f1;
+            border-left: 3px solid {MD3_COLORS['primary']};
             font-weight: 500;
-        }
+        }}
 
-        .alert-description {
+        .alert-description {{
             font-size: 13px;
-            color: #4b5563;
+            color: {MD3_COLORS['on_surface_variant']};
             padding: 12px;
-            background: white;
+            background: {MD3_COLORS['surface']};
             border-radius: 8px;
-            border-left: 3px solid #9ca3af;
+            border-left: 3px solid {MD3_COLORS['outline']};
             line-height: 1.6;
-        }
+        }}
 
         /* Timeline Info */
-        .alert-timeline {
+        .alert-timeline {{
             display: flex;
             align-items: center;
             gap: 24px;
             margin-top: 16px;
             padding: 12px 16px;
-            background: linear-gradient(90deg, #f0f9ff 0%, #ffffff 100%);
+            background: {MD3_COLORS['primary_container']};
             border-radius: 8px;
-        }
+        }}
 
-        .timeline-item {
+        .timeline-item {{
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-        }
+        }}
 
-        .timeline-label {
+        .timeline-label {{
             font-size: 10px;
             text-transform: uppercase;
             font-weight: 600;
-            color: #6b7280;
+            color: {MD3_COLORS['on_surface_variant']};
             margin-bottom: 2px;
-        }
+        }}
 
-        .timeline-value {
+        .timeline-value {{
             font-size: 13px;
             font-weight: 500;
-            color: #1f2937;
-        }
+            color: {MD3_COLORS['on_surface']};
+        }}
 
-        .duration-badge {
+        .duration-badge {{
             padding: 4px 10px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
-        }
+        }}
 
-        .duration-badge.long {
-            background: #fee2e2;
-            color: #991b1b;
-        }
+        .duration-badge.long {{
+            background: {MD3_COLORS['error_container']};
+            color: {MD3_COLORS['on_error_container']};
+        }}
 
-        .duration-badge.normal {
-            background: #dbeafe;
-            color: #1e40af;
-        }
+        .duration-badge.normal {{
+            background: {MD3_COLORS['primary_container']};
+            color: {MD3_COLORS['on_primary_container']};
+        }}
 
         /* =========================================================
-           GNB - Sticky Navigation
+           GNB - Sticky Navigation (MD3)
            ========================================================= */
-        .severity-nav {
+        .severity-nav {{
             position: sticky;
             top: 10px;
             z-index: 100;
@@ -255,21 +263,24 @@ class AlertHTMLReportGenerator(HTMLReportBase):
             flex-wrap: wrap;
             gap: 10px;
             padding: 15px;
-            background: white;
+            background: {MD3_COLORS['surface']};
             border-radius: 12px;
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
             margin-bottom: 20px;
             align-items: center;
-        }
+        }}
 
-        .severity-nav-label {
+        .severity-nav-label {{
             font-weight: 600;
-            color: #374151;
+            color: {MD3_COLORS['on_surface_variant']};
             padding: 8px 0;
             font-size: 14px;
-        }
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }}
 
-        .severity-nav-link {
+        .severity-nav-link {{
             padding: 8px 16px;
             border-radius: 20px;
             text-decoration: none;
@@ -279,68 +290,68 @@ class AlertHTMLReportGenerator(HTMLReportBase):
             display: inline-flex;
             align-items: center;
             gap: 6px;
-        }
+        }}
 
-        .severity-nav-link:hover {
+        .severity-nav-link:hover {{
             transform: translateY(-2px);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        }
+        }}
 
-        .severity-nav-link.critical {
-            background: linear-gradient(135deg, #fee2e2, #fecaca);
-            color: #991b1b;
-            border: 1px solid #fca5a5;
-        }
+        .severity-nav-link.critical {{
+            background: {MD3_COLORS['error_container']};
+            color: {MD3_COLORS['on_error_container']};
+            border: 1px solid {MD3_COLORS['error']};
+        }}
 
-        .severity-nav-link.high {
-            background: linear-gradient(135deg, #fef3c7, #fde68a);
-            color: #92400e;
-            border: 1px solid #fcd34d;
-        }
+        .severity-nav-link.high {{
+            background: {MD3_COLORS['warning_container']};
+            color: {MD3_COLORS['on_warning_container']};
+            border: 1px solid {MD3_COLORS['warning']};
+        }}
 
-        .severity-nav-link.medium {
-            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-            color: #1e40af;
-            border: 1px solid #93c5fd;
-        }
+        .severity-nav-link.medium {{
+            background: {MD3_COLORS['primary_container']};
+            color: {MD3_COLORS['on_primary_container']};
+            border: 1px solid {MD3_COLORS['primary']};
+        }}
 
         /* Section anchor offset for sticky nav */
-        .severity-section {
+        .severity-section {{
             scroll-margin-top: 80px;
             margin-bottom: 32px;
-        }
+        }}
 
-        .severity-section-header {
+        .severity-section-header {{
             display: flex;
             align-items: center;
             gap: 10px;
             margin-bottom: 16px;
             padding-bottom: 12px;
-            border-bottom: 2px solid #e5e7eb;
-        }
+            border-bottom: 2px solid {MD3_COLORS['outline_variant']};
+        }}
 
-        .severity-section-title {
+        .severity-section-title {{
             font-size: 18px;
             font-weight: 600;
-            color: #1f2937;
-        }
+            color: {MD3_COLORS['on_surface']};
+        }}
 
-        .severity-section-count {
-            background: #e5e7eb;
-            color: #4b5563;
+        .severity-section-count {{
+            background: {MD3_COLORS['outline_variant']};
+            color: {MD3_COLORS['on_surface_variant']};
             padding: 4px 10px;
             border-radius: 12px;
             font-size: 12px;
             font-weight: 600;
-        }
+        }}
 
         /* Smooth scroll behavior */
-        html {
+        html {{
             scroll-behavior: smooth;
-        }
+        }}
 
         /* Severity badge styling */
-        .severity-badge {
+        .severity-badge {{
             display: inline-flex;
             align-items: center;
             gap: 4px;
@@ -350,180 +361,181 @@ class AlertHTMLReportGenerator(HTMLReportBase):
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-        }
+        }}
 
-        .severity-badge.critical {
-            background: #fee2e2;
-            color: #991b1b;
-        }
+        .severity-badge.critical {{
+            background: {MD3_COLORS['error_container']};
+            color: {MD3_COLORS['on_error_container']};
+        }}
 
-        .severity-badge.high {
-            background: #fef3c7;
-            color: #92400e;
-        }
+        .severity-badge.high {{
+            background: {MD3_COLORS['warning_container']};
+            color: {MD3_COLORS['on_warning_container']};
+        }}
 
-        .severity-badge.medium {
-            background: #dbeafe;
-            color: #1e40af;
-        }
+        .severity-badge.medium {{
+            background: {MD3_COLORS['primary_container']};
+            color: {MD3_COLORS['on_primary_container']};
+        }}
 
         /* Resource Info Grid */
-        .resource-info-grid {
+        .resource-info-grid {{
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
             margin-top: 12px;
-        }
+        }}
 
-        @media (max-width: 768px) {
-            .resource-info-grid {
+        @media (max-width: 768px) {{
+            .resource-info-grid {{
                 grid-template-columns: 1fr;
-            }
-        }
+            }}
+        }}
 
-        .resource-info-item {
+        .resource-info-item {{
             display: flex;
             align-items: center;
             gap: 8px;
             padding: 10px 12px;
-            background: white;
+            background: {MD3_COLORS['surface']};
             border-radius: 8px;
-            border: 1px solid #e5e7eb;
-        }
+            border: 1px solid {MD3_COLORS['outline_variant']};
+        }}
 
-        .resource-info-icon {
+        .resource-info-icon {{
             font-size: 18px;
-        }
+            color: {MD3_COLORS['on_surface_variant']};
+        }}
 
-        .resource-info-content {
+        .resource-info-content {{
             display: flex;
             flex-direction: column;
-        }
+        }}
 
-        .resource-info-label {
+        .resource-info-label {{
             font-size: 10px;
             text-transform: uppercase;
-            color: #6b7280;
+            color: {MD3_COLORS['on_surface_variant']};
             font-weight: 600;
-        }
+        }}
 
-        .resource-info-value {
+        .resource-info-value {{
             font-size: 13px;
-            color: #1f2937;
+            color: {MD3_COLORS['on_surface']};
             font-weight: 500;
-        }
+        }}
 
         /* =========================================================
-           Timeline Visualization - Alert Causality Chart
+           Timeline Visualization - Alert Causality Chart (MD3)
            ========================================================= */
-        .timeline-container {
-            background: white;
+        .timeline-container {{
+            background: {MD3_COLORS['surface']};
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 24px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
             overflow-x: auto;
-        }
+        }}
 
-        .timeline-header {
+        .timeline-header {{
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 16px;
             padding-bottom: 12px;
-            border-bottom: 2px solid #e5e7eb;
-        }
+            border-bottom: 2px solid {MD3_COLORS['outline_variant']};
+        }}
 
-        .timeline-title {
+        .timeline-title {{
             font-size: 18px;
             font-weight: 600;
-            color: #1f2937;
+            color: {MD3_COLORS['on_surface']};
             display: flex;
             align-items: center;
             gap: 8px;
-        }
+        }}
 
-        .timeline-subtitle {
+        .timeline-subtitle {{
             font-size: 12px;
-            color: #6b7280;
-        }
+            color: {MD3_COLORS['on_surface_variant']};
+        }}
 
-        .timeline-legend {
+        .timeline-legend {{
             display: flex;
             gap: 16px;
             font-size: 12px;
-        }
+        }}
 
-        .timeline-legend-item {
+        .timeline-legend-item {{
             display: flex;
             align-items: center;
             gap: 6px;
-        }
+        }}
 
-        .timeline-legend-dot {
+        .timeline-legend-dot {{
             width: 12px;
             height: 12px;
             border-radius: 3px;
-        }
+        }}
 
-        .timeline-legend-dot.critical {
-            background: linear-gradient(90deg, #ef4444, #dc2626);
-        }
+        .timeline-legend-dot.critical {{
+            background: {MD3_COLORS['error']};
+        }}
 
-        .timeline-legend-dot.high {
-            background: linear-gradient(90deg, #f59e0b, #d97706);
-        }
+        .timeline-legend-dot.high {{
+            background: {MD3_COLORS['warning']};
+        }}
 
-        .timeline-legend-dot.medium {
-            background: linear-gradient(90deg, #3b82f6, #2563eb);
-        }
+        .timeline-legend-dot.medium {{
+            background: {MD3_COLORS['primary']};
+        }}
 
         /* Time Scale (X-axis) */
-        .timeline-scale {
+        .timeline-scale {{
             display: flex;
             margin-left: 220px;
             margin-bottom: 12px;
             padding-bottom: 8px;
-            border-bottom: 2px solid #e5e7eb;
+            border-bottom: 2px solid {MD3_COLORS['outline_variant']};
             position: relative;
-        }
+        }}
 
-        .timeline-scale-mark {
+        .timeline-scale-mark {{
             flex: 1;
             font-size: 11px;
-            color: #6b7280;
+            color: {MD3_COLORS['on_surface_variant']};
             text-align: left;
             position: relative;
-        }
+        }}
 
-        .timeline-scale-mark::before {
+        .timeline-scale-mark::before {{
             content: '';
             position: absolute;
             left: 0;
             bottom: -10px;
             width: 1px;
             height: 6px;
-            background: #d1d5db;
-        }
+            background: {MD3_COLORS['outline']};
+        }}
 
         /* Timeline Rows */
-        .timeline-rows {
+        .timeline-rows {{
             min-width: 800px;
-        }
+        }}
 
-        .timeline-row {
+        .timeline-row {{
             display: flex;
             align-items: center;
             height: 32px;
             margin-bottom: 6px;
-        }
+        }}
 
-        .timeline-row:hover {
-            background: #f9fafb;
+        .timeline-row:hover {{
+            background: {MD3_COLORS['surface_variant']};
             border-radius: 4px;
-        }
+        }}
 
-        .timeline-label {
+        .timeline-label {{
             width: 220px;
             flex-shrink: 0;
             font-size: 12px;
@@ -535,23 +547,23 @@ class AlertHTMLReportGenerator(HTMLReportBase):
             display: flex;
             align-items: center;
             gap: 6px;
-        }
+        }}
 
-        .timeline-label .emoji {
+        .timeline-label .icon {{
             font-size: 14px;
-        }
+        }}
 
         /* Track and Bar */
-        .timeline-track {
+        .timeline-track {{
             flex: 1;
             height: 20px;
-            background: #f3f4f6;
+            background: {MD3_COLORS['surface_variant']};
             border-radius: 4px;
             position: relative;
             overflow: hidden;
-        }
+        }}
 
-        .timeline-bar {
+        .timeline-bar {{
             position: absolute;
             height: 100%;
             border-radius: 4px;
@@ -566,39 +578,39 @@ class AlertHTMLReportGenerator(HTMLReportBase):
             font-weight: 500;
             white-space: nowrap;
             overflow: hidden;
-        }
+        }}
 
-        .timeline-bar:hover {
+        .timeline-bar:hover {{
             opacity: 0.85;
             transform: scaleY(1.15);
             z-index: 10;
-        }
+        }}
 
         /* Severity Colors */
-        .timeline-bar.critical {
-            background: linear-gradient(90deg, #ef4444, #dc2626);
-            box-shadow: 0 1px 3px rgba(239, 68, 68, 0.4);
-        }
+        .timeline-bar.critical {{
+            background: {MD3_COLORS['error']};
+            box-shadow: 0 1px 3px rgba(211, 47, 47, 0.4);
+        }}
 
-        .timeline-bar.high {
-            background: linear-gradient(90deg, #f59e0b, #d97706);
-            box-shadow: 0 1px 3px rgba(245, 158, 11, 0.4);
-        }
+        .timeline-bar.high {{
+            background: {MD3_COLORS['warning']};
+            box-shadow: 0 1px 3px rgba(245, 124, 0, 0.4);
+        }}
 
-        .timeline-bar.medium {
-            background: linear-gradient(90deg, #3b82f6, #2563eb);
-            box-shadow: 0 1px 3px rgba(59, 130, 246, 0.4);
-        }
+        .timeline-bar.medium {{
+            background: {MD3_COLORS['primary']};
+            box-shadow: 0 1px 3px rgba(25, 118, 210, 0.4);
+        }}
 
         /* Tooltip */
-        .timeline-bar::after {
+        .timeline-bar::after {{
             content: attr(data-tooltip);
             position: absolute;
             left: 50%;
             bottom: 100%;
             transform: translateX(-50%);
-            background: #1f2937;
-            color: white;
+            background: {MD3_COLORS['on_surface']};
+            color: {MD3_COLORS['surface']};
             padding: 6px 10px;
             border-radius: 6px;
             font-size: 11px;
@@ -608,278 +620,282 @@ class AlertHTMLReportGenerator(HTMLReportBase):
             transition: opacity 0.2s;
             z-index: 100;
             margin-bottom: 8px;
-        }
+        }}
 
-        .timeline-bar:hover::after {
+        .timeline-bar:hover::after {{
             opacity: 1;
-        }
+        }}
 
         /* Causality Hint */
-        .timeline-causality-hint {
+        .timeline-causality-hint {{
             margin-top: 16px;
             padding: 12px 16px;
-            background: linear-gradient(90deg, #f0f9ff 0%, #eff6ff 100%);
+            background: {MD3_COLORS['primary_container']};
             border-radius: 8px;
             font-size: 12px;
-            color: #374151;
+            color: {MD3_COLORS['on_surface_variant']};
             display: flex;
             align-items: flex-start;
             gap: 8px;
-        }
+        }}
 
-        .timeline-causality-hint .hint-icon {
+        .timeline-causality-hint .hint-icon {{
             font-size: 16px;
             flex-shrink: 0;
-        }
+            color: {MD3_COLORS['primary']};
+        }}
 
-        .timeline-causality-hint .hint-text {
+        .timeline-causality-hint .hint-text {{
             line-height: 1.5;
-        }
+        }}
 
         /* Now marker */
-        .timeline-now-marker {
+        .timeline-now-marker {{
             position: absolute;
             right: 0;
             top: 0;
             bottom: 0;
             width: 2px;
-            background: #10b981;
-        }
+            background: {MD3_COLORS['success']};
+        }}
 
-        .timeline-now-label {
+        .timeline-now-label {{
             position: absolute;
             right: -4px;
             top: -20px;
             font-size: 10px;
-            color: #10b981;
+            color: {MD3_COLORS['success']};
             font-weight: 600;
-        }
+        }}
 
         /* Collapsible Section */
-        .collapsible-section {
+        .collapsible-section {{
             margin-top: 24px;
-        }
+        }}
 
-        .collapsible-header {
+        .collapsible-header {{
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 12px 16px;
-            background: #f9fafb;
+            background: {MD3_COLORS['surface_variant']};
             border-radius: 8px;
             cursor: pointer;
             transition: background 0.2s;
-        }
+        }}
 
-        .collapsible-header:hover {
-            background: #f3f4f6;
-        }
+        .collapsible-header:hover {{
+            background: {MD3_COLORS['outline_variant']};
+        }}
 
-        .collapsible-header-title {
+        .collapsible-header-title {{
             font-size: 15px;
             font-weight: 600;
-            color: #374151;
+            color: {MD3_COLORS['on_surface_variant']};
             display: flex;
             align-items: center;
             gap: 8px;
-        }
+        }}
 
-        .collapsible-toggle {
+        .collapsible-toggle {{
             font-size: 12px;
-            color: #6b7280;
+            color: {MD3_COLORS['on_surface_variant']};
             display: flex;
             align-items: center;
             gap: 4px;
-        }
+        }}
 
-        .collapsible-content {
+        .collapsible-content {{
             display: none;
             margin-top: 16px;
-        }
+        }}
 
-        .collapsible-content.expanded {
+        .collapsible-content.expanded {{
             display: block;
-        }
+        }}
 
         /* Responsive */
-        @media (max-width: 768px) {
-            .timeline-container {
+        @media (max-width: 768px) {{
+            .timeline-container {{
                 overflow-x: scroll;
-            }
+            }}
 
-            .timeline-rows {
+            .timeline-rows {{
                 min-width: 600px;
-            }
+            }}
 
-            .timeline-label {
+            .timeline-label {{
                 width: 150px;
                 font-size: 11px;
-            }
-        }
+            }}
+        }}
 
         /* =========================================================
-           Grouped Timeline - Pod/Node Level Separation
+           Grouped Timeline - Pod/Node Level Separation (MD3)
            ========================================================= */
-        .grouped-timeline-container {
-            background: white;
+        .grouped-timeline-container {{
+            background: {MD3_COLORS['surface']};
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 24px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        }
+        }}
 
-        .grouped-timeline-header {
+        .grouped-timeline-header {{
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
             padding-bottom: 12px;
-            border-bottom: 2px solid #e5e7eb;
-        }
+            border-bottom: 2px solid {MD3_COLORS['outline_variant']};
+        }}
 
-        .grouped-timeline-title {
+        .grouped-timeline-title {{
             font-size: 18px;
             font-weight: 600;
-            color: #1f2937;
+            color: {MD3_COLORS['on_surface']};
             display: flex;
             align-items: center;
             gap: 8px;
-        }
+        }}
 
-        .grouped-timeline-subtitle {
+        .grouped-timeline-subtitle {{
             font-size: 12px;
-            color: #6b7280;
-        }
+            color: {MD3_COLORS['on_surface_variant']};
+        }}
 
         /* Group Section */
-        .timeline-group {
+        .timeline-group {{
             margin-bottom: 24px;
             padding: 16px;
-            background: #fafafa;
+            background: {MD3_COLORS['surface_variant']};
             border-radius: 8px;
-        }
+        }}
 
-        .timeline-group:last-child {
+        .timeline-group:last-child {{
             margin-bottom: 0;
-        }
+        }}
 
-        .timeline-group-header {
+        .timeline-group-header {{
             display: flex;
             align-items: center;
             gap: 8px;
             margin-bottom: 12px;
             padding-bottom: 8px;
-            border-bottom: 1px solid #e5e7eb;
-        }
+            border-bottom: 1px solid {MD3_COLORS['outline_variant']};
+        }}
 
-        .timeline-group-icon {
+        .timeline-group-icon {{
             font-size: 16px;
-        }
+            color: {MD3_COLORS['on_surface_variant']};
+        }}
 
-        .timeline-group-title {
+        .timeline-group-title {{
             font-size: 14px;
             font-weight: 600;
-            color: #374151;
-        }
+            color: {MD3_COLORS['on_surface_variant']};
+        }}
 
-        .timeline-group-count {
+        .timeline-group-count {{
             font-size: 12px;
-            color: #6b7280;
-            background: #e5e7eb;
+            color: {MD3_COLORS['on_surface_variant']};
+            background: {MD3_COLORS['outline_variant']};
             padding: 2px 8px;
             border-radius: 10px;
-        }
+        }}
 
         /* QuickChart Timeline Image */
-        .timeline-chart-wrapper {
+        .timeline-chart-wrapper {{
             display: flex;
             justify-content: center;
             align-items: center;
             margin: 12px 0;
-        }
+        }}
 
-        .timeline-chart-img {
+        .timeline-chart-img {{
             max-width: 100%;
             height: auto;
             border-radius: 8px;
-        }
+        }}
 
         /* Alert List in Group */
-        .timeline-alert-list {
+        .timeline-alert-list {{
             margin-top: 12px;
-        }
+        }}
 
-        .timeline-alert-item {
+        .timeline-alert-item {{
             display: flex;
             align-items: center;
             gap: 8px;
             padding: 8px 12px;
-            background: white;
+            background: {MD3_COLORS['surface']};
             border-radius: 6px;
             margin-bottom: 6px;
-            border-left: 3px solid #e5e7eb;
-        }
+            border-left: 3px solid {MD3_COLORS['outline_variant']};
+        }}
 
-        .timeline-alert-item:last-child {
+        .timeline-alert-item:last-child {{
             margin-bottom: 0;
-        }
+        }}
 
-        .timeline-alert-item.critical {
-            border-left-color: #ef4444;
-        }
+        .timeline-alert-item.critical {{
+            border-left-color: {MD3_COLORS['error']};
+        }}
 
-        .timeline-alert-item.high {
-            border-left-color: #f59e0b;
-        }
+        .timeline-alert-item.high {{
+            border-left-color: {MD3_COLORS['warning']};
+        }}
 
-        .timeline-alert-item.medium {
-            border-left-color: #3b82f6;
-        }
+        .timeline-alert-item.medium {{
+            border-left-color: {MD3_COLORS['primary']};
+        }}
 
-        .timeline-alert-severity {
+        .timeline-alert-severity {{
             font-size: 14px;
-        }
+            display: flex;
+            align-items: center;
+        }}
 
-        .timeline-alert-name {
+        .timeline-alert-name {{
             font-size: 13px;
             font-weight: 500;
-            color: #1f2937;
+            color: {MD3_COLORS['on_surface']};
             flex: 1;
-        }
+        }}
 
-        .timeline-alert-time {
+        .timeline-alert-time {{
             font-size: 11px;
-            color: #6b7280;
+            color: {MD3_COLORS['on_surface_variant']};
             white-space: nowrap;
-        }
+        }}
 
-        .timeline-alert-duration {
+        .timeline-alert-duration {{
             font-size: 11px;
-            color: #9ca3af;
+            color: {MD3_COLORS['on_surface_variant']};
             padding: 2px 6px;
-            background: #f3f4f6;
+            background: {MD3_COLORS['surface_variant']};
             border-radius: 4px;
-        }
+        }}
 
         /* No Data Message */
-        .timeline-no-data {
+        .timeline-no-data {{
             text-align: center;
             padding: 40px 20px;
-            color: #6b7280;
+            color: {MD3_COLORS['on_surface_variant']};
             font-size: 14px;
-        }
+        }}
 
         /* =========================================================
            KakaoTalk Message Preview
            ========================================================= */
-        .kakao-preview {
+        .kakao-preview {{
             margin: 16px 20px 20px;
             border-radius: 12px;
             overflow: hidden;
             border: 1px solid #fae100;
-        }
+        }}
 
-        .kakao-preview-header {
+        .kakao-preview-header {{
             background: #fae100;
             color: #3c1e1e;
             padding: 8px 12px;
@@ -888,22 +904,22 @@ class AlertHTMLReportGenerator(HTMLReportBase):
             display: flex;
             align-items: center;
             gap: 6px;
-        }
+        }}
 
-        .kakao-preview-content {
-            background: #f9f9f9;
+        .kakao-preview-content {{
+            background: {MD3_COLORS['surface_variant']};
             padding: 12px;
-        }
+        }}
 
-        .kakao-preview-content pre {
+        .kakao-preview-content pre {{
             font-family: 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
             font-size: 11px;
             line-height: 1.5;
             white-space: pre-wrap;
             word-break: break-word;
             margin: 0;
-            color: #333;
-        }
+            color: {MD3_COLORS['on_surface']};
+        }}
         """
 
     def _wrap_html(self, content: str) -> str:
@@ -916,8 +932,11 @@ class AlertHTMLReportGenerator(HTMLReportBase):
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{self.title}</title>
+    <!-- Material Symbols Font (Google CDN) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <style>
         {self.styles.get_base_css()}
+        {self._get_icon_css()}
         {self._get_additional_css()}
     </style>
 </head>
@@ -957,9 +976,9 @@ class AlertHTMLReportGenerator(HTMLReportBase):
                 pod_groups = self._group_pod_alerts_by_namespace(pod_alerts)
                 sections.append(self._generate_grouped_timeline_section(
                     title="Pod Level 타임라인",
-                    icon="🐳",
+                    icon_name="deployed_code",
                     groups=pod_groups,
-                    group_icon="📁",
+                    group_icon_name="folder",
                 ))
 
             # 2-2. Node Level 타임라인 (node_group별 그룹화)
@@ -967,9 +986,9 @@ class AlertHTMLReportGenerator(HTMLReportBase):
                 node_groups = self._group_node_alerts_by_node_group(node_alerts)
                 sections.append(self._generate_grouped_timeline_section(
                     title="Node Level 타임라인",
-                    icon="🖥️",
+                    icon_name="dns",
                     groups=node_groups,
-                    group_icon="🏷️",
+                    group_icon_name="label",
                 ))
 
         # 3. 심각도별 네비게이션
@@ -999,17 +1018,24 @@ class AlertHTMLReportGenerator(HTMLReportBase):
             alerts = by_severity.get(severity, [])
             if alerts:
                 severity_korean = self.SEVERITY_KOREAN.get(severity.value, severity.value)
-                emoji = self.SEVERITY_EMOJI.get(severity.value, "📊")
+                severity_config = self.SEVERITY_ICON.get(severity.value, {"icon": "info", "filled": False, "color": "primary"})
+                icon_html = self._icon(
+                    severity_config["icon"],
+                    size="sm",
+                    filled=severity_config["filled"],
+                    color=severity_config["color"],
+                )
                 count = len(alerts)
                 links.append(
                     f'<a href="#section-{severity.value}" class="severity-nav-link {severity.value}">'
-                    f'{emoji} {severity_korean} ({count})'
+                    f'{icon_html} {severity_korean} ({count})'
                     f'</a>'
                 )
 
+        nav_icon = self._icon("near_me", size="sm", color="muted")
         return f"""
         <div class="severity-nav">
-            <span class="severity-nav-label">📍 바로가기:</span>
+            <span class="severity-nav-label">{nav_icon} 바로가기:</span>
             {" ".join(links)}
         </div>
         """
@@ -1054,28 +1080,33 @@ class AlertHTMLReportGenerator(HTMLReportBase):
 
         # 상태 메시지
         if not alerts:
+            check_icon = self._icon("check_circle", size="sm", filled=True, color="success", inline=True)
             status_alert = self.render_alert(
-                "✅ 현재 발생 중인 알림이 없습니다.",
+                f"{check_icon} 현재 발생 중인 알림이 없습니다.",
                 "success",
             )
         elif severity_counts[AlertSeverity.CRITICAL] > 0:
+            error_icon = self._icon("error", size="sm", filled=True, color="error", inline=True)
             status_alert = self.render_alert(
-                f"🚨 {severity_counts[AlertSeverity.CRITICAL]}건의 심각한 알림이 발생했습니다. 즉시 확인이 필요합니다.",
+                f"{error_icon} {severity_counts[AlertSeverity.CRITICAL]}건의 심각한 알림이 발생했습니다. 즉시 확인이 필요합니다.",
                 "danger",
             )
         elif severity_counts[AlertSeverity.HIGH] > 0:
+            warning_icon = self._icon("warning", size="sm", filled=True, color="warning", inline=True)
             status_alert = self.render_alert(
-                f"⚠️ {severity_counts[AlertSeverity.HIGH]}건의 높은 심각도 알림이 발생했습니다.",
+                f"{warning_icon} {severity_counts[AlertSeverity.HIGH]}건의 높은 심각도 알림이 발생했습니다.",
                 "warning",
             )
         else:
+            info_icon = self._icon("info", size="sm", color="primary", inline=True)
             status_alert = self.render_alert(
-                f"📊 {len(alerts)}건의 알림이 발생했습니다.",
+                f"{info_icon} {len(alerts)}건의 알림이 발생했습니다.",
                 "info",
             )
 
+        dashboard_icon = self._icon("dashboard", size="sm", color="muted", inline=True)
         return self.render_card(
-            "📊 알림 요약",
+            f"{dashboard_icon} 알림 요약",
             f"{status_alert}{stat_cards}",
         )
 
@@ -1326,17 +1357,17 @@ class AlertHTMLReportGenerator(HTMLReportBase):
     def _generate_grouped_timeline_section(
         self,
         title: str,
-        icon: str,
+        icon_name: str,
         groups: Dict[str, List[ProcessedAlert]],
-        group_icon: str,
+        group_icon_name: str,
     ) -> str:
         """그룹별 타임라인 섹션 HTML 생성.
 
         Args:
             title: 섹션 제목
-            icon: 섹션 아이콘
+            icon_name: Material Symbol 아이콘 이름
             groups: 그룹별 알림 딕셔너리
-            group_icon: 그룹 아이콘
+            group_icon_name: 그룹 Material Symbol 아이콘 이름
 
         Returns:
             HTML 문자열
@@ -1367,16 +1398,19 @@ class AlertHTMLReportGenerator(HTMLReportBase):
         group_html_list = []
         for group_name, alerts in sorted_groups:
             group_html = self._generate_group_timeline(
-                group_name, alerts, scale, group_icon, time_format
+                group_name, alerts, scale, group_icon_name, time_format
             )
             group_html_list.append(group_html)
+
+        # 아이콘 렌더링
+        title_icon = self._icon(icon_name, size="sm", color="muted")
 
         return f'''
         <div class="grouped-timeline-container">
             <div class="grouped-timeline-header">
                 <div>
                     <div class="grouped-timeline-title">
-                        {icon} {title}
+                        {title_icon} {title}
                     </div>
                     <div class="grouped-timeline-subtitle">
                         {time_range_text} • 총 {total_count}건 • {len(groups)}개 그룹
@@ -1406,7 +1440,7 @@ class AlertHTMLReportGenerator(HTMLReportBase):
         group_name: str,
         alerts: List[ProcessedAlert],
         scale: Dict[str, Any],
-        icon: str,
+        icon_name: str,
         time_format: str,
     ) -> str:
         """개별 그룹의 타임라인 HTML 생성.
@@ -1415,7 +1449,7 @@ class AlertHTMLReportGenerator(HTMLReportBase):
             group_name: 그룹 이름
             alerts: 알림 목록
             scale: 시간 스케일 설정
-            icon: 그룹 아이콘
+            icon_name: Material Symbol 아이콘 이름
             time_format: 시간 표시 형식
 
         Returns:
@@ -1425,7 +1459,13 @@ class AlertHTMLReportGenerator(HTMLReportBase):
         alert_items = []
         for alert in alerts:
             severity_class = alert.severity.value
-            emoji = self.SEVERITY_EMOJI.get(alert.severity.value, "📊")
+            severity_config = self.SEVERITY_ICON.get(alert.severity.value, {"icon": "info", "filled": False, "color": "primary"})
+            severity_icon = self._icon(
+                severity_config["icon"],
+                size="sm",
+                filled=severity_config["filled"],
+                color=severity_config["color"],
+            )
             time_str = alert.first_seen.strftime(time_format)
             duration = alert.duration_minutes
             if duration >= 60:
@@ -1435,7 +1475,7 @@ class AlertHTMLReportGenerator(HTMLReportBase):
 
             alert_items.append(f'''
             <div class="timeline-alert-item {severity_class}">
-                <span class="timeline-alert-severity">{emoji}</span>
+                <span class="timeline-alert-severity">{severity_icon}</span>
                 <span class="timeline-alert-name">{alert.alert_name}</span>
                 <span class="timeline-alert-time">{time_str}</span>
                 <span class="timeline-alert-duration">{duration_text}</span>
@@ -1458,10 +1498,13 @@ class AlertHTMLReportGenerator(HTMLReportBase):
             </div>
             '''
 
+        # 그룹 아이콘 렌더링
+        group_icon = self._icon(icon_name, size="sm", color="muted")
+
         return f'''
         <div class="timeline-group">
             <div class="timeline-group-header">
-                <span class="timeline-group-icon">{icon}</span>
+                <span class="timeline-group-icon">{group_icon}</span>
                 <span class="timeline-group-title">{group_name}</span>
                 <span class="timeline-group-count">{len(alerts)}건</span>
             </div>
@@ -1625,12 +1668,14 @@ class AlertHTMLReportGenerator(HTMLReportBase):
         if excluded_count > 0:
             excluded_note = f' • <span style="color: #6b7280;">이전 알림 {excluded_count}건은 하단 상세 목록에서 확인</span>'
 
+        timeline_icon = self._icon("timeline", size="sm", color="muted")
+
         return f"""
         <div class="timeline-container">
             <div class="timeline-header">
                 <div>
                     <div class="timeline-title">
-                        ⏱️ 알림 타임라인 (최근 {max_hours}시간)
+                        {timeline_icon} 알림 타임라인 (최근 {max_hours}시간)
                     </div>
                     <div class="timeline-subtitle">
                         {time_range_text} ({total_duration}) • {len(sorted_alerts)}건 표시{excluded_note}
@@ -1679,7 +1724,13 @@ class AlertHTMLReportGenerator(HTMLReportBase):
             HTML 타임라인 행 문자열
         """
         severity_class = alert.severity.value
-        emoji = self.SEVERITY_EMOJI.get(alert.severity.value, "📊")
+        severity_config = self.SEVERITY_ICON.get(alert.severity.value, {"icon": "info", "filled": False, "color": "primary"})
+        severity_icon = self._icon(
+            severity_config["icon"],
+            size="sm",
+            filled=severity_config["filled"],
+            color=severity_config["color"],
+        )
 
         # 위치 계산 (%)
         start_offset = (alert.first_seen - scale["min_time"]).total_seconds() / 60
@@ -1706,7 +1757,7 @@ class AlertHTMLReportGenerator(HTMLReportBase):
         return f"""
         <div class="timeline-row">
             <div class="timeline-label">
-                <span class="emoji">{emoji}</span>
+                <span class="icon">{severity_icon}</span>
                 {alert.alert_name}
             </div>
             <div class="timeline-track">
@@ -1757,9 +1808,11 @@ class AlertHTMLReportGenerator(HTMLReportBase):
         if not hints:
             hints.append(f"첫 알림 <strong>{first_alert.alert_name}</strong> 발생 후 약 {int(time_diff)}분 내에 {len(sorted_alerts)}개의 알림이 연쇄 발생")
 
+        hint_icon = self._icon("lightbulb", size="sm", filled=True, color="primary")
+
         return f"""
         <div class="timeline-causality-hint">
-            <span class="hint-icon">💡</span>
+            <span class="hint-icon">{hint_icon}</span>
             <span class="hint-text">
                 <strong>인과관계 힌트:</strong> 위에서 아래로 시간순 정렬되어 있습니다.
                 먼저 발생한 알림(위쪽)이 후속 알림(아래쪽)의 원인일 수 있습니다.<br>
@@ -1783,7 +1836,13 @@ class AlertHTMLReportGenerator(HTMLReportBase):
             HTML 섹션 문자열
         """
         severity_korean = self.SEVERITY_KOREAN.get(severity.value, severity.value)
-        emoji = self.SEVERITY_EMOJI.get(severity.value, "📊")
+        severity_config = self.SEVERITY_ICON.get(severity.value, {"icon": "info", "filled": False, "color": "primary"})
+        section_icon = self._icon(
+            severity_config["icon"],
+            size="lg",
+            filled=severity_config["filled"],
+            color=severity_config["color"],
+        )
 
         # 네임스페이스 → 알림명 순으로 정렬
         sorted_alerts = sorted(alerts, key=lambda x: (x.namespace, x.alert_name))
@@ -1796,7 +1855,7 @@ class AlertHTMLReportGenerator(HTMLReportBase):
         return f"""
         <div id="section-{severity.value}" class="severity-section">
             <div class="severity-section-header">
-                <span style="font-size: 24px;">{emoji}</span>
+                {section_icon}
                 <span class="severity-section-title">{severity_korean} 알림</span>
                 <span class="severity-section-count">{len(alerts)}건</span>
             </div>
@@ -1876,16 +1935,29 @@ class AlertHTMLReportGenerator(HTMLReportBase):
         Returns:
             HTML 카드 문자열
         """
-        resource_emoji = self.RESOURCE_TYPE_EMOJI.get(alert.resource_type, "📦")
+        # Resource icon
+        resource_icon_name = self.RESOURCE_TYPE_ICON.get(alert.resource_type, "deployed_code")
+        resource_icon = self._icon(resource_icon_name, size="sm", color="muted")
+
         severity_class = alert.severity.value
         severity_korean = self.SEVERITY_KOREAN.get(alert.severity.value, alert.severity.value)
-        severity_emoji = self.SEVERITY_EMOJI.get(alert.severity.value, "📊")
+        severity_config = self.SEVERITY_ICON.get(alert.severity.value, {"icon": "info", "filled": False, "color": "primary"})
+        severity_icon = self._icon(
+            severity_config["icon"],
+            size="sm",
+            filled=severity_config["filled"],
+            color=severity_config["color"],
+        )
+
+        # Icons for meta info
+        cluster_icon = self._icon("cloud", size="xs", color="muted")
+        namespace_icon = self._icon("folder", size="xs", color="muted")
 
         # 메타 정보
         meta_items = []
-        meta_items.append(f'<span class="alert-card-meta-item">🏢 {alert.cluster_name}</span>')
-        meta_items.append(f'<span class="alert-card-meta-item">📁 {alert.namespace}</span>')
-        meta_items.append(f'<span class="alert-card-meta-item">{resource_emoji} {alert.resource_type}</span>')
+        meta_items.append(f'<span class="alert-card-meta-item">{cluster_icon} {alert.cluster_name}</span>')
+        meta_items.append(f'<span class="alert-card-meta-item">{namespace_icon} {alert.namespace}</span>')
+        meta_items.append(f'<span class="alert-card-meta-item">{resource_icon} {alert.resource_type}</span>')
 
         # 시간 정보
         first_seen_str = alert.first_seen.strftime('%Y-%m-%d %H:%M:%S')
@@ -1893,32 +1965,39 @@ class AlertHTMLReportGenerator(HTMLReportBase):
         duration_class = "long" if duration_minutes > 15 else "normal"
         duration_text = f"{duration_minutes}분" if duration_minutes < 60 else f"{duration_minutes // 60}시간 {duration_minutes % 60}분"
 
+        # Icons for resource info grid
+        label_icon = self._icon("label", size="sm", color="muted")
+        schedule_icon = self._icon("schedule", size="xs", color="muted")
+        timer_icon = self._icon("timer", size="xs", color="muted")
+        repeat_icon = self._icon("repeat", size="xs", color="muted")
+        chat_icon = self._icon("chat", size="sm", color="primary")
+
         # 리소스 정보 그리드
         resource_info_html = f"""
         <div class="resource-info-grid">
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏢</span>
+                <span class="resource-info-icon">{cluster_icon}</span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">클러스터</span>
                     <span class="resource-info-value">{alert.cluster_name}</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">📁</span>
+                <span class="resource-info-icon">{namespace_icon}</span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">네임스페이스</span>
                     <span class="resource-info-value">{alert.namespace}</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">{resource_emoji}</span>
+                <span class="resource-info-icon">{resource_icon}</span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 타입</span>
                     <span class="resource-info-value">{alert.resource_type}</span>
                 </div>
             </div>
             <div class="resource-info-item">
-                <span class="resource-info-icon">🏷️</span>
+                <span class="resource-info-icon">{label_icon}</span>
                 <div class="resource-info-content">
                     <span class="resource-info-label">리소스 이름</span>
                     <span class="resource-info-value">{alert.resource_name}</span>
@@ -1932,7 +2011,7 @@ class AlertHTMLReportGenerator(HTMLReportBase):
         if alert.summary:
             summary_html = f"""
             <div class="alert-summary">
-                💬 {alert.summary}
+                {chat_icon} {alert.summary}
             </div>
             """
 
@@ -1948,21 +2027,21 @@ class AlertHTMLReportGenerator(HTMLReportBase):
         timeline_html = f"""
         <div class="alert-timeline">
             <div class="timeline-item">
-                <span class="timeline-label">🕐 최초 발생</span>
+                <span class="timeline-label">{schedule_icon} 최초 발생</span>
                 <span class="timeline-value">{first_seen_str}</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="timeline-label">{timer_icon} 지속 시간</span>
                 <span class="duration-badge {duration_class}">{duration_text}</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-label">{repeat_icon} 발생 횟수</span>
                 <span class="timeline-value">{alert.occurrence_count}회</span>
             </div>
         </div>
         """
 
-        # KakaoTalk Preview
+        # KakaoTalk Preview (keep emoji for KakaoTalk branding)
         kakao_message = self._generate_kakao_preview(alert)
         kakao_message_escaped = html.escape(kakao_message)
         kakao_preview_html = f"""
@@ -1977,12 +2056,15 @@ class AlertHTMLReportGenerator(HTMLReportBase):
         </div>
         """
 
+        # Content title icon
+        content_title_icon = self._icon("label", size="sm", color="muted")
+
         return f"""
         <div class="alert-card {severity_class}">
             <div class="alert-card-header">
                 <div class="alert-card-header-left">
                     <div class="alert-card-title">
-                        <span class="emoji">{severity_emoji}</span>
+                        <span class="icon">{severity_icon}</span>
                         {alert.alert_name}
                     </div>
                     <div class="alert-card-meta">
@@ -1991,14 +2073,14 @@ class AlertHTMLReportGenerator(HTMLReportBase):
                 </div>
                 <div class="alert-card-header-right">
                     <span class="severity-badge {severity_class}">
-                        {severity_emoji} {severity_korean}
+                        {severity_icon} {severity_korean}
                     </span>
                 </div>
             </div>
             <div class="alert-content-box">
                 <div class="alert-content-header">
                     <span class="alert-content-title">
-                        🏷️ {alert.resource_name}
+                        {content_title_icon} {alert.resource_name}
                     </span>
                 </div>
                 {resource_info_html}
