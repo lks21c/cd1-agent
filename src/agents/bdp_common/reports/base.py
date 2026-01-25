@@ -10,7 +10,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from src.agents.bdp_common.reports.styles import ReportStyles, SEVERITY_COLORS
+from src.agents.bdp_common.reports.styles import (
+    ReportStyles,
+    SEVERITY_COLORS,
+    MD3_COLORS,
+    MATERIAL_ICONS,
+    get_material_icon,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -92,8 +98,11 @@ class HTMLReportBase(ABC):
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{self.title}</title>
+    <!-- Material Symbols Font (Google CDN) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <style>
         {self.styles.get_base_css()}
+        {self._get_icon_css()}
     </style>
 </head>
 <body>
@@ -108,6 +117,85 @@ class HTMLReportBase(ABC):
     </div>
 </body>
 </html>"""
+
+    def _get_icon_css(self) -> str:
+        """Material Symbols 아이콘 유틸리티 CSS 반환."""
+        return f"""
+        /* =========================================================
+           Material Symbols Icon Utilities
+           ========================================================= */
+        .material-symbols-outlined {{
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+            vertical-align: middle;
+        }}
+
+        /* Icon Sizes */
+        .icon-xs {{ font-size: 14px; }}
+        .icon-sm {{ font-size: 18px; }}
+        .icon-md {{ font-size: 24px; }}
+        .icon-lg {{ font-size: 32px; }}
+        .icon-xl {{ font-size: 48px; }}
+
+        /* Icon Filled Style */
+        .icon-filled {{
+            font-variation-settings: 'FILL' 1;
+        }}
+
+        /* Icon Colors (MD3 Semantic) */
+        .icon-error {{ color: {MD3_COLORS['error']}; }}
+        .icon-warning {{ color: {MD3_COLORS['warning']}; }}
+        .icon-success {{ color: {MD3_COLORS['success']}; }}
+        .icon-primary {{ color: {MD3_COLORS['primary']}; }}
+        .icon-muted {{ color: {MD3_COLORS['on_surface_variant']}; }}
+        .icon-on-surface {{ color: {MD3_COLORS['on_surface']}; }}
+
+        /* Icon with text alignment helper */
+        .icon-inline {{
+            vertical-align: -0.125em;
+            margin-right: 4px;
+        }}
+        """
+
+    def _icon(
+        self,
+        name: str,
+        size: str = "md",
+        filled: bool = False,
+        color: str = "",
+        inline: bool = False,
+    ) -> str:
+        """Material Symbol 아이콘 렌더링.
+
+        Args:
+            name: 아이콘 이름 (e.g., 'error', 'check_circle')
+            size: 크기 (xs, sm, md, lg, xl)
+            filled: filled 스타일 여부
+            color: 색상 클래스 (error, warning, success, primary, muted)
+            inline: 텍스트와 인라인 정렬 여부
+
+        Returns:
+            HTML 아이콘 문자열
+        """
+        classes = ["material-symbols-outlined", f"icon-{size}"]
+        if filled:
+            classes.append("icon-filled")
+        if color:
+            classes.append(f"icon-{color}")
+        if inline:
+            classes.append("icon-inline")
+        return f'<span class="{" ".join(classes)}">{name}</span>'
 
     def render_card(
         self,

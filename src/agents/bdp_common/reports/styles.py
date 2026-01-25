@@ -2,63 +2,158 @@
 Report Styles (Common).
 
 HTML 리포트 공통 스타일 및 색상 상수.
+Material Design 3 기반 디자인 시스템.
 """
 
 from dataclasses import dataclass
 from typing import Dict
 
 
-# Severity 색상
+# =============================================================================
+# Material Design 3 Color Palette (12색 제한)
+# =============================================================================
+MD3_COLORS: Dict[str, str] = {
+    # Primary
+    "primary": "#1976D2",
+    "primary_container": "#E3F2FD",
+    "on_primary": "#FFFFFF",
+    "on_primary_container": "#1565C0",
+
+    # Semantic - Error
+    "error": "#D32F2F",
+    "error_container": "#FFEBEE",
+    "on_error": "#FFFFFF",
+    "on_error_container": "#B71C1C",
+
+    # Semantic - Warning
+    "warning": "#F57C00",
+    "warning_container": "#FFF3E0",
+    "on_warning_container": "#E65100",
+
+    # Semantic - Success
+    "success": "#388E3C",
+    "success_container": "#E8F5E9",
+    "on_success_container": "#1B5E20",
+
+    # Neutral
+    "surface": "#FFFFFF",
+    "surface_variant": "#F5F5F5",
+    "on_surface": "#212121",
+    "on_surface_variant": "#757575",
+    "outline": "#BDBDBD",
+    "outline_variant": "#E0E0E0",
+}
+
+
+# =============================================================================
+# Material Symbols 아이콘 매핑
+# =============================================================================
+MATERIAL_ICONS: Dict[str, Dict[str, str]] = {
+    # Resource Types
+    "resource": {
+        "glue": "folder_data",
+        "athena": "query_stats",
+        "emr": "bolt",
+        "sagemaker": "smart_toy",
+        "s3": "inventory_2",
+        "mwaa": "air",
+        "msk": "stream",
+        "lambda": "function",
+        "default": "cloud",
+    },
+    # Severity
+    "severity": {
+        "critical": "error",
+        "high": "warning",
+        "medium": "info",
+        "low": "check_circle",
+    },
+    # Status/Meta
+    "status": {
+        "enabled": "check_circle",
+        "disabled": "cancel",
+        "null": "remove",
+        "increase": "trending_up",
+        "decrease": "trending_down",
+    },
+    # UI Elements
+    "ui": {
+        "settings": "settings",
+        "recommendation": "lightbulb",
+        "impact": "priority_high",
+        "version": "history",
+        "account": "business",
+        "time": "schedule",
+        "navigation": "near_me",
+        "monitoring": "monitoring",
+        "discovered": "search",
+        "dashboard": "dashboard",
+        "baseline": "description",
+        "current": "description",
+        "change": "swap_horiz",
+        "chart": "show_chart",
+        "timeline": "timeline",
+    },
+}
+
+
+# =============================================================================
+# Severity 색상 및 아이콘 (MD3 기반)
+# =============================================================================
 SEVERITY_COLORS: Dict[str, Dict[str, str]] = {
     "critical": {
-        "bg": "#fee2e2",
-        "border": "#ef4444",
-        "text": "#991b1b",
-        "emoji": "🚨",
+        "bg": MD3_COLORS["error_container"],
+        "border": MD3_COLORS["error"],
+        "text": MD3_COLORS["on_error_container"],
+        "icon": "error",
+        "icon_filled": True,
     },
     "high": {
-        "bg": "#fef3c7",
-        "border": "#f59e0b",
-        "text": "#92400e",
-        "emoji": "⚠️",
+        "bg": MD3_COLORS["warning_container"],
+        "border": MD3_COLORS["warning"],
+        "text": MD3_COLORS["on_warning_container"],
+        "icon": "warning",
+        "icon_filled": True,
     },
     "medium": {
-        "bg": "#dbeafe",
-        "border": "#3b82f6",
-        "text": "#1e40af",
-        "emoji": "📊",
+        "bg": MD3_COLORS["primary_container"],
+        "border": MD3_COLORS["primary"],
+        "text": MD3_COLORS["on_primary_container"],
+        "icon": "info",
+        "icon_filled": False,
     },
     "low": {
-        "bg": "#f3f4f6",
-        "border": "#9ca3af",
-        "text": "#4b5563",
-        "emoji": "ℹ️",
+        "bg": MD3_COLORS["surface_variant"],
+        "border": MD3_COLORS["outline"],
+        "text": MD3_COLORS["on_surface_variant"],
+        "icon": "check_circle",
+        "icon_filled": False,
     },
 }
 
 
 @dataclass
 class ReportStyles:
-    """리포트 CSS 스타일."""
+    """리포트 CSS 스타일 (MD3 기반)."""
 
-    # 기본 색상
-    primary_color: str = "#3b82f6"
-    secondary_color: str = "#6b7280"
-    success_color: str = "#10b981"
-    warning_color: str = "#f59e0b"
-    danger_color: str = "#ef4444"
-    info_color: str = "#3b82f6"
+    # 기본 색상 (MD3 Palette)
+    primary_color: str = MD3_COLORS["primary"]
+    secondary_color: str = MD3_COLORS["on_surface_variant"]
+    success_color: str = MD3_COLORS["success"]
+    warning_color: str = MD3_COLORS["warning"]
+    danger_color: str = MD3_COLORS["error"]
+    info_color: str = MD3_COLORS["primary"]
 
     # 배경 색상
-    bg_color: str = "#f9fafb"
-    card_bg_color: str = "#ffffff"
+    bg_color: str = MD3_COLORS["surface_variant"]
+    card_bg_color: str = MD3_COLORS["surface"]
 
     # 텍스트 색상
-    text_color: str = "#111827"
-    text_muted: str = "#6b7280"
+    text_color: str = MD3_COLORS["on_surface"]
+    text_muted: str = MD3_COLORS["on_surface_variant"]
 
     # 테두리
-    border_color: str = "#e5e7eb"
+    border_color: str = MD3_COLORS["outline_variant"]
     border_radius: str = "8px"
 
     # 폰트
@@ -300,7 +395,24 @@ class ReportStyles:
         """
 
     def get_severity_badge(self, severity: str) -> str:
-        """심각도 배지 HTML 반환."""
+        """심각도 배지 HTML 반환 (Material Icon 사용)."""
         severity_lower = severity.lower()
-        emoji = SEVERITY_COLORS.get(severity_lower, {}).get("emoji", "📊")
-        return f'<span class="badge badge-{severity_lower}">{emoji} {severity.upper()}</span>'
+        severity_config = SEVERITY_COLORS.get(severity_lower, SEVERITY_COLORS["medium"])
+        icon_name = severity_config.get("icon", "info")
+        is_filled = severity_config.get("icon_filled", False)
+        fill_class = " icon-filled" if is_filled else ""
+        return f'<span class="badge badge-{severity_lower}"><span class="material-symbols-outlined icon-sm{fill_class}">{icon_name}</span> {severity.upper()}</span>'
+
+
+def get_material_icon(category: str, key: str, fallback: str = "help") -> str:
+    """Material Symbol 아이콘 이름 조회.
+
+    Args:
+        category: 아이콘 카테고리 (resource, severity, status, ui)
+        key: 아이콘 키
+        fallback: 기본값
+
+    Returns:
+        Material Symbol 이름
+    """
+    return MATERIAL_ICONS.get(category, {}).get(key, fallback)
