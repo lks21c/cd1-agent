@@ -2,7 +2,7 @@
 # Build, test, and deployment automation
 
 .PHONY: help install dev test lint format wheel layer build publish clean
-.PHONY: server-dev server-cost server-hdsp server-bdp server-drift server-all
+.PHONY: server-dev server-hdsp server-bdp server-drift server-all
 .PHONY: docker-server-build docker-server-up docker-server-down docker-server-logs
 
 # Default target
@@ -18,7 +18,6 @@ help:
 	@echo ""
 	@echo "HTTP Server (K8s migration):"
 	@echo "  make server-dev       Install server dependencies"
-	@echo "  make server-cost      Run Cost agent server (port 8001)"
 	@echo "  make server-hdsp      Run HDSP agent server (port 8002)"
 	@echo "  make server-bdp       Run BDP agent server (port 8003)"
 	@echo "  make server-drift     Run Drift agent server (port 8004)"
@@ -52,11 +51,6 @@ dev:
 server-dev:
 	pip install -e ".[all,server]"
 
-server-cost:
-	@echo "=== Starting Cost Agent Server on port 8001 ==="
-	AWS_PROVIDER=mock COST_PROVIDER=mock LLM_PROVIDER=mock DEBUG=true \
-		uvicorn src.agents.cost.server:app --reload --port 8001
-
 server-hdsp:
 	@echo "=== Starting HDSP Agent Server on port 8002 ==="
 	AWS_PROVIDER=mock LLM_PROVIDER=mock DEBUG=true \
@@ -75,7 +69,6 @@ server-drift:
 # Docker server commands
 docker-server-build:
 	@echo "=== Building all agent Docker images ==="
-	docker build --build-arg AGENT_NAME=cost -t cd1-agent-cost .
 	docker build --build-arg AGENT_NAME=hdsp -t cd1-agent-hdsp .
 	docker build --build-arg AGENT_NAME=bdp -t cd1-agent-bdp .
 	docker build --build-arg AGENT_NAME=drift -t cd1-agent-drift .
@@ -88,7 +81,6 @@ docker-server-up:
 	@sleep 10
 	@echo ""
 	@echo "=== Services ready ==="
-	@echo "Cost Agent:  http://localhost:8001"
 	@echo "HDSP Agent:  http://localhost:8002 (profile: hdsp)"
 	@echo "BDP Agent:   http://localhost:8003 (profile: bdp)"
 	@echo "Drift Agent: http://localhost:8004 (profile: drift)"
@@ -102,7 +94,6 @@ docker-server-logs:
 
 docker-server-test:
 	@echo "=== Testing all agent health endpoints ==="
-	@curl -s http://localhost:8001/health | python3 -m json.tool 2>/dev/null || echo "Cost agent not available"
 	@curl -s http://localhost:8002/health | python3 -m json.tool 2>/dev/null || echo "HDSP agent not available"
 	@curl -s http://localhost:8003/health | python3 -m json.tool 2>/dev/null || echo "BDP agent not available"
 	@curl -s http://localhost:8004/health | python3 -m json.tool 2>/dev/null || echo "Drift agent not available"

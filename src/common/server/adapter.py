@@ -45,9 +45,9 @@ def create_handler_endpoint(
         Async endpoint function compatible with FastAPI
 
     Example:
-        from src.agents.cost.handler import CostDetectionHandler
+        from src.agents.hdsp.handler import HDSPDetectionHandler
 
-        endpoint = create_handler_endpoint(CostDetectionHandler)
+        endpoint = create_handler_endpoint(HDSPDetectionHandler)
 
         @router.post("/detect")
         async def detect(request: DetectionRequest):

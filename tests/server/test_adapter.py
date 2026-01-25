@@ -80,19 +80,6 @@ class TestHandlerIntegration:
     """Integration tests for handler adapter with real handlers."""
 
     @pytest.mark.asyncio
-    async def test_cost_handler_adapter(self):
-        """Test adapter with Cost handler."""
-        from src.agents.cost.handler import CostDetectionHandler
-
-        endpoint = create_handler_endpoint(CostDetectionHandler)
-
-        result = await endpoint({"detection_type": "all", "days": 7})
-
-        assert result["success"] is True
-        assert "data" in result
-        assert result["data"]["detection_type"] == "all"
-
-    @pytest.mark.asyncio
     async def test_hdsp_handler_adapter(self):
         """Test adapter with HDSP handler."""
         from src.agents.hdsp.handler import HDSPDetectionHandler
