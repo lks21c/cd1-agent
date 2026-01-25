@@ -67,12 +67,124 @@ class AlertHTMLReportGenerator(HTMLReportBase):
         "PersistentVolumeClaim": "sd_card",
     }
 
+    # alert_name → (증상 설명, 조치 방법) 매핑
+    ALERT_REMEDIATION_MAP: Dict[str, Dict[str, str]] = {
+        # Pod 관련
+        "KubePodCrashLooping": {
+            "symptom": "파드가 반복적으로 재시작됨",
+            "action": "kubectl logs로 오류 확인, 리소스 리밋/환경변수 점검",
+        },
+        "KubeContainerOOMKilled": {
+            "symptom": "컨테이너가 메모리 부족으로 종료됨",
+            "action": "메모리 리밋 증가 (spec.containers[].resources.limits.memory)",
+        },
+        "KubePodNotReady": {
+            "symptom": "파드가 Ready 상태에 도달하지 못함",
+            "action": "Readiness Probe 설정 및 의존 서비스 확인",
+        },
+        "KubePodNotScheduled": {
+            "symptom": "파드가 노드에 스케줄링되지 않음",
+            "action": "노드 리소스/Taint/Affinity 설정 확인",
+        },
+        # Node 관련
+        "KubeNodeNotReady": {
+            "symptom": "노드가 NotReady 상태",
+            "action": "kubelet 상태 확인, 노드 재시작 또는 drain 후 점검",
+        },
+        "KubeNodeMemoryPressure": {
+            "symptom": "노드 메모리 압박 발생",
+            "action": "파드 축출(eviction) 또는 노드 스케일아웃 필요",
+        },
+        "NodeFilesystemAlmostOutOfSpace": {
+            "symptom": "노드 디스크 공간 부족",
+            "action": "불필요한 이미지/로그 정리, 볼륨 확장 검토",
+        },
+        "KubeNodeDiskPressure": {
+            "symptom": "노드 디스크 압박 발생",
+            "action": "디스크 사용량 정리 또는 볼륨 확장",
+        },
+        "KubeNodePIDPressure": {
+            "symptom": "노드 PID 부족 발생",
+            "action": "프로세스 누수 확인, 파드 재시작 또는 노드 재부팅",
+        },
+        # Deployment/ReplicaSet
+        "KubeDeploymentReplicasMismatch": {
+            "symptom": "원하는 레플리카 수와 실제 수가 다름",
+            "action": "PDB/리소스 제약/스케줄링 문제 확인",
+        },
+        "KubeDeploymentGenerationMismatch": {
+            "symptom": "디플로이먼트 업데이트가 지연됨",
+            "action": "롤아웃 상태 확인 (kubectl rollout status)",
+        },
+        "KubeStatefulSetReplicasMismatch": {
+            "symptom": "스테이트풀셋 레플리카 수 불일치",
+            "action": "PVC/스토리지 문제 및 파드 상태 확인",
+        },
+        # Job
+        "KubeJobFailed": {
+            "symptom": "Job 실행 실패",
+            "action": "Job 로그 확인, backoffLimit 및 재시도 정책 점검",
+        },
+        "KubeJobNotCompleted": {
+            "symptom": "Job이 완료되지 않음",
+            "action": "activeDeadlineSeconds 및 parallelism 설정 확인",
+        },
+        # HPA
+        "KubeHpaReplicasMismatch": {
+            "symptom": "HPA 대상 레플리카 수 불일치",
+            "action": "HPA 메트릭 서버 상태 및 리소스 제한 확인",
+        },
+        "KubeHpaMaxedOut": {
+            "symptom": "HPA가 최대 레플리카에 도달",
+            "action": "maxReplicas 증가 또는 리소스 최적화 검토",
+        },
+        # 기타
+        "HighMemoryUsage": {
+            "symptom": "메모리 사용량이 임계치 초과",
+            "action": "메모리 누수 점검, 수평 확장 고려",
+        },
+        "HighCPUUsage": {
+            "symptom": "CPU 사용량이 임계치 초과",
+            "action": "CPU 리밋 조정 또는 수평 확장 고려",
+        },
+        "ContainerWaiting": {
+            "symptom": "컨테이너가 대기 상태에 머무름",
+            "action": "이미지 풀 상태, 시크릿/컨피그맵 마운트 확인",
+        },
+        "PodOOMKilled": {
+            "symptom": "파드가 OOM으로 종료됨",
+            "action": "메모리 리밋 증가 또는 메모리 누수 확인 필요",
+        },
+    }
+
     def __init__(self):
         """리포트 생성기 초기화."""
         super().__init__(
             title="HDSP Alert Monitoring Report",
             styles=ReportStyles(),
         )
+
+    def _get_remediation(self, alert_name: str) -> Optional[Dict[str, str]]:
+        """알림명에 해당하는 조치 가이드 반환.
+
+        정확한 매칭 시도 → 부분 매칭 시도 → None 반환
+
+        Args:
+            alert_name: 알림 이름
+
+        Returns:
+            조치 가이드 딕셔너리 {"symptom": ..., "action": ...} 또는 None
+        """
+        # 1. 정확한 매칭
+        if alert_name in self.ALERT_REMEDIATION_MAP:
+            return self.ALERT_REMEDIATION_MAP[alert_name]
+
+        # 2. 부분 매칭 (OOMKilled, CrashLooping 등 키워드 포함 시)
+        for key, value in self.ALERT_REMEDIATION_MAP.items():
+            if key in alert_name or alert_name in key:
+                return value
+
+        return None
 
     def _get_additional_css(self) -> str:
         """추가 CSS 스타일 반환 (MD3 색상 팔레트)."""
@@ -919,6 +1031,39 @@ class AlertHTMLReportGenerator(HTMLReportBase):
             word-break: break-word;
             margin: 0;
             color: {MD3_COLORS['on_surface']};
+        }}
+
+        /* =========================================================
+           Remediation Box - Alert Action Guide (MD3)
+           ========================================================= */
+        .alert-remediation {{
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: {MD3_COLORS['success_container']};
+            border-radius: 8px;
+            border-left: 3px solid {MD3_COLORS['success']};
+        }}
+
+        .alert-remediation-header {{
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: {MD3_COLORS['on_success_container']};
+            margin-bottom: 8px;
+        }}
+
+        .alert-remediation-symptom {{
+            font-size: 13px;
+            color: {MD3_COLORS['on_surface']};
+            margin-bottom: 4px;
+        }}
+
+        .alert-remediation-action {{
+            font-size: 13px;
+            font-weight: 500;
+            color: {MD3_COLORS['on_success_container']};
         }}
         """
 
@@ -2023,6 +2168,25 @@ class AlertHTMLReportGenerator(HTMLReportBase):
             </div>
             """
 
+        # Remediation Guide
+        remediation_html = ""
+        remediation = self._get_remediation(alert.alert_name)
+        if remediation:
+            remedy_icon = self._icon("build", size="sm", color="success")
+            remediation_html = f"""
+            <div class="alert-remediation">
+                <div class="alert-remediation-header">
+                    {remedy_icon} 조치 가이드
+                </div>
+                <div class="alert-remediation-symptom">
+                    <strong>증상:</strong> {remediation['symptom']}
+                </div>
+                <div class="alert-remediation-action">
+                    <strong>조치:</strong> {remediation['action']}
+                </div>
+            </div>
+            """
+
         # Timeline
         timeline_html = f"""
         <div class="alert-timeline">
@@ -2086,6 +2250,7 @@ class AlertHTMLReportGenerator(HTMLReportBase):
                 {resource_info_html}
                 {summary_html}
                 {description_html}
+                {remediation_html}
                 {timeline_html}
             </div>
             {kakao_preview_html}

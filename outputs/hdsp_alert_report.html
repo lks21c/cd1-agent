@@ -1130,6 +1130,39 @@
             margin: 0;
             color: #212121;
         }
+
+        /* =========================================================
+           Remediation Box - Alert Action Guide (MD3)
+           ========================================================= */
+        .alert-remediation {
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: #E8F5E9;
+            border-radius: 8px;
+            border-left: 3px solid #388E3C;
+        }
+
+        .alert-remediation-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #1B5E20;
+            margin-bottom: 8px;
+        }
+
+        .alert-remediation-symptom {
+            font-size: 13px;
+            color: #212121;
+            margin-bottom: 4px;
+        }
+
+        .alert-remediation-action {
+            font-size: 13px;
+            font-weight: 500;
+            color: #1B5E20;
+        }
         
     </style>
 </head>
@@ -1137,7 +1170,7 @@
     <div class="header">
         <div class="container">
             <h1 class="header-title">HDSP Alert Monitoring Report</h1>
-            <p class="header-subtitle">Generated at 2026-01-25 21:30:38 UTC</p>
+            <p class="header-subtitle">Generated at 2026-01-25 22:48:16 UTC</p>
         </div>
     </div>
     <div class="container">
@@ -1186,7 +1219,7 @@
                         <span class="material-symbols-outlined icon-sm icon-muted">deployed_code</span> Pod Level 타임라인
                     </div>
                     <div class="grouped-timeline-subtitle">
-                        01/23 21:25 ~ 01/25 21:32 • 총 8건 • 5개 그룹
+                        01/23 22:43 ~ 01/25 22:50 • 총 8건 • 5개 그룹
                     </div>
                 </div>
                 <div class="timeline-legend">
@@ -1213,7 +1246,7 @@
             </div>
             
             <div class="timeline-chart-wrapper">
-                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubePodOOMKilled%22%2C%20%22KubePodCrashLoopin%22%2C%20%22KubeHpaMaxedOut%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B10.0%2C%2015.0%2C%205.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B40.0%2C%2035.0%2C%2045.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%28239%2C%2068%2C%2068%2C%200.85%29%22%2C%20%22rgba%28239%2C%2068%2C%2068%2C%200.85%29%22%2C%20%22rgba%28245%2C%20158%2C%2011%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%2052.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2220%3A40%20%E2%86%92%2021%3A32%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=96&bkg=white&devicePixelRatio=2" alt="production Timeline" class="timeline-chart-img">
+                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubePodOOMKilled%22%2C%20%22KubePodCrashLoopin%22%2C%20%22KubeHpaMaxedOut%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B10.0%2C%2015.0%2C%205.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B40.0%2C%2035.0%2C%2045.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%28239%2C%2068%2C%2068%2C%200.85%29%22%2C%20%22rgba%28239%2C%2068%2C%2068%2C%200.85%29%22%2C%20%22rgba%28245%2C%20158%2C%2011%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%2052.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2221%3A58%20%E2%86%92%2022%3A50%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=96&bkg=white&devicePixelRatio=2" alt="production Timeline" class="timeline-chart-img">
             </div>
             
             <div class="timeline-alert-list">
@@ -1221,21 +1254,21 @@
             <div class="timeline-alert-item critical">
                 <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-filled icon-error">error</span></span>
                 <span class="timeline-alert-name">KubePodOOMKilled</span>
-                <span class="timeline-alert-time">01/25 20:50</span>
+                <span class="timeline-alert-time">01/25 22:08</span>
                 <span class="timeline-alert-duration">40m</span>
             </div>
             
             <div class="timeline-alert-item critical">
                 <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-filled icon-error">error</span></span>
                 <span class="timeline-alert-name">KubePodCrashLooping</span>
-                <span class="timeline-alert-time">01/25 20:55</span>
+                <span class="timeline-alert-time">01/25 22:13</span>
                 <span class="timeline-alert-duration">35m</span>
             </div>
             
             <div class="timeline-alert-item high">
                 <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-filled icon-warning">warning</span></span>
                 <span class="timeline-alert-name">KubeHpaMaxedOut</span>
-                <span class="timeline-alert-time">01/25 20:45</span>
+                <span class="timeline-alert-time">01/25 22:03</span>
                 <span class="timeline-alert-duration">45m</span>
             </div>
             
@@ -1250,7 +1283,7 @@
             </div>
             
             <div class="timeline-chart-wrapper">
-                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubeDeploymentRepl%22%2C%20%22KubeQuotaAlmostFul%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B107.0%2C%205.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B18.0%2C%20120.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%28245%2C%20158%2C%2011%2C%200.85%29%22%2C%20%22rgba%2859%2C%20130%2C%20246%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%20127.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2219%3A25%20%E2%86%92%2021%3A32%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=74&bkg=white&devicePixelRatio=2" alt="staging Timeline" class="timeline-chart-img">
+                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubeDeploymentRepl%22%2C%20%22KubeQuotaAlmostFul%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B107.0%2C%205.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B18.0%2C%20120.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%28245%2C%20158%2C%2011%2C%200.85%29%22%2C%20%22rgba%2859%2C%20130%2C%20246%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%20127.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2220%3A43%20%E2%86%92%2022%3A50%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=74&bkg=white&devicePixelRatio=2" alt="staging Timeline" class="timeline-chart-img">
             </div>
             
             <div class="timeline-alert-list">
@@ -1258,14 +1291,14 @@
             <div class="timeline-alert-item high">
                 <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-filled icon-warning">warning</span></span>
                 <span class="timeline-alert-name">KubeDeploymentReplicasMismatch</span>
-                <span class="timeline-alert-time">01/25 21:12</span>
+                <span class="timeline-alert-time">01/25 22:30</span>
                 <span class="timeline-alert-duration">18m</span>
             </div>
             
             <div class="timeline-alert-item medium">
                 <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-primary">info</span></span>
                 <span class="timeline-alert-name">KubeQuotaAlmostFull</span>
-                <span class="timeline-alert-time">01/25 19:30</span>
+                <span class="timeline-alert-time">01/25 20:48</span>
                 <span class="timeline-alert-duration">2h 0m</span>
             </div>
             
@@ -1280,7 +1313,7 @@
             </div>
             
             <div class="timeline-chart-wrapper">
-                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubeJobFailed%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B5.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B1560.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%2859%2C%20130%2C%20246%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%201567.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2201/24%2019%3A25%20%E2%86%92%2001/25%2021%3A32%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=60&bkg=white&devicePixelRatio=2" alt="batch-jobs Timeline" class="timeline-chart-img">
+                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubeJobFailed%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B5.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B1560.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%2859%2C%20130%2C%20246%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%201567.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2201/24%2020%3A43%20%E2%86%92%2001/25%2022%3A50%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=60&bkg=white&devicePixelRatio=2" alt="batch-jobs Timeline" class="timeline-chart-img">
             </div>
             
             <div class="timeline-alert-list">
@@ -1288,7 +1321,7 @@
             <div class="timeline-alert-item medium">
                 <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-primary">info</span></span>
                 <span class="timeline-alert-name">KubeJobFailed</span>
-                <span class="timeline-alert-time">01/24 19:30</span>
+                <span class="timeline-alert-time">01/24 20:48</span>
                 <span class="timeline-alert-duration">26h 0m</span>
             </div>
             
@@ -1303,7 +1336,7 @@
             </div>
             
             <div class="timeline-chart-wrapper">
-                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22CertificateExpirin%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B5.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B2880.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%2859%2C%20130%2C%20246%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%202887.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2201/23%2021%3A25%20%E2%86%92%2001/25%2021%3A32%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=60&bkg=white&devicePixelRatio=2" alt="cert-manager Timeline" class="timeline-chart-img">
+                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22CertificateExpirin%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B5.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B2880.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%2859%2C%20130%2C%20246%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%202887.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2201/23%2022%3A43%20%E2%86%92%2001/25%2022%3A50%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=60&bkg=white&devicePixelRatio=2" alt="cert-manager Timeline" class="timeline-chart-img">
             </div>
             
             <div class="timeline-alert-list">
@@ -1311,7 +1344,7 @@
             <div class="timeline-alert-item medium">
                 <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-primary">info</span></span>
                 <span class="timeline-alert-name">CertificateExpiringSoon</span>
-                <span class="timeline-alert-time">01/23 21:30</span>
+                <span class="timeline-alert-time">01/23 22:48</span>
                 <span class="timeline-alert-duration">48h 0m</span>
             </div>
             
@@ -1326,7 +1359,7 @@
             </div>
             
             <div class="timeline-chart-wrapper">
-                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubePersistentVolu%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B5.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B22.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%28245%2C%20158%2C%2011%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%2029.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2221%3A03%20%E2%86%92%2021%3A32%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=60&bkg=white&devicePixelRatio=2" alt="data-pipeline Timeline" class="timeline-chart-img">
+                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubePersistentVolu%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B5.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B22.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%28245%2C%20158%2C%2011%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%2029.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2222%3A21%20%E2%86%92%2022%3A50%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=60&bkg=white&devicePixelRatio=2" alt="data-pipeline Timeline" class="timeline-chart-img">
             </div>
             
             <div class="timeline-alert-list">
@@ -1334,7 +1367,7 @@
             <div class="timeline-alert-item high">
                 <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-filled icon-warning">warning</span></span>
                 <span class="timeline-alert-name">KubePersistentVolumeClaimPending</span>
-                <span class="timeline-alert-time">01/25 21:08</span>
+                <span class="timeline-alert-time">01/25 22:26</span>
                 <span class="timeline-alert-duration">22m</span>
             </div>
             
@@ -1351,7 +1384,7 @@
                         <span class="material-symbols-outlined icon-sm icon-muted">dns</span> Node Level 타임라인
                     </div>
                     <div class="grouped-timeline-subtitle">
-                        01/24 09:25 ~ 01/25 21:32 • 총 5건 • 3개 그룹
+                        01/24 10:43 ~ 01/25 22:50 • 총 5건 • 3개 그룹
                     </div>
                 </div>
                 <div class="timeline-legend">
@@ -1378,7 +1411,7 @@
             </div>
             
             <div class="timeline-chart-wrapper">
-                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubeNodeNotReady%22%2C%20%22KubeNodeMemoryPres%22%2C%20%22KubeNodeDiskPressu%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B35.0%2C%205.0%2C%2030.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B25.0%2C%2055.0%2C%2030.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%28239%2C%2068%2C%2068%2C%200.85%29%22%2C%20%22rgba%28245%2C%20158%2C%2011%2C%200.85%29%22%2C%20%22rgba%2859%2C%20130%2C%20246%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%2062.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2220%3A30%20%E2%86%92%2021%3A32%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=96&bkg=white&devicePixelRatio=2" alt="worker-group Timeline" class="timeline-chart-img">
+                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubeNodeNotReady%22%2C%20%22KubeNodeMemoryPres%22%2C%20%22KubeNodeDiskPressu%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B35.0%2C%205.0%2C%2030.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B25.0%2C%2055.0%2C%2030.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%28239%2C%2068%2C%2068%2C%200.85%29%22%2C%20%22rgba%28245%2C%20158%2C%2011%2C%200.85%29%22%2C%20%22rgba%2859%2C%20130%2C%20246%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%2062.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2221%3A48%20%E2%86%92%2022%3A50%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=96&bkg=white&devicePixelRatio=2" alt="worker-group Timeline" class="timeline-chart-img">
             </div>
             
             <div class="timeline-alert-list">
@@ -1386,21 +1419,21 @@
             <div class="timeline-alert-item critical">
                 <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-filled icon-error">error</span></span>
                 <span class="timeline-alert-name">KubeNodeNotReady</span>
-                <span class="timeline-alert-time">01/25 21:05</span>
+                <span class="timeline-alert-time">01/25 22:23</span>
                 <span class="timeline-alert-duration">25m</span>
             </div>
             
             <div class="timeline-alert-item high">
                 <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-filled icon-warning">warning</span></span>
                 <span class="timeline-alert-name">KubeNodeMemoryPressure</span>
-                <span class="timeline-alert-time">01/25 20:35</span>
+                <span class="timeline-alert-time">01/25 21:53</span>
                 <span class="timeline-alert-duration">55m</span>
             </div>
             
             <div class="timeline-alert-item medium">
                 <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-primary">info</span></span>
                 <span class="timeline-alert-name">KubeNodeDiskPressure</span>
-                <span class="timeline-alert-time">01/25 21:00</span>
+                <span class="timeline-alert-time">01/25 22:18</span>
                 <span class="timeline-alert-duration">30m</span>
             </div>
             
@@ -1415,7 +1448,7 @@
             </div>
             
             <div class="timeline-chart-wrapper">
-                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22NodeGPUTemperature%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B5.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B15.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%28245%2C%20158%2C%2011%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%2022.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2221%3A10%20%E2%86%92%2021%3A32%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=60&bkg=white&devicePixelRatio=2" alt="gpu-group Timeline" class="timeline-chart-img">
+                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22NodeGPUTemperature%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B5.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B15.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%28245%2C%20158%2C%2011%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%2022.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2222%3A28%20%E2%86%92%2022%3A50%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=60&bkg=white&devicePixelRatio=2" alt="gpu-group Timeline" class="timeline-chart-img">
             </div>
             
             <div class="timeline-alert-list">
@@ -1423,7 +1456,7 @@
             <div class="timeline-alert-item high">
                 <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-filled icon-warning">warning</span></span>
                 <span class="timeline-alert-name">NodeGPUTemperatureHigh</span>
-                <span class="timeline-alert-time">01/25 21:15</span>
+                <span class="timeline-alert-time">01/25 22:33</span>
                 <span class="timeline-alert-duration">15m</span>
             </div>
             
@@ -1438,7 +1471,7 @@
             </div>
             
             <div class="timeline-chart-wrapper">
-                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubeCPUOvercommit%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B5.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B2160.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%2859%2C%20130%2C%20246%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%202167.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2201/24%2009%3A25%20%E2%86%92%2001/25%2021%3A32%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=60&bkg=white&devicePixelRatio=2" alt="infra-group Timeline" class="timeline-chart-img">
+                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubeCPUOvercommit%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B5.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B2160.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%2859%2C%20130%2C%20246%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%202167.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2201/24%2010%3A43%20%E2%86%92%2001/25%2022%3A50%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=60&bkg=white&devicePixelRatio=2" alt="infra-group Timeline" class="timeline-chart-img">
             </div>
             
             <div class="timeline-alert-list">
@@ -1446,7 +1479,7 @@
             <div class="timeline-alert-item medium">
                 <span class="timeline-alert-severity"><span class="material-symbols-outlined icon-sm icon-primary">info</span></span>
                 <span class="timeline-alert-name">KubeCPUOvercommit</span>
-                <span class="timeline-alert-time">01/24 09:30</span>
+                <span class="timeline-alert-time">01/24 10:48</span>
                 <span class="timeline-alert-duration">36h 0m</span>
             </div>
             
@@ -1535,10 +1568,23 @@
             </div>
             
                 
+            <div class="alert-remediation">
+                <div class="alert-remediation-header">
+                    <span class="material-symbols-outlined icon-sm icon-success">build</span> 조치 가이드
+                </div>
+                <div class="alert-remediation-symptom">
+                    <strong>증상:</strong> 노드가 NotReady 상태
+                </div>
+                <div class="alert-remediation-action">
+                    <strong>조치:</strong> kubelet 상태 확인, 노드 재시작 또는 drain 후 점검
+                </div>
+            </div>
+            
+                
         <div class="alert-timeline">
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
-                <span class="timeline-value">2026-01-25 21:05:38</span>
+                <span class="timeline-value">2026-01-25 22:23:16</span>
             </div>
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
@@ -1643,10 +1689,23 @@
             </div>
             
                 
+            <div class="alert-remediation">
+                <div class="alert-remediation-header">
+                    <span class="material-symbols-outlined icon-sm icon-success">build</span> 조치 가이드
+                </div>
+                <div class="alert-remediation-symptom">
+                    <strong>증상:</strong> 파드가 반복적으로 재시작됨
+                </div>
+                <div class="alert-remediation-action">
+                    <strong>조치:</strong> kubectl logs로 오류 확인, 리소스 리밋/환경변수 점검
+                </div>
+            </div>
+            
+                
         <div class="alert-timeline">
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
-                <span class="timeline-value">2026-01-25 20:55:38</span>
+                <span class="timeline-value">2026-01-25 22:13:16</span>
             </div>
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
@@ -1751,10 +1810,23 @@ Pod production/api-server-7d9f8b6c5-x2k4m이 CrashLoopBackOff 상태입니다.
             </div>
             
                 
+            <div class="alert-remediation">
+                <div class="alert-remediation-header">
+                    <span class="material-symbols-outlined icon-sm icon-success">build</span> 조치 가이드
+                </div>
+                <div class="alert-remediation-symptom">
+                    <strong>증상:</strong> 파드가 OOM으로 종료됨
+                </div>
+                <div class="alert-remediation-action">
+                    <strong>조치:</strong> 메모리 리밋 증가 또는 메모리 누수 확인 필요
+                </div>
+            </div>
+            
+                
         <div class="alert-timeline">
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
-                <span class="timeline-value">2026-01-25 20:50:38</span>
+                <span class="timeline-value">2026-01-25 22:08:16</span>
             </div>
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
@@ -1869,10 +1941,11 @@ Pod production/ml-inference-5c7d8e9f0-p3q2r이 OOMKilled 되었습니다.
             </div>
             
                 
+                
         <div class="alert-timeline">
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
-                <span class="timeline-value">2026-01-25 21:08:38</span>
+                <span class="timeline-value">2026-01-25 22:26:16</span>
             </div>
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
@@ -1977,10 +2050,23 @@ PVC data-pipeline/etl-data-pvc가 15분 이상 Pending 상태입니다.
             </div>
             
                 
+            <div class="alert-remediation">
+                <div class="alert-remediation-header">
+                    <span class="material-symbols-outlined icon-sm icon-success">build</span> 조치 가이드
+                </div>
+                <div class="alert-remediation-symptom">
+                    <strong>증상:</strong> 노드 메모리 압박 발생
+                </div>
+                <div class="alert-remediation-action">
+                    <strong>조치:</strong> 파드 축출(eviction) 또는 노드 스케일아웃 필요
+                </div>
+            </div>
+            
+                
         <div class="alert-timeline">
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
-                <span class="timeline-value">2026-01-25 20:35:38</span>
+                <span class="timeline-value">2026-01-25 21:53:16</span>
             </div>
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
@@ -2085,10 +2171,11 @@ PVC data-pipeline/etl-data-pvc가 15분 이상 Pending 상태입니다.
             </div>
             
                 
+                
         <div class="alert-timeline">
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
-                <span class="timeline-value">2026-01-25 21:15:38</span>
+                <span class="timeline-value">2026-01-25 22:33:16</span>
             </div>
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
@@ -2193,10 +2280,23 @@ gpu-node-01 GPU 온도 85°C, 임계값 80°C 초과.
             </div>
             
                 
+            <div class="alert-remediation">
+                <div class="alert-remediation-header">
+                    <span class="material-symbols-outlined icon-sm icon-success">build</span> 조치 가이드
+                </div>
+                <div class="alert-remediation-symptom">
+                    <strong>증상:</strong> HPA가 최대 레플리카에 도달
+                </div>
+                <div class="alert-remediation-action">
+                    <strong>조치:</strong> maxReplicas 증가 또는 리소스 최적화 검토
+                </div>
+            </div>
+            
+                
         <div class="alert-timeline">
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
-                <span class="timeline-value">2026-01-25 20:45:38</span>
+                <span class="timeline-value">2026-01-25 22:03:16</span>
             </div>
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
@@ -2301,10 +2401,23 @@ HPA production/order-service가 최대 레플리카(20개)로 운영 중입니�
             </div>
             
                 
+            <div class="alert-remediation">
+                <div class="alert-remediation-header">
+                    <span class="material-symbols-outlined icon-sm icon-success">build</span> 조치 가이드
+                </div>
+                <div class="alert-remediation-symptom">
+                    <strong>증상:</strong> 원하는 레플리카 수와 실제 수가 다름
+                </div>
+                <div class="alert-remediation-action">
+                    <strong>조치:</strong> PDB/리소스 제약/스케줄링 문제 확인
+                </div>
+            </div>
+            
+                
         <div class="alert-timeline">
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
-                <span class="timeline-value">2026-01-25 21:12:38</span>
+                <span class="timeline-value">2026-01-25 22:30:16</span>
             </div>
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
@@ -2419,10 +2532,23 @@ Deployment staging/web-frontend: 요청 5개, 현재 3개, 가용 2개.
             </div>
             
                 
+            <div class="alert-remediation">
+                <div class="alert-remediation-header">
+                    <span class="material-symbols-outlined icon-sm icon-success">build</span> 조치 가이드
+                </div>
+                <div class="alert-remediation-symptom">
+                    <strong>증상:</strong> Job 실행 실패
+                </div>
+                <div class="alert-remediation-action">
+                    <strong>조치:</strong> Job 로그 확인, backoffLimit 및 재시도 정책 점검
+                </div>
+            </div>
+            
+                
         <div class="alert-timeline">
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
-                <span class="timeline-value">2026-01-24 19:30:38</span>
+                <span class="timeline-value">2026-01-24 20:48:16</span>
             </div>
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
@@ -2527,10 +2653,11 @@ Job batch-jobs/nightly-etl-20250125가 3회 시도 후 실패했습니다.
             </div>
             
                 
+                
         <div class="alert-timeline">
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
-                <span class="timeline-value">2026-01-23 21:30:38</span>
+                <span class="timeline-value">2026-01-23 22:48:16</span>
             </div>
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
@@ -2635,10 +2762,11 @@ api.hdsp.example.com 인증서가 7일 후 만료됩니다.
             </div>
             
                 
+                
         <div class="alert-timeline">
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
-                <span class="timeline-value">2026-01-24 09:30:38</span>
+                <span class="timeline-value">2026-01-24 10:48:16</span>
             </div>
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
@@ -2743,10 +2871,23 @@ api.hdsp.example.com 인증서가 7일 후 만료됩니다.
             </div>
             
                 
+            <div class="alert-remediation">
+                <div class="alert-remediation-header">
+                    <span class="material-symbols-outlined icon-sm icon-success">build</span> 조치 가이드
+                </div>
+                <div class="alert-remediation-symptom">
+                    <strong>증상:</strong> 노드 디스크 압박 발생
+                </div>
+                <div class="alert-remediation-action">
+                    <strong>조치:</strong> 디스크 사용량 정리 또는 볼륨 확장
+                </div>
+            </div>
+            
+                
         <div class="alert-timeline">
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
-                <span class="timeline-value">2026-01-25 21:00:38</span>
+                <span class="timeline-value">2026-01-25 22:18:16</span>
             </div>
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
@@ -2851,10 +2992,11 @@ api.hdsp.example.com 인증서가 7일 후 만료됩니다.
             </div>
             
                 
+                
         <div class="alert-timeline">
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">schedule</span> 최초 발생</span>
-                <span class="timeline-value">2026-01-25 19:30:38</span>
+                <span class="timeline-value">2026-01-25 20:48:16</span>
             </div>
             <div class="timeline-item">
                 <span class="timeline-label"><span class="material-symbols-outlined icon-xs icon-muted">timer</span> 지속 시간</span>
