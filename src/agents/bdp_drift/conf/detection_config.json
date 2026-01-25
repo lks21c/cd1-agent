@@ -1,0 +1,66 @@
+{
+  "severity_mapping": {
+    "critical": [
+      "table_schema",
+      "columns",
+      "encryption_configuration",
+      "s3_encryption",
+      "server_side_encryption",
+      "endpoint_config",
+      "iam_role",
+      "role_arn",
+      "execution_role",
+      "kms_key",
+      "security_configuration",
+      "public_access_block"
+    ],
+    "high": [
+      "release_label",
+      "runtime",
+      "airflow_version",
+      "kafka_version",
+      "instance_type",
+      "instance_class",
+      "engine_type",
+      "handler",
+      "layers"
+    ],
+    "medium": [
+      "memory_size",
+      "timeout",
+      "min_workers",
+      "max_workers",
+      "min_capacity",
+      "max_capacity",
+      "number_of_broker_nodes",
+      "volume_size",
+      "environment_class"
+    ],
+    "low": [
+      "tags",
+      "description",
+      "comment",
+      "parameters"
+    ]
+  },
+  "ignore_fields": [
+    "last_modified_time",
+    "create_time",
+    "update_time",
+    "last_access_time",
+    "version_id",
+    "code_sha256",
+    "last_modified",
+    "creation_date"
+  ],
+  "detection": {
+    "enabled": true,
+    "batch_size": 50,
+    "parallel_fetch": true
+  },
+  "alerting": {
+    "hitl_on_critical": true,
+    "eventbridge_enabled": true,
+    "kakao_enabled": false
+  }
+}
