@@ -3,6 +3,7 @@ conf/*
 !conf/eventbridge_config.json
 !conf/kakao_config.json
 !conf/detection_config.json
+!conf/schema/
 
 # Legacy paths (이전 버전 호환) - sensitive tokens only
 kakao_tokens.json
