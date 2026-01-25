@@ -1,13 +1,13 @@
 """
 Scenario Factory for BDP Compact Cost Anomaly Detection Testing.
 
-7개 그룹, 34개의 다양한 비용 이상 시나리오를 정의하고 테스트 데이터를 생성합니다.
+7개 그룹, 35개의 다양한 비용 이상 시나리오를 정의하고 테스트 데이터를 생성합니다.
 
 그룹 목록:
 1. 급등 패턴 (Sudden Spike) - 6개
 2. 점진적 변화 (Gradual Change) - 5개
 3. 비용 감소 (Cost Reduction) - 4개
-4. 주기적 패턴 (Cyclic Patterns) - 5개
+4. 주기적 패턴 (Cyclic Patterns) - 6개
 5. 서비스 프로파일 (Service Profile) - 4개
 6. 엣지 케이스 (Edge Cases) - 6개
 7. 탐지 방법 비교 (Detection Method Comparison) - 4개
@@ -61,7 +61,7 @@ class ScenarioFactory:
     """
     시나리오 생성 팩토리.
 
-    7개 그룹, 34개 테스트 시나리오를 정의하고, 각 시나리오에 대한
+    7개 그룹, 35개 테스트 시나리오를 정의하고, 각 시나리오에 대한
     ServiceCostData를 생성합니다.
     """
 
@@ -322,16 +322,16 @@ class ScenarioFactory:
                 group_name="Gradual Change",
                 name="Steep Increase",
                 name_ko="가파른 증가",
-                description_ko="DynamoDB 비용이 7일간 일 8%씩 증가. 트래픽 급증 추세.",
+                description_ko="DynamoDB 비용이 7일간 일 12%씩 증가. 트래픽 급증 추세. (84% 누적 증가)",
                 service_name="Amazon DynamoDB",
                 expected_severity=Severity.HIGH,
                 expected_detection_method="ensemble",
                 pattern_recognizer="Trend",
                 base_cost=80000,
-                spike_percent=56,  # 7 * 8%
+                spike_percent=84,  # 7 * 12%
                 spike_duration=7,
                 pattern_type="gradual",
-                daily_increase_rate=8.0,
+                daily_increase_rate=12.0,
             ),
             # 2-4: 지속적 상승
             ScenarioDefinition(
@@ -474,13 +474,13 @@ class ScenarioFactory:
                 group_name="Cyclic Patterns",
                 name="Weekday Pattern",
                 name_ko="평일 패턴",
-                description_ko="Lambda 비용이 평일에 40% 상승. 업무 시간 트래픽 패턴.",
+                description_ko="Lambda 비용이 평일에 80% 상승. 업무 시간 트래픽 패턴. (패턴 빈도가 높아 정상으로 인식될 수 있음)",
                 service_name="AWS Lambda",
                 expected_severity=Severity.MEDIUM,
                 expected_detection_method="ensemble",
                 pattern_recognizer="DayOfWeek",
                 base_cost=80000,
-                spike_percent=40,
+                spike_percent=80,
                 spike_duration=5,
                 pattern_type="weekday",
             ),
@@ -501,31 +501,31 @@ class ScenarioFactory:
                 spike_duration=3,
                 pattern_type="month_end",
             ),
-            # 4-4: 월초 버스트
+            # 4-4: 월초 버스트 (증가형)
             ScenarioDefinition(
                 id="4-4",
                 group_id="4",
                 group_name="Cyclic Patterns",
                 name="Month-Start Burst",
                 name_ko="월초 버스트",
-                description_ko="Batch 비용이 월초에 150% 버스트. 월간 보고서 생성.",
+                description_ko="Batch 비용이 월초에 200% 버스트 (증가형). 월간 보고서 생성.",
                 service_name="AWS Batch",
                 expected_severity=Severity.HIGH,
                 expected_detection_method="ensemble",
                 pattern_recognizer="MonthCycle",
                 base_cost=100000,
-                spike_percent=150,
+                spike_percent=200,
                 spike_duration=2,
-                pattern_type="month_start",
+                pattern_type="month_start_rising",
             ),
-            # 4-5: 격주 패턴
+            # 4-5: 격주 패턴 (1주 정상 → 2주 스파이크)
             ScenarioDefinition(
                 id="4-5",
                 group_id="4",
                 group_name="Cyclic Patterns",
                 name="Biweekly Pattern",
                 name_ko="격주 패턴",
-                description_ko="EMR 비용이 격주로 80% 상승. 정기 데이터 처리 스케줄.",
+                description_ko="EMR 비용이 1주차 정상 → 2주차 전체 80% 상승. 격주 정기 데이터 처리 스케줄.",
                 service_name="Amazon EMR",
                 expected_severity=Severity.MEDIUM,
                 expected_detection_method="ensemble",
@@ -535,54 +535,72 @@ class ScenarioFactory:
                 spike_duration=2,
                 pattern_type="biweekly",
             ),
+            # 4-6: 월간 예외 스파이크
+            ScenarioDefinition(
+                id="4-6",
+                group_id="4",
+                group_name="Cyclic Patterns",
+                name="Monthly Exception Spike",
+                name_ko="월간 예외 스파이크",
+                description_ko="Redshift 비용이 3주간 동일 패턴 후 4주차에 150% 예외적 스파이크. 월말 정산, 분기 보고 등 반영.",
+                service_name="Amazon Redshift",
+                expected_severity=Severity.HIGH,
+                expected_detection_method="ensemble",
+                pattern_recognizer="MonthCycle",
+                base_cost=200000,
+                spike_percent=150,
+                spike_duration=2,
+                pattern_type="monthly_exception",
+            ),
         ])
 
         # =========================================================================
         # Group 5: 서비스 프로파일 (Service Profile) - 4개
+        # spike-normal 서비스의 실제 운영 패턴 반영
         # =========================================================================
         scenarios.extend([
-            # 5-1: Lambda 스파이크
+            # 5-1: Lambda 간헐적 스파이크
             ScenarioDefinition(
                 id="5-1",
                 group_id="5",
                 group_name="Service Profile",
-                name="Lambda Spike",
-                name_ko="Lambda 스파이크",
-                description_ko="Lambda 비용이 200% 급등. spike-normal 서비스 특성.",
+                name="Lambda Intermittent Spike",
+                name_ko="Lambda 간헐적 스파이크",
+                description_ko="Lambda 비용이 14일 중 3-4회 간헐적으로 200% 급등. 이벤트 기반 서비스 특성.",
                 service_name="AWS Lambda",
                 expected_severity=Severity.HIGH,
                 expected_detection_method="ensemble",
                 pattern_recognizer="ServiceProfile",
                 base_cost=80000,
                 spike_percent=200,
-                spike_duration=2,
-                pattern_type="sudden_spike",
+                spike_duration=1,
+                pattern_type="intermittent_spike",
             ),
-            # 5-2: Glue 스파이크
+            # 5-2: Glue 배치 버스트
             ScenarioDefinition(
                 id="5-2",
                 group_id="5",
                 group_name="Service Profile",
-                name="Glue Spike",
-                name_ko="Glue 스파이크",
-                description_ko="Glue 비용이 250% 급등. ETL 작업 실행으로 인한 정상 스파이크.",
+                name="Glue Batch Burst",
+                name_ko="Glue 배치 버스트",
+                description_ko="Glue 비용이 배치 작업 패턴 (시작 스파이크 → 유지 → 종료 스파이크). ETL 작업 실행.",
                 service_name="AWS Glue",
                 expected_severity=Severity.HIGH,
                 expected_detection_method="ensemble",
                 pattern_recognizer="ServiceProfile",
                 base_cost=150000,
                 spike_percent=250,
-                spike_duration=2,
-                pattern_type="sudden_spike",
+                spike_duration=3,
+                pattern_type="batch_burst",
             ),
-            # 5-3: Step Functions 스파이크
+            # 5-3: Step Functions 워크플로우 패턴
             ScenarioDefinition(
                 id="5-3",
                 group_id="5",
                 group_name="Service Profile",
-                name="Step Functions Spike",
-                name_ko="Step Functions 스파이크",
-                description_ko="Step Functions 비용이 180% 급등. 워크플로우 실행 증가.",
+                name="Step Functions Workflow",
+                name_ko="Step Functions 워크플로우",
+                description_ko="Step Functions 비용이 불규칙 워크플로우 실행 패턴. 180% 스파이크.",
                 service_name="AWS Step Functions",
                 expected_severity=Severity.HIGH,
                 expected_detection_method="ensemble",
@@ -590,16 +608,16 @@ class ScenarioFactory:
                 base_cost=50000,
                 spike_percent=180,
                 spike_duration=2,
-                pattern_type="sudden_spike",
+                pattern_type="workflow_pattern",
             ),
             # 5-4: Athena 쿼리 폭증
             ScenarioDefinition(
                 id="5-4",
                 group_id="5",
                 group_name="Service Profile",
-                name="Athena Query Surge",
+                name="Athena Query Burst",
                 name_ko="Athena 쿼리 폭증",
-                description_ko="Athena 비용이 300% 급등. 대량 분석 쿼리 실행.",
+                description_ko="Athena 비용이 급등 후 급락 (V자/역V자 패턴). 대량 분석 쿼리 실행.",
                 service_name="Amazon Athena",
                 expected_severity=Severity.CRITICAL,
                 expected_detection_method="ensemble",
@@ -607,7 +625,7 @@ class ScenarioFactory:
                 base_cost=250000,
                 spike_percent=300,
                 spike_duration=2,
-                pattern_type="sudden_spike",
+                pattern_type="query_burst",
             ),
         ])
 
@@ -660,9 +678,9 @@ class ScenarioFactory:
                 group_name="Edge Cases",
                 name="Minimal Cost",
                 name_ko="극소 비용",
-                description_ko="Route 53 비용이 100원에서 500원. 임계값 미만 변화.",
+                description_ko="Route 53 비용이 100원에서 500원 (400% 변화). 극소 비용이지만 변화율이 높아 CRITICAL로 탐지됨. 절대값 임계치 필요성 검증.",
                 service_name="Amazon Route 53",
-                expected_severity=Severity.LOW,
+                expected_severity=Severity.CRITICAL,
                 expected_detection_method="ratio",
                 pattern_recognizer=None,
                 base_cost=100,
@@ -698,14 +716,14 @@ class ScenarioFactory:
                 group_name="Edge Cases",
                 name="Spike Then Recovery",
                 name_ko="이상치 후 복구",
-                description_ko="RDS 비용이 200% 급등 후 정상 복구. 일시적 이상.",
+                description_ko="RDS 비용이 250% 급등 (4일간 유지) 후 빠른 복구. 스파이크 기간이 길어 탐지 가능.",
                 service_name="Amazon RDS",
                 expected_severity=Severity.HIGH,
                 expected_detection_method="ensemble",
                 pattern_recognizer=None,
                 base_cost=300000,
-                spike_percent=200,
-                spike_duration=2,
+                spike_percent=250,
+                spike_duration=4,
                 pattern_type="spike_recovery",
                 is_edge_case=True,
                 edge_case_type="spike_recovery",
@@ -851,7 +869,9 @@ class ScenarioFactory:
             "weekday": cls._generate_weekday_pattern,
             "month_end": cls._generate_month_end_pattern,
             "month_start": cls._generate_month_start_pattern,
+            "month_start_rising": cls._generate_month_start_rising_pattern,
             "biweekly": cls._generate_biweekly_pattern,
+            "monthly_exception": cls._generate_monthly_exception_pattern,
             "normal": cls._generate_normal_variation,
             # Edge cases
             "insufficient_data": cls._generate_normal_variation,
@@ -863,6 +883,11 @@ class ScenarioFactory:
             "ecod_dominant": cls._generate_ecod_dominant_pattern,
             "ratio_dominant": cls._generate_ratio_dominant_pattern,
             "stddev_dominant": cls._generate_stddev_dominant_pattern,
+            # Service profile patterns
+            "intermittent_spike": cls._generate_intermittent_spike,
+            "batch_burst": cls._generate_batch_burst,
+            "workflow_pattern": cls._generate_workflow_pattern,
+            "query_burst": cls._generate_query_burst,
         }
 
         generator = pattern_generators.get(
@@ -872,7 +897,8 @@ class ScenarioFactory:
 
         # 타임스탬프가 필요한 패턴들
         patterns_need_timestamps = {
-            "weekend", "weekday", "month_end", "month_start", "biweekly"
+            "weekend", "weekday", "month_end", "month_start", "month_start_rising",
+            "biweekly", "monthly_exception"
         }
 
         if scenario.pattern_type in patterns_need_timestamps:
@@ -1099,7 +1125,14 @@ class ScenarioFactory:
     def _generate_biweekly_pattern(
         cls, scenario: ScenarioDefinition, days: int, timestamps: List[str]
     ) -> List[float]:
-        """격주 패턴 생성."""
+        """격주 패턴 생성.
+
+        1주차(0-6일): 정상 비용
+        2주차(7-13일): 전체 스파이크 (+80%)
+
+        이 패턴은 4-6 월간 예외 스파이크(12일 정상 + 2일 스파이크)와
+        시각적으로 명확히 구분됩니다.
+        """
         import random
 
         base = scenario.base_cost
@@ -1107,14 +1140,12 @@ class ScenarioFactory:
 
         costs = []
         for i, ts in enumerate(timestamps):
-            # 격주: 7일마다 2일간 스파이크
-            week_number = i // 7
-            day_in_week = i % 7
-
-            if week_number % 2 == 0 and day_in_week < scenario.spike_duration:
+            # 2주차(day 7 이상)에 전체 스파이크
+            if i >= 7:
                 variance = random.uniform(-0.05, 0.05)
                 costs.append(base * spike_multiplier * (1 + variance))
             else:
+                # 1주차는 정상
                 variance = random.uniform(-0.05, 0.05)
                 costs.append(base * (1 + variance))
 
@@ -1173,7 +1204,10 @@ class ScenarioFactory:
     def _generate_spike_recovery_pattern(
         cls, scenario: ScenarioDefinition, days: int
     ) -> List[float]:
-        """스파이크 후 복구 패턴 생성."""
+        """스파이크 후 부분 복구 패턴 생성.
+
+        스파이크가 유지된 상태에서 부분적으로만 복구되어 탐지 가능.
+        """
         import random
 
         base = scenario.base_cost
@@ -1183,30 +1217,21 @@ class ScenarioFactory:
         costs = []
 
         # 정상 기간 (처음)
-        normal_days = days - spike_days * 2 - 1
+        normal_days = days - spike_days
         for _ in range(max(0, normal_days)):
             variance = random.uniform(-0.05, 0.05)
             costs.append(base * (1 + variance))
 
-        # 스파이크 기간
+        # 스파이크 기간 (마지막 spike_days일에 높은 값 유지)
+        # 점진적 상승 후 높은 수준 유지
         for i in range(spike_days):
             progress = (i + 1) / spike_days
-            multiplier = 1 + (spike_multiplier - 1) * progress
+            # 최소 70%의 스파이크 유지
+            multiplier = 1 + (spike_multiplier - 1) * max(0.7, progress)
             variance = random.uniform(-0.03, 0.03)
             costs.append(base * multiplier * (1 + variance))
 
-        # 복구 기간 (점진적 하락)
-        for i in range(spike_days):
-            progress = (spike_days - i) / spike_days
-            multiplier = 1 + (spike_multiplier - 1) * progress
-            variance = random.uniform(-0.03, 0.03)
-            costs.append(base * multiplier * (1 + variance))
-
-        # 마지막 정상
-        variance = random.uniform(-0.05, 0.05)
-        costs.append(base * (1 + variance))
-
-        return costs[:days]  # 정확히 days 길이로 맞춤
+        return costs[:days]
 
     @classmethod
     def _generate_gradual_then_spike_pattern(
@@ -1320,6 +1345,224 @@ class ScenarioFactory:
 
         return costs
 
+    # =========================================================================
+    # 신규 패턴 생성기 (주기적 패턴)
+    # =========================================================================
+
+    @classmethod
+    def _generate_month_start_rising_pattern(
+        cls, scenario: ScenarioDefinition, days: int, timestamps: List[str]
+    ) -> List[float]:
+        """월초 증가형 패턴 생성 (정상 → 스파이크).
+
+        기존 month_start는 감소형(스파이크→정상)이었으나,
+        탐지가 어려워 증가형으로 변경.
+        """
+        import random
+
+        base = scenario.base_cost
+        spike_days = scenario.spike_duration
+        spike_multiplier = 1 + (scenario.spike_percent / 100)
+
+        costs = []
+
+        # 정상 기간 (처음)
+        for _ in range(days - spike_days):
+            variance = random.uniform(-0.05, 0.05)
+            costs.append(base * (1 + variance))
+
+        # 월초 버스트 (마지막 spike_days일) - 점진적 상승
+        for i in range(spike_days):
+            progress = (i + 1) / spike_days
+            multiplier = 1 + (spike_multiplier - 1) * progress
+            variance = random.uniform(-0.03, 0.03)
+            costs.append(base * multiplier * (1 + variance))
+
+        return costs
+
+    @classmethod
+    def _generate_monthly_exception_pattern(
+        cls, scenario: ScenarioDefinition, days: int, timestamps: List[str]
+    ) -> List[float]:
+        """월간 예외 스파이크 패턴 생성.
+
+        3주간 동일한 패턴 후 4주차에 예외적 스파이크.
+        월말 정산, 분기 보고서 등의 업무 패턴 반영.
+        """
+        import random
+
+        base = scenario.base_cost
+        spike_days = scenario.spike_duration
+        spike_multiplier = 1 + (scenario.spike_percent / 100)
+
+        costs = []
+
+        # 14일 기준: 처음 11-12일은 정상, 마지막 2-3일은 스파이크
+        normal_days = days - spike_days
+
+        # 정상 기간 (3주 동일 패턴 시뮬레이션)
+        for _ in range(normal_days):
+            variance = random.uniform(-0.05, 0.05)
+            costs.append(base * (1 + variance))
+
+        # 4주차 예외적 스파이크
+        for i in range(spike_days):
+            progress = (i + 1) / spike_days
+            multiplier = 1 + (spike_multiplier - 1) * progress
+            variance = random.uniform(-0.03, 0.03)
+            costs.append(base * multiplier * (1 + variance))
+
+        return costs
+
+    # =========================================================================
+    # 신규 패턴 생성기 (서비스 프로파일)
+    # =========================================================================
+
+    @classmethod
+    def _generate_intermittent_spike(
+        cls, scenario: ScenarioDefinition, days: int
+    ) -> List[float]:
+        """간헐적 스파이크 패턴 생성 (Lambda 등 이벤트 기반 서비스).
+
+        마지막 2-3일에 스파이크를 배치하여 탐지 가능하도록 함.
+        이벤트 기반 서비스의 실제 운영 패턴 반영.
+        """
+        import random
+
+        base = scenario.base_cost
+        spike_multiplier = 1 + (scenario.spike_percent / 100)
+        spike_duration = max(2, scenario.spike_duration)
+
+        costs = []
+
+        # 처음에 1-2회 간헐적 스파이크 (히스토리에 패턴 추가)
+        early_spike_day = random.randint(2, 5)
+
+        # 정상 기간 (처음)
+        for i in range(days - spike_duration):
+            if i == early_spike_day:
+                # 중간 정도의 스파이크 (패턴 히스토리)
+                variance = random.uniform(-0.05, 0.05)
+                costs.append(base * (spike_multiplier * 0.6) * (1 + variance))
+            else:
+                variance = random.uniform(-0.05, 0.05)
+                costs.append(base * (1 + variance))
+
+        # 마지막 spike_duration일에 큰 스파이크 (탐지 대상)
+        for i in range(spike_duration):
+            progress = (i + 1) / spike_duration
+            multiplier = 1 + (spike_multiplier - 1) * progress
+            variance = random.uniform(-0.03, 0.03)
+            costs.append(base * multiplier * (1 + variance))
+
+        return costs
+
+    @classmethod
+    def _generate_batch_burst(
+        cls, scenario: ScenarioDefinition, days: int
+    ) -> List[float]:
+        """배치 버스트 패턴 생성 (Glue 등 ETL 서비스).
+
+        정상 기간 후 마지막에 급격한 스파이크.
+        탐지가 확실하도록 마지막에 높은 값으로 끝남.
+        """
+        import random
+
+        base = scenario.base_cost
+        spike_multiplier = 1 + (scenario.spike_percent / 100)
+        spike_duration = scenario.spike_duration
+
+        costs = []
+
+        # 정상 기간 (처음)
+        normal_days = days - spike_duration
+        for _ in range(normal_days):
+            variance = random.uniform(-0.05, 0.05)
+            costs.append(base * (1 + variance))
+
+        # 스파이크 기간 (마지막 spike_duration일)
+        for i in range(spike_duration):
+            progress = (i + 1) / spike_duration
+            multiplier = 1 + (spike_multiplier - 1) * progress
+            variance = random.uniform(-0.03, 0.03)
+            costs.append(base * multiplier * (1 + variance))
+
+        return costs
+
+    @classmethod
+    def _generate_workflow_pattern(
+        cls, scenario: ScenarioDefinition, days: int
+    ) -> List[float]:
+        """워크플로우 실행 패턴 생성 (Step Functions 등).
+
+        불규칙한 스파이크 패턴.
+        워크플로우 실행이 불규칙하게 발생하는 패턴 반영.
+        """
+        import random
+
+        base = scenario.base_cost
+        spike_multiplier = 1 + (scenario.spike_percent / 100)
+        duration = scenario.spike_duration
+
+        costs = []
+
+        # 정상 기간 (처음)
+        normal_days = days - duration
+        for _ in range(normal_days):
+            variance = random.uniform(-0.05, 0.05)
+            # 가끔 작은 스파이크 (워크플로우 짧은 실행)
+            if random.random() < 0.2:
+                small_spike = random.uniform(1.2, 1.5)
+                costs.append(base * small_spike * (1 + variance))
+            else:
+                costs.append(base * (1 + variance))
+
+        # 주요 스파이크 기간 (대량 워크플로우 실행)
+        for i in range(duration):
+            progress = (i + 1) / duration
+            multiplier = 1 + (spike_multiplier - 1) * progress
+            variance = random.uniform(-0.05, 0.05)
+            costs.append(base * multiplier * (1 + variance))
+
+        return costs
+
+    @classmethod
+    def _generate_query_burst(
+        cls, scenario: ScenarioDefinition, days: int
+    ) -> List[float]:
+        """쿼리 폭증 패턴 생성 (Athena 등 쿼리 기반 서비스).
+
+        정상 → 급등 패턴으로 마지막에 높은 스파이크.
+        대량 쿼리 실행이 최근에 발생하여 탐지 대상이 됨.
+        """
+        import random
+
+        base = scenario.base_cost
+        spike_multiplier = 1 + (scenario.spike_percent / 100)
+        duration = scenario.spike_duration
+
+        costs = []
+
+        # 정상 기간 (처음) - 가끔 작은 스파이크
+        normal_days = days - duration
+        for i in range(normal_days):
+            if i == normal_days // 2:
+                # 중간에 작은 스파이크 (쿼리 패턴 히스토리)
+                variance = random.uniform(-0.03, 0.03)
+                costs.append(base * 1.5 * (1 + variance))
+            else:
+                variance = random.uniform(-0.05, 0.05)
+                costs.append(base * (1 + variance))
+
+        # 마지막 duration일에 급등 (대량 쿼리 실행)
+        for i in range(duration):
+            progress = (i + 1) / duration
+            multiplier = 1 + (spike_multiplier - 1) * progress
+            variance = random.uniform(-0.03, 0.03)
+            costs.append(base * multiplier * (1 + variance))
+
+        return costs
+
     @classmethod
     def generate_all_cost_data(
         cls,
@@ -1335,7 +1578,7 @@ class ScenarioFactory:
             days: 데이터 일수
 
         Returns:
-            34개의 ServiceCostData 목록
+            35개의 ServiceCostData 목록
         """
         scenarios = cls.get_all_scenarios()
         return [

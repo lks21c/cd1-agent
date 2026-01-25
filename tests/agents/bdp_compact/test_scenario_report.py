@@ -1,7 +1,7 @@
 """
 Scenario Report Test Runner.
 
-7개 그룹, 34개의 비용 이상 시나리오를 실행하고 HTML 리포트를 생성합니다.
+7개 그룹, 35개의 비용 이상 시나리오를 실행하고 HTML 리포트를 생성합니다.
 
 Usage:
     # 전체 테스트 실행 (34개 시나리오)
@@ -318,14 +318,14 @@ class TestScenarioReport:
         chart_generator: CostTrendChartGenerator,
         report_generator: HTMLReportGenerator,
     ):
-        """전체 34개 시나리오 실행 후 HTML 리포트 생성."""
-        print("\n=== 전체 시나리오 리포트 생성 (34개) ===")
+        """전체 35개 시나리오 실행 후 HTML 리포트 생성."""
+        print("\n=== 전체 시나리오 리포트 생성 (35개) ===")
 
         # 모든 시나리오 가져오기
         scenarios = ScenarioFactory.get_all_scenarios()
         groups = ScenarioFactory.get_all_groups()
 
-        assert len(scenarios) == 34, f"Expected 34 scenarios, got {len(scenarios)}"
+        assert len(scenarios) == 35, f"Expected 35 scenarios, got {len(scenarios)}"
         assert len(groups) == 7, f"Expected 7 groups, got {len(groups)}"
 
         # 각 시나리오 실행
@@ -447,7 +447,7 @@ class TestScenarioReport:
         scenarios = ScenarioFactory.get_all_scenarios()
         groups = ScenarioFactory.get_all_groups()
 
-        assert len(scenarios) == 34, f"Expected 34 scenarios, got {len(scenarios)}"
+        assert len(scenarios) == 35, f"Expected 35 scenarios, got {len(scenarios)}"
         assert len(groups) == 7, f"Expected 7 groups, got {len(groups)}"
 
         # 그룹별 시나리오 수 검증
@@ -455,7 +455,7 @@ class TestScenarioReport:
             "1": 6,  # Sudden Spike
             "2": 5,  # Gradual Change
             "3": 4,  # Cost Reduction
-            "4": 5,  # Cyclic Patterns
+            "4": 6,  # Cyclic Patterns (5→6: 월간 예외 스파이크 추가)
             "5": 4,  # Service Profile
             "6": 6,  # Edge Cases
             "7": 4,  # Detection Method Comparison
@@ -548,7 +548,7 @@ def run_scenario_report():
     groups = ScenarioFactory.get_all_groups()
     results: List[ScenarioResult] = []
 
-    print("=== BDP Compact 시나리오 테스트 실행 (34개 시나리오) ===\n")
+    print("=== BDP Compact 시나리오 테스트 실행 (35개 시나리오) ===\n")
 
     for scenario in scenarios:
         cost_data = ScenarioFactory.generate_cost_data(scenario)
