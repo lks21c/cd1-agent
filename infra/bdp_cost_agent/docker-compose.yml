@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  localstack:
+    image: localstack/localstack:3.0
+    container_name: bdp-cost-localstack
+    ports:
+      - "4566:4566"
+      - "4510-4559:4510-4559"
+    environment:
+      - SERVICES=dynamodb,events,sts
+      - DEBUG=1
+      - PERSISTENCE=1
+      - DATA_DIR=/var/lib/localstack/data
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - AWS_DEFAULT_REGION=ap-northeast-2
+    volumes:
+      - "./init:/etc/localstack/init/ready.d"
+      - "localstack_data:/var/lib/localstack"
+    networks:
+      - bdp-cost-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  bdp-cost-agent:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    container_name: bdp-cost-agent
+    ports:
+      - "8005:8005"
+    environment:
+      - ENVIRONMENT=dev
+      - AWS_REGION=ap-northeast-2
+      - AWS_PROVIDER=localstack
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - LOCALSTACK_ENDPOINT=http://localstack:4566
+      - BDP_PROVIDER=localstack
+      - BDP_SENSITIVITY=0.7
+      - BDP_CURRENCY=KRW
+      - BDP_MIN_COST_THRESHOLD=10000
+      - BDP_HITL_ON_CRITICAL=true
+      - EVENT_BUS=bdp-cost-events
+      - EVENT_PROVIDER=localstack
+      - RDS_PROVIDER=mock
+      - LOG_LEVEL=DEBUG
+      # Multi-Account 설정 (시뮬레이션)
+      - BDP_ACCOUNT_1_ID=111111111111
+      - BDP_ACCOUNT_1_NAME=bdp-prod
+      - BDP_ACCOUNT_2_ID=222222222222
+      - BDP_ACCOUNT_2_NAME=hyundaicard-member
+    depends_on:
+      localstack:
+        condition: service_healthy
+    networks:
+      - bdp-cost-network
+    command: ["python", "-m", "src.agents.bdp_cost.server"]
+
+volumes:
+  localstack_data:
+
+networks:
+  bdp-cost-network:
+    driver: bridge

@@ -63,7 +63,7 @@ pyod = [
     "numpy>=1.24.0",
     "scipy>=1.10.0",
 ]
-bdp-compact = [
+bdp-cost = [
     "cd1-agent[pyod,server]",
 ]
 server = [

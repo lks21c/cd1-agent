@@ -132,7 +132,7 @@ all = [
     { name = "scipy" },
     { name = "uvicorn", extra = ["standard"] },
 ]
-bdp-compact = [
+bdp-cost = [
     { name = "fastapi" },
     { name = "httpx" },
     { name = "numpy" },
@@ -198,7 +198,7 @@ requires-dist = [
     { name = "boto3", marker = "extra == 'lambda-layer'", specifier = ">=1.28.0" },
     { name = "build", marker = "extra == 'dev'", specifier = ">=1.0.0" },
     { name = "cd1-agent", extras = ["luminol", "vllm", "gemini", "rds", "server", "pyod"], marker = "extra == 'all'" },
-    { name = "cd1-agent", extras = ["pyod", "server"], marker = "extra == 'bdp-compact'" },
+    { name = "cd1-agent", extras = ["pyod", "server"], marker = "extra == 'bdp-cost'" },
     { name = "cryptography", marker = "extra == 'rds'", specifier = ">=41.0.0" },
     { name = "fastapi", marker = "extra == 'server'", specifier = ">=0.115.0" },
     { name = "google-generativeai", marker = "extra == 'gemini'", specifier = ">=0.3.0" },
@@ -226,7 +226,7 @@ requires-dist = [
     { name = "twine", marker = "extra == 'dev'", specifier = ">=4.0.0" },
     { name = "uvicorn", extras = ["standard"], marker = "extra == 'server'", specifier = ">=0.32.0" },
 ]
-provides-extras = ["dev", "luminol", "vllm", "gemini", "rds", "pyod", "bdp-compact", "server", "lambda-layer", "all"]
+provides-extras = ["dev", "luminol", "vllm", "gemini", "rds", "pyod", "bdp-cost", "server", "lambda-layer", "all"]
 
 [package.metadata.requires-dev]
 dev = [

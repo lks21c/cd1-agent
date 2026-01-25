@@ -16,12 +16,12 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.agents.bdp_compact.services.cost_explorer_provider import (
+from src.agents.bdp_cost.services.cost_explorer_provider import (
     MockCostExplorerProvider,
     ServiceCostData,
 )
-from src.agents.bdp_compact.services.kakao_notifier import KakaoNotifier
-from src.agents.bdp_compact.services.report_generator import ReportGenerator
+from src.agents.bdp_cost.services.kakao_notifier import KakaoNotifier
+from src.agents.bdp_cost.services.report_generator import ReportGenerator
 
 # Configure logging
 logging.basicConfig(

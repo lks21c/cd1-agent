@@ -1,5 +1,0 @@
-{
-  "EventBusName": "cd1-agent-events",
-  "Source": "cd1-agent.bdp-compact",
-  "DetailType": "Cost Drift Detected"
-}

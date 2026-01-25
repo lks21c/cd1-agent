@@ -178,8 +178,8 @@ class KakaoNotifier:
         self.access_token = None
         self.refresh_token = None
         self.rest_api_key = None
-        self.token_path = Path(__file__).parent.parent / "src/agents/bdp_compact/conf/kakao_tokens.json"
-        self.config_path = Path(__file__).parent.parent / "src/agents/bdp_compact/conf/kakao_config.json"
+        self.token_path = Path(__file__).parent.parent / "src/agents/bdp_cost/conf/kakao_tokens.json"
+        self.config_path = Path(__file__).parent.parent / "src/agents/bdp_cost/conf/kakao_config.json"
 
     def load_tokens(self) -> bool:
         try:

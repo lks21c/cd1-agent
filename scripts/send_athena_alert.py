@@ -24,10 +24,10 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.agents.bdp_compact.services.anomaly_detector import CostDriftDetector
-from src.agents.bdp_compact.services.cost_explorer_provider import ServiceCostData
-from src.agents.bdp_compact.services.kakao_notifier import KakaoNotifier
-from src.agents.bdp_compact.services.summary_generator import SummaryGenerator
+from src.agents.bdp_cost.services.anomaly_detector import CostDriftDetector
+from src.agents.bdp_cost.services.cost_explorer_provider import ServiceCostData
+from src.agents.bdp_cost.services.kakao_notifier import KakaoNotifier
+from src.agents.bdp_cost.services.summary_generator import SummaryGenerator
 
 # Configure logging
 logging.basicConfig(
@@ -102,7 +102,7 @@ def main():
 
     if not notifier.load_tokens():
         print("  ❌ 토큰 로드 실패. 토큰 설정을 확인하세요.")
-        print("     실행: python -m src.agents.bdp_compact.services.kakao_notifier")
+        print("     실행: python -m src.agents.bdp_cost.services.kakao_notifier")
         return 1
 
     success = notifier.send_alert(result, summary)
