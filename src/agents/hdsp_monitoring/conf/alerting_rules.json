@@ -1,0 +1,43 @@
+{
+  "routing": {
+    "critical": {
+      "primary": "kakao",
+      "fallback": "eventbridge",
+      "immediate": true,
+      "repeat_interval_minutes": 30
+    },
+    "high": {
+      "primary": "kakao",
+      "fallback": "eventbridge",
+      "immediate": true,
+      "repeat_interval_minutes": 60
+    },
+    "medium": {
+      "primary": "eventbridge",
+      "fallback": null,
+      "immediate": false,
+      "repeat_interval_minutes": 120
+    }
+  },
+  "channels": {
+    "kakao": {
+      "enabled": true,
+      "max_message_length": 1000,
+      "rate_limit_per_minute": 5
+    },
+    "eventbridge": {
+      "enabled": true,
+      "batch_size": 10
+    }
+  },
+  "message_templates": {
+    "korean": true,
+    "include_runbook_url": true,
+    "max_alerts_per_message": 5
+  },
+  "escalation": {
+    "enabled": false,
+    "escalation_after_minutes": 30,
+    "escalation_channel": "slack"
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "alertmanager": {
+    "url": "${ALERTMANAGER_URL:-http://localhost:9093}",
+    "timeout_seconds": 30,
+    "api_version": "v2"
+  },
+  "severity_mapping": {
+    "critical_alerts": [
+      "KubePodCrashLooping",
+      "KubeContainerOOMKilled",
+      "KubeNodeNotReady",
+      "TargetDown",
+      "KubeAPIDown",
+      "EtcdClusterUnavailable",
+      "AlertmanagerDown",
+      "PrometheusDown"
+    ],
+    "high_alerts": [
+      "KubeNodeMemoryPressure",
+      "KubeNodeDiskPressure",
+      "KubeDeploymentReplicasMismatch",
+      "KubePersistentVolumeFillingUp",
+      "ContainerCPUUsageHigh",
+      "ContainerMemoryUsageHigh"
+    ],
+    "label_mapping": {
+      "critical": "critical",
+      "error": "critical",
+      "page": "critical",
+      "warning": "high",
+      "high": "high",
+      "info": "medium",
+      "medium": "medium",
+      "low": "medium"
+    }
+  },
+  "deduplication": {
+    "enabled": true,
+    "window_seconds": 300,
+    "repeat_interval_seconds": 3600,
+    "store_type": "memory"
+  },
+  "grouping": {
+    "enabled": true,
+    "group_by": ["namespace", "alertname"],
+    "group_wait_seconds": 30,
+    "group_interval_seconds": 60
+  },
+  "rate_limiting": {
+    "max_notifications_per_minute": 10,
+    "burst_allowance": 5
+  },
+  "namespaces": {
+    "include": null,
+    "exclude": ["test-*", "dev-*", "kube-node-lease"]
+  },
+  "cluster": {
+    "name": "${HDSP_CLUSTER_NAME:-on-prem-k8s}",
+    "environment": "${ENVIRONMENT:-production}"
+  }
+}

@@ -1,0 +1,2843 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HDSP Alert Monitoring Report</title>
+    <style>
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f9fafb;
+            color: #111827;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            padding: 20px;
+        }
+
+        .card-header {
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-critical {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+
+        .badge-high {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #f59e0b;
+        }
+
+        .badge-medium {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #3b82f6;
+        }
+
+        .badge-low {
+            background: #f3f4f6;
+            color: #4b5563;
+            border: 1px solid #9ca3af;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .table th {
+            background: #f9fafb;
+            font-weight: 600;
+        }
+
+        .table tr:hover {
+            background: #f9fafb;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .grid-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        @media (max-width: 768px) {
+            .grid-2, .grid-3, .grid-4 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .diff-added {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .diff-removed {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .diff-changed {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .code-block {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+        }
+
+        .nav {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-item {
+            padding: 8px 16px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover {
+            background: #f9fafb;
+        }
+
+        .nav-item.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .header {
+            background: #ffffff;
+            padding: 24px;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 24px;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+        }
+
+        .alert-danger {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            border: 1px solid #10b981;
+            color: #166534;
+        }
+        
+        
+        /* =========================================================
+           Alert Card - Self-contained card design
+           ========================================================= */
+        .alert-card {
+            margin-bottom: 20px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: box-shadow 0.2s ease;
+        }
+
+        .alert-card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .alert-card.critical {
+            border-left: 4px solid #ef4444;
+        }
+
+        .alert-card.high {
+            border-left: 4px solid #f59e0b;
+        }
+
+        .alert-card.medium {
+            border-left: 4px solid #3b82f6;
+        }
+
+        /* Card Header */
+        .alert-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 16px 20px;
+            background: linear-gradient(to right, #f8fafc, #ffffff);
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .alert-card-header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .alert-card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .alert-card-title .emoji {
+            font-size: 18px;
+        }
+
+        .alert-card-meta {
+            font-size: 12px;
+            color: #6b7280;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .alert-card-meta-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .alert-card-header-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        /* Alert Content Box */
+        .alert-content-box {
+            margin: 16px 20px;
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .alert-content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #e5e7eb;
+        }
+
+        .alert-content-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Summary & Description */
+        .alert-summary {
+            font-size: 14px;
+            color: #1f2937;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            border-left: 3px solid #6366f1;
+            font-weight: 500;
+        }
+
+        .alert-description {
+            font-size: 13px;
+            color: #4b5563;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            border-left: 3px solid #9ca3af;
+            line-height: 1.6;
+        }
+
+        /* Timeline Info */
+        .alert-timeline {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: linear-gradient(90deg, #f0f9ff 0%, #ffffff 100%);
+            border-radius: 8px;
+        }
+
+        .timeline-item {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .timeline-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: #6b7280;
+            margin-bottom: 2px;
+        }
+
+        .timeline-value {
+            font-size: 13px;
+            font-weight: 500;
+            color: #1f2937;
+        }
+
+        .duration-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .duration-badge.long {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .duration-badge.normal {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        /* =========================================================
+           GNB - Sticky Navigation
+           ========================================================= */
+        .severity-nav {
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 15px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .severity-nav-label {
+            font-weight: 600;
+            color: #374151;
+            padding: 8px 0;
+            font-size: 14px;
+        }
+
+        .severity-nav-link {
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 13px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .severity-nav-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .severity-nav-link.critical {
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .severity-nav-link.high {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #92400e;
+            border: 1px solid #fcd34d;
+        }
+
+        .severity-nav-link.medium {
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+
+        /* Section anchor offset for sticky nav */
+        .severity-section {
+            scroll-margin-top: 80px;
+            margin-bottom: 32px;
+        }
+
+        .severity-section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .severity-section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .severity-section-count {
+            background: #e5e7eb;
+            color: #4b5563;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Smooth scroll behavior */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Severity badge styling */
+        .severity-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .severity-badge.critical {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .severity-badge.high {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .severity-badge.medium {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        /* Resource Info Grid */
+        .resource-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .resource-info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .resource-info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .resource-info-icon {
+            font-size: 18px;
+        }
+
+        .resource-info-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .resource-info-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #6b7280;
+            font-weight: 600;
+        }
+
+        .resource-info-value {
+            font-size: 13px;
+            color: #1f2937;
+            font-weight: 500;
+        }
+
+        /* =========================================================
+           Timeline Visualization - Alert Causality Chart
+           ========================================================= */
+        .timeline-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            overflow-x: auto;
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .timeline-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .timeline-subtitle {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .timeline-legend {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+        }
+
+        .timeline-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .timeline-legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .timeline-legend-dot.critical {
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+        }
+
+        .timeline-legend-dot.high {
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+        }
+
+        .timeline-legend-dot.medium {
+            background: linear-gradient(90deg, #3b82f6, #2563eb);
+        }
+
+        /* Time Scale (X-axis) */
+        .timeline-scale {
+            display: flex;
+            margin-left: 220px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e5e7eb;
+            position: relative;
+        }
+
+        .timeline-scale-mark {
+            flex: 1;
+            font-size: 11px;
+            color: #6b7280;
+            text-align: left;
+            position: relative;
+        }
+
+        .timeline-scale-mark::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -10px;
+            width: 1px;
+            height: 6px;
+            background: #d1d5db;
+        }
+
+        /* Timeline Rows */
+        .timeline-rows {
+            min-width: 800px;
+        }
+
+        .timeline-row {
+            display: flex;
+            align-items: center;
+            height: 32px;
+            margin-bottom: 6px;
+        }
+
+        .timeline-row:hover {
+            background: #f9fafb;
+            border-radius: 4px;
+        }
+
+        .timeline-label {
+            width: 220px;
+            flex-shrink: 0;
+            font-size: 12px;
+            font-weight: 500;
+            padding-right: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .timeline-label .emoji {
+            font-size: 14px;
+        }
+
+        /* Track and Bar */
+        .timeline-track {
+            flex: 1;
+            height: 20px;
+            background: #f3f4f6;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .timeline-bar {
+            position: absolute;
+            height: 100%;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.2s;
+            min-width: 6px;
+            display: flex;
+            align-items: center;
+            padding-left: 6px;
+            font-size: 10px;
+            color: white;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .timeline-bar:hover {
+            opacity: 0.85;
+            transform: scaleY(1.15);
+            z-index: 10;
+        }
+
+        /* Severity Colors */
+        .timeline-bar.critical {
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+            box-shadow: 0 1px 3px rgba(239, 68, 68, 0.4);
+        }
+
+        .timeline-bar.high {
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+            box-shadow: 0 1px 3px rgba(245, 158, 11, 0.4);
+        }
+
+        .timeline-bar.medium {
+            background: linear-gradient(90deg, #3b82f6, #2563eb);
+            box-shadow: 0 1px 3px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Tooltip */
+        .timeline-bar::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: 50%;
+            bottom: 100%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            z-index: 100;
+            margin-bottom: 8px;
+        }
+
+        .timeline-bar:hover::after {
+            opacity: 1;
+        }
+
+        /* Causality Hint */
+        .timeline-causality-hint {
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: linear-gradient(90deg, #f0f9ff 0%, #eff6ff 100%);
+            border-radius: 8px;
+            font-size: 12px;
+            color: #374151;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .timeline-causality-hint .hint-icon {
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .timeline-causality-hint .hint-text {
+            line-height: 1.5;
+        }
+
+        /* Now marker */
+        .timeline-now-marker {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #10b981;
+        }
+
+        .timeline-now-label {
+            position: absolute;
+            right: -4px;
+            top: -20px;
+            font-size: 10px;
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        /* Collapsible Section */
+        .collapsible-section {
+            margin-top: 24px;
+        }
+
+        .collapsible-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: #f9fafb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .collapsible-header:hover {
+            background: #f3f4f6;
+        }
+
+        .collapsible-header-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .collapsible-toggle {
+            font-size: 12px;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .collapsible-content {
+            display: none;
+            margin-top: 16px;
+        }
+
+        .collapsible-content.expanded {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .timeline-container {
+                overflow-x: scroll;
+            }
+
+            .timeline-rows {
+                min-width: 600px;
+            }
+
+            .timeline-label {
+                width: 150px;
+                font-size: 11px;
+            }
+        }
+
+        /* =========================================================
+           Grouped Timeline - Pod/Node Level Separation
+           ========================================================= */
+        .grouped-timeline-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .grouped-timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .grouped-timeline-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .grouped-timeline-subtitle {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        /* Group Section */
+        .timeline-group {
+            margin-bottom: 24px;
+            padding: 16px;
+            background: #fafafa;
+            border-radius: 8px;
+        }
+
+        .timeline-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-group-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .timeline-group-icon {
+            font-size: 16px;
+        }
+
+        .timeline-group-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .timeline-group-count {
+            font-size: 12px;
+            color: #6b7280;
+            background: #e5e7eb;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        /* QuickChart Timeline Image */
+        .timeline-chart-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 12px 0;
+        }
+
+        .timeline-chart-img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        /* Alert List in Group */
+        .timeline-alert-list {
+            margin-top: 12px;
+        }
+
+        .timeline-alert-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: white;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            border-left: 3px solid #e5e7eb;
+        }
+
+        .timeline-alert-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-alert-item.critical {
+            border-left-color: #ef4444;
+        }
+
+        .timeline-alert-item.high {
+            border-left-color: #f59e0b;
+        }
+
+        .timeline-alert-item.medium {
+            border-left-color: #3b82f6;
+        }
+
+        .timeline-alert-severity {
+            font-size: 14px;
+        }
+
+        .timeline-alert-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: #1f2937;
+            flex: 1;
+        }
+
+        .timeline-alert-time {
+            font-size: 11px;
+            color: #6b7280;
+            white-space: nowrap;
+        }
+
+        .timeline-alert-duration {
+            font-size: 11px;
+            color: #9ca3af;
+            padding: 2px 6px;
+            background: #f3f4f6;
+            border-radius: 4px;
+        }
+
+        /* No Data Message */
+        .timeline-no-data {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        /* =========================================================
+           KakaoTalk Message Preview
+           ========================================================= */
+        .kakao-preview {
+            margin: 16px 20px 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #fae100;
+        }
+
+        .kakao-preview-header {
+            background: #fae100;
+            color: #3c1e1e;
+            padding: 8px 12px;
+            font-weight: 600;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .kakao-preview-content {
+            background: #f9f9f9;
+            padding: 12px;
+        }
+
+        .kakao-preview-content pre {
+            font-family: 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+            font-size: 11px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin: 0;
+            color: #333;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1 class="header-title">HDSP Alert Monitoring Report</h1>
+            <p class="header-subtitle">Generated at 2026-01-25 21:09:00 UTC</p>
+        </div>
+    </div>
+    <div class="container">
+        
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">📊 알림 요약</span>
+                
+            </div>
+            
+        <div class="alert alert-danger">
+            🚨 3건의 심각한 알림이 발생했습니다. 즉시 확인이 필요합니다.
+        </div>
+        
+        <div class="grid grid-4">
+            
+            <div class="card stat-card">
+                <div class="stat-value" style="color: #3b82f6;">13</div>
+                <div class="stat-label">총 알림</div>
+            </div>
+            
+            <div class="card stat-card">
+                <div class="stat-value" style="color: #ef4444;">3</div>
+                <div class="stat-label">심각</div>
+            </div>
+            
+            <div class="card stat-card">
+                <div class="stat-value" style="color: #f59e0b;">5</div>
+                <div class="stat-label">높음</div>
+            </div>
+            
+            <div class="card stat-card">
+                <div class="stat-value" style="color: #3b82f6;">5</div>
+                <div class="stat-label">보통</div>
+            </div>
+            
+        </div>
+        
+        </div>
+        
+
+        <div class="grouped-timeline-container">
+            <div class="grouped-timeline-header">
+                <div>
+                    <div class="grouped-timeline-title">
+                        🐳 Pod Level 타임라인
+                    </div>
+                    <div class="grouped-timeline-subtitle">
+                        01/23 21:04 ~ 01/25 21:11 • 총 8건 • 5개 그룹
+                    </div>
+                </div>
+                <div class="timeline-legend">
+                    <div class="timeline-legend-item">
+                        <div class="timeline-legend-dot critical"></div>
+                        <span>심각</span>
+                    </div>
+                    <div class="timeline-legend-item">
+                        <div class="timeline-legend-dot high"></div>
+                        <span>높음</span>
+                    </div>
+                    <div class="timeline-legend-item">
+                        <div class="timeline-legend-dot medium"></div>
+                        <span>보통</span>
+                    </div>
+                </div>
+            </div>
+            
+        <div class="timeline-group">
+            <div class="timeline-group-header">
+                <span class="timeline-group-icon">📁</span>
+                <span class="timeline-group-title">production</span>
+                <span class="timeline-group-count">3건</span>
+            </div>
+            
+            <div class="timeline-chart-wrapper">
+                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubePodOOMKilled%22%2C%20%22KubePodCrashLoopin%22%2C%20%22KubeHpaMaxedOut%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B10.0%2C%2015.0%2C%205.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B40.0%2C%2035.0%2C%2045.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%28239%2C%2068%2C%2068%2C%200.85%29%22%2C%20%22rgba%28239%2C%2068%2C%2068%2C%200.85%29%22%2C%20%22rgba%28245%2C%20158%2C%2011%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%2052.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2220%3A19%20%E2%86%92%2021%3A11%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=96&bkg=white&devicePixelRatio=2" alt="production Timeline" class="timeline-chart-img">
+            </div>
+            
+            <div class="timeline-alert-list">
+                
+            <div class="timeline-alert-item critical">
+                <span class="timeline-alert-severity">🚨</span>
+                <span class="timeline-alert-name">KubePodOOMKilled</span>
+                <span class="timeline-alert-time">01/25 20:29</span>
+                <span class="timeline-alert-duration">40m</span>
+            </div>
+            
+            <div class="timeline-alert-item critical">
+                <span class="timeline-alert-severity">🚨</span>
+                <span class="timeline-alert-name">KubePodCrashLooping</span>
+                <span class="timeline-alert-time">01/25 20:34</span>
+                <span class="timeline-alert-duration">35m</span>
+            </div>
+            
+            <div class="timeline-alert-item high">
+                <span class="timeline-alert-severity">⚠️</span>
+                <span class="timeline-alert-name">KubeHpaMaxedOut</span>
+                <span class="timeline-alert-time">01/25 20:24</span>
+                <span class="timeline-alert-duration">45m</span>
+            </div>
+            
+            </div>
+        </div>
+        
+        <div class="timeline-group">
+            <div class="timeline-group-header">
+                <span class="timeline-group-icon">📁</span>
+                <span class="timeline-group-title">staging</span>
+                <span class="timeline-group-count">2건</span>
+            </div>
+            
+            <div class="timeline-chart-wrapper">
+                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubeDeploymentRepl%22%2C%20%22KubeQuotaAlmostFul%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B107.0%2C%205.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B18.0%2C%20120.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%28245%2C%20158%2C%2011%2C%200.85%29%22%2C%20%22rgba%2859%2C%20130%2C%20246%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%20127.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2219%3A04%20%E2%86%92%2021%3A11%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=74&bkg=white&devicePixelRatio=2" alt="staging Timeline" class="timeline-chart-img">
+            </div>
+            
+            <div class="timeline-alert-list">
+                
+            <div class="timeline-alert-item high">
+                <span class="timeline-alert-severity">⚠️</span>
+                <span class="timeline-alert-name">KubeDeploymentReplicasMismatch</span>
+                <span class="timeline-alert-time">01/25 20:51</span>
+                <span class="timeline-alert-duration">18m</span>
+            </div>
+            
+            <div class="timeline-alert-item medium">
+                <span class="timeline-alert-severity">📊</span>
+                <span class="timeline-alert-name">KubeQuotaAlmostFull</span>
+                <span class="timeline-alert-time">01/25 19:09</span>
+                <span class="timeline-alert-duration">2h 0m</span>
+            </div>
+            
+            </div>
+        </div>
+        
+        <div class="timeline-group">
+            <div class="timeline-group-header">
+                <span class="timeline-group-icon">📁</span>
+                <span class="timeline-group-title">batch-jobs</span>
+                <span class="timeline-group-count">1건</span>
+            </div>
+            
+            <div class="timeline-chart-wrapper">
+                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubeJobFailed%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B5.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B1560.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%2859%2C%20130%2C%20246%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%201567.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2201/24%2019%3A04%20%E2%86%92%2001/25%2021%3A11%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=60&bkg=white&devicePixelRatio=2" alt="batch-jobs Timeline" class="timeline-chart-img">
+            </div>
+            
+            <div class="timeline-alert-list">
+                
+            <div class="timeline-alert-item medium">
+                <span class="timeline-alert-severity">📊</span>
+                <span class="timeline-alert-name">KubeJobFailed</span>
+                <span class="timeline-alert-time">01/24 19:09</span>
+                <span class="timeline-alert-duration">26h 0m</span>
+            </div>
+            
+            </div>
+        </div>
+        
+        <div class="timeline-group">
+            <div class="timeline-group-header">
+                <span class="timeline-group-icon">📁</span>
+                <span class="timeline-group-title">cert-manager</span>
+                <span class="timeline-group-count">1건</span>
+            </div>
+            
+            <div class="timeline-chart-wrapper">
+                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22CertificateExpirin%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B5.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B2880.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%2859%2C%20130%2C%20246%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%202887.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2201/23%2021%3A04%20%E2%86%92%2001/25%2021%3A11%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=60&bkg=white&devicePixelRatio=2" alt="cert-manager Timeline" class="timeline-chart-img">
+            </div>
+            
+            <div class="timeline-alert-list">
+                
+            <div class="timeline-alert-item medium">
+                <span class="timeline-alert-severity">📊</span>
+                <span class="timeline-alert-name">CertificateExpiringSoon</span>
+                <span class="timeline-alert-time">01/23 21:09</span>
+                <span class="timeline-alert-duration">48h 0m</span>
+            </div>
+            
+            </div>
+        </div>
+        
+        <div class="timeline-group">
+            <div class="timeline-group-header">
+                <span class="timeline-group-icon">📁</span>
+                <span class="timeline-group-title">data-pipeline</span>
+                <span class="timeline-group-count">1건</span>
+            </div>
+            
+            <div class="timeline-chart-wrapper">
+                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubePersistentVolu%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B5.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B22.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%28245%2C%20158%2C%2011%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%2029.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2220%3A42%20%E2%86%92%2021%3A11%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=60&bkg=white&devicePixelRatio=2" alt="data-pipeline Timeline" class="timeline-chart-img">
+            </div>
+            
+            <div class="timeline-alert-list">
+                
+            <div class="timeline-alert-item high">
+                <span class="timeline-alert-severity">⚠️</span>
+                <span class="timeline-alert-name">KubePersistentVolumeClaimPending</span>
+                <span class="timeline-alert-time">01/25 20:47</span>
+                <span class="timeline-alert-duration">22m</span>
+            </div>
+            
+            </div>
+        </div>
+        
+        </div>
+        
+
+        <div class="grouped-timeline-container">
+            <div class="grouped-timeline-header">
+                <div>
+                    <div class="grouped-timeline-title">
+                        🖥️ Node Level 타임라인
+                    </div>
+                    <div class="grouped-timeline-subtitle">
+                        01/24 09:04 ~ 01/25 21:11 • 총 5건 • 3개 그룹
+                    </div>
+                </div>
+                <div class="timeline-legend">
+                    <div class="timeline-legend-item">
+                        <div class="timeline-legend-dot critical"></div>
+                        <span>심각</span>
+                    </div>
+                    <div class="timeline-legend-item">
+                        <div class="timeline-legend-dot high"></div>
+                        <span>높음</span>
+                    </div>
+                    <div class="timeline-legend-item">
+                        <div class="timeline-legend-dot medium"></div>
+                        <span>보통</span>
+                    </div>
+                </div>
+            </div>
+            
+        <div class="timeline-group">
+            <div class="timeline-group-header">
+                <span class="timeline-group-icon">🏷️</span>
+                <span class="timeline-group-title">worker-group</span>
+                <span class="timeline-group-count">3건</span>
+            </div>
+            
+            <div class="timeline-chart-wrapper">
+                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubeNodeNotReady%22%2C%20%22KubeNodeMemoryPres%22%2C%20%22KubeNodeDiskPressu%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B35.0%2C%205.0%2C%2030.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B25.0%2C%2055.0%2C%2030.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%28239%2C%2068%2C%2068%2C%200.85%29%22%2C%20%22rgba%28245%2C%20158%2C%2011%2C%200.85%29%22%2C%20%22rgba%2859%2C%20130%2C%20246%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%2062.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2220%3A09%20%E2%86%92%2021%3A11%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=96&bkg=white&devicePixelRatio=2" alt="worker-group Timeline" class="timeline-chart-img">
+            </div>
+            
+            <div class="timeline-alert-list">
+                
+            <div class="timeline-alert-item critical">
+                <span class="timeline-alert-severity">🚨</span>
+                <span class="timeline-alert-name">KubeNodeNotReady</span>
+                <span class="timeline-alert-time">01/25 20:44</span>
+                <span class="timeline-alert-duration">25m</span>
+            </div>
+            
+            <div class="timeline-alert-item high">
+                <span class="timeline-alert-severity">⚠️</span>
+                <span class="timeline-alert-name">KubeNodeMemoryPressure</span>
+                <span class="timeline-alert-time">01/25 20:14</span>
+                <span class="timeline-alert-duration">55m</span>
+            </div>
+            
+            <div class="timeline-alert-item medium">
+                <span class="timeline-alert-severity">📊</span>
+                <span class="timeline-alert-name">KubeNodeDiskPressure</span>
+                <span class="timeline-alert-time">01/25 20:39</span>
+                <span class="timeline-alert-duration">30m</span>
+            </div>
+            
+            </div>
+        </div>
+        
+        <div class="timeline-group">
+            <div class="timeline-group-header">
+                <span class="timeline-group-icon">🏷️</span>
+                <span class="timeline-group-title">gpu-group</span>
+                <span class="timeline-group-count">1건</span>
+            </div>
+            
+            <div class="timeline-chart-wrapper">
+                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22NodeGPUTemperature%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B5.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B15.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%28245%2C%20158%2C%2011%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%2022.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2220%3A49%20%E2%86%92%2021%3A11%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=60&bkg=white&devicePixelRatio=2" alt="gpu-group Timeline" class="timeline-chart-img">
+            </div>
+            
+            <div class="timeline-alert-list">
+                
+            <div class="timeline-alert-item high">
+                <span class="timeline-alert-severity">⚠️</span>
+                <span class="timeline-alert-name">NodeGPUTemperatureHigh</span>
+                <span class="timeline-alert-time">01/25 20:54</span>
+                <span class="timeline-alert-duration">15m</span>
+            </div>
+            
+            </div>
+        </div>
+        
+        <div class="timeline-group">
+            <div class="timeline-group-header">
+                <span class="timeline-group-icon">🏷️</span>
+                <span class="timeline-group-title">infra-group</span>
+                <span class="timeline-group-count">1건</span>
+            </div>
+            
+            <div class="timeline-chart-wrapper">
+                <img src="https://quickchart.io/chart?c=%7B%22type%22%3A%20%22horizontalBar%22%2C%20%22data%22%3A%20%7B%22labels%22%3A%20%5B%22KubeCPUOvercommit%22%5D%2C%20%22datasets%22%3A%20%5B%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B5.0%5D%2C%20%22backgroundColor%22%3A%20%22rgba%280%2C%200%2C%200%2C%200%29%22%2C%20%22borderWidth%22%3A%200%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%2C%20%7B%22label%22%3A%20%22%22%2C%20%22data%22%3A%20%5B2160.0%5D%2C%20%22backgroundColor%22%3A%20%5B%22rgba%2859%2C%20130%2C%20246%2C%200.85%29%22%5D%2C%20%22borderRadius%22%3A%203%2C%20%22barThickness%22%3A%2012%2C%20%22datalabels%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22options%22%3A%20%7B%22responsive%22%3A%20false%2C%20%22legend%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22title%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scales%22%3A%20%7B%22xAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22min%22%3A%200%2C%20%22max%22%3A%202167.0%2C%20%22display%22%3A%20false%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20true%2C%20%22labelString%22%3A%20%2201/24%2009%3A04%20%E2%86%92%2001/25%2021%3A11%22%2C%20%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%236b7280%22%7D%7D%5D%2C%20%22yAxes%22%3A%20%5B%7B%22stacked%22%3A%20true%2C%20%22ticks%22%3A%20%7B%22fontSize%22%3A%209%2C%20%22fontColor%22%3A%20%22%23374151%22%7D%2C%20%22gridLines%22%3A%20%7B%22display%22%3A%20false%7D%2C%20%22scaleLabel%22%3A%20%7B%22display%22%3A%20false%7D%7D%5D%7D%2C%20%22layout%22%3A%20%7B%22padding%22%3A%20%7B%22left%22%3A%205%2C%20%22right%22%3A%2010%2C%20%22top%22%3A%205%2C%20%22bottom%22%3A%205%7D%7D%7D%7D&w=550&h=60&bkg=white&devicePixelRatio=2" alt="infra-group Timeline" class="timeline-chart-img">
+            </div>
+            
+            <div class="timeline-alert-list">
+                
+            <div class="timeline-alert-item medium">
+                <span class="timeline-alert-severity">📊</span>
+                <span class="timeline-alert-name">KubeCPUOvercommit</span>
+                <span class="timeline-alert-time">01/24 09:09</span>
+                <span class="timeline-alert-duration">36h 0m</span>
+            </div>
+            
+            </div>
+        </div>
+        
+        </div>
+        
+
+        <div class="severity-nav">
+            <span class="severity-nav-label">📍 바로가기:</span>
+            <a href="#section-critical" class="severity-nav-link critical">🚨 심각 (3)</a> <a href="#section-high" class="severity-nav-link high">⚠️ 높음 (5)</a> <a href="#section-medium" class="severity-nav-link medium">📊 보통 (5)</a>
+        </div>
+        
+
+        <div id="section-critical" class="severity-section">
+            <div class="severity-section-header">
+                <span style="font-size: 24px;">🚨</span>
+                <span class="severity-section-title">심각 알림</span>
+                <span class="severity-section-count">3건</span>
+            </div>
+            
+        <div class="alert-card critical">
+            <div class="alert-card-header">
+                <div class="alert-card-header-left">
+                    <div class="alert-card-title">
+                        <span class="emoji">🚨</span>
+                        KubeNodeNotReady
+                    </div>
+                    <div class="alert-card-meta">
+                        <span class="alert-card-meta-item">🏢 hdsp-prod-01</span> <span class="alert-card-meta-item">📁 kube-system</span> <span class="alert-card-meta-item">🖥️ Node</span>
+                    </div>
+                </div>
+                <div class="alert-card-header-right">
+                    <span class="severity-badge critical">
+                        🚨 심각
+                    </span>
+                </div>
+            </div>
+            <div class="alert-content-box">
+                <div class="alert-content-header">
+                    <span class="alert-content-title">
+                        🏷️ worker-node-03
+                    </span>
+                </div>
+                
+        <div class="resource-info-grid">
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏢</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">클러스터</span>
+                    <span class="resource-info-value">hdsp-prod-01</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">📁</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">네임스페이스</span>
+                    <span class="resource-info-value">kube-system</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🖥️</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 타입</span>
+                    <span class="resource-info-value">Node</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏷️</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 이름</span>
+                    <span class="resource-info-value">worker-node-03</span>
+                </div>
+            </div>
+        </div>
+        
+                
+            <div class="alert-summary">
+                💬 노드 준비 안됨
+            </div>
+            
+                
+            <div class="alert-description">
+                노드 worker-node-03이 15분 이상 NotReady 상태입니다.
+            </div>
+            
+                
+        <div class="alert-timeline">
+            <div class="timeline-item">
+                <span class="timeline-label">🕐 최초 발생</span>
+                <span class="timeline-value">2026-01-25 20:44:00</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="duration-badge long">25분</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-value">8회</span>
+            </div>
+        </div>
+        
+            </div>
+            
+        <div class="kakao-preview">
+            <div class="kakao-preview-header">
+                <span>💬</span>
+                <span>카카오톡 알림 미리보기</span>
+            </div>
+            <div class="kakao-preview-content">
+                <pre>━━━━━━━━━━━━━━━━━━━━
+🏷️ 클러스터: hdsp-prod-01
+📍 네임스페이스: kube-system
+🔧 리소스: 노드/worker-node-03
+━━━━━━━━━━━━━━━━━━━━
+
+📋 알림 내용:
+노드 worker-node-03이 15분 이상 NotReady 상태입니다.
+
+⚠️ 조치 권고:
+🚨 즉시 확인이 필요합니다.
+서비스 장애 또는 심각한 문제가 발생했습니다.
+
+[심각도: 심각 | 지속시간: 25분]</pre>
+            </div>
+        </div>
+        
+        </div>
+        
+        <div class="alert-card critical">
+            <div class="alert-card-header">
+                <div class="alert-card-header-left">
+                    <div class="alert-card-title">
+                        <span class="emoji">🚨</span>
+                        KubePodCrashLooping
+                    </div>
+                    <div class="alert-card-meta">
+                        <span class="alert-card-meta-item">🏢 hdsp-prod-01</span> <span class="alert-card-meta-item">📁 production</span> <span class="alert-card-meta-item">🐳 Pod</span>
+                    </div>
+                </div>
+                <div class="alert-card-header-right">
+                    <span class="severity-badge critical">
+                        🚨 심각
+                    </span>
+                </div>
+            </div>
+            <div class="alert-content-box">
+                <div class="alert-content-header">
+                    <span class="alert-content-title">
+                        🏷️ api-server-7d9f8b6c5-x2k4m
+                    </span>
+                </div>
+                
+        <div class="resource-info-grid">
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏢</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">클러스터</span>
+                    <span class="resource-info-value">hdsp-prod-01</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">📁</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">네임스페이스</span>
+                    <span class="resource-info-value">production</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🐳</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 타입</span>
+                    <span class="resource-info-value">Pod</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏷️</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 이름</span>
+                    <span class="resource-info-value">api-server-7d9f8b6c5-x2k4m</span>
+                </div>
+            </div>
+        </div>
+        
+                
+            <div class="alert-summary">
+                💬 Pod 크래시 루프 발생
+            </div>
+            
+                
+            <div class="alert-description">
+                Pod production/api-server-7d9f8b6c5-x2k4m이 CrashLoopBackOff 상태입니다.
+            </div>
+            
+                
+        <div class="alert-timeline">
+            <div class="timeline-item">
+                <span class="timeline-label">🕐 최초 발생</span>
+                <span class="timeline-value">2026-01-25 20:34:00</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="duration-badge long">35분</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-value">15회</span>
+            </div>
+        </div>
+        
+            </div>
+            
+        <div class="kakao-preview">
+            <div class="kakao-preview-header">
+                <span>💬</span>
+                <span>카카오톡 알림 미리보기</span>
+            </div>
+            <div class="kakao-preview-content">
+                <pre>━━━━━━━━━━━━━━━━━━━━
+🏷️ 클러스터: hdsp-prod-01
+📍 네임스페이스: production
+🔧 리소스: 파드/api-server-7d9f8b6c5-x2k4m
+━━━━━━━━━━━━━━━━━━━━
+
+📋 알림 내용:
+Pod production/api-server-7d9f8b6c5-x2k4m이 CrashLoopBackOff 상태입니다.
+
+⚠️ 조치 권고:
+🚨 즉시 확인이 필요합니다.
+서비스 장애 또는 심각한 문제가 발생했습니다.
+
+[심각도: 심각 | 지속시간: 35분]</pre>
+            </div>
+        </div>
+        
+        </div>
+        
+        <div class="alert-card critical">
+            <div class="alert-card-header">
+                <div class="alert-card-header-left">
+                    <div class="alert-card-title">
+                        <span class="emoji">🚨</span>
+                        KubePodOOMKilled
+                    </div>
+                    <div class="alert-card-meta">
+                        <span class="alert-card-meta-item">🏢 hdsp-prod-01</span> <span class="alert-card-meta-item">📁 production</span> <span class="alert-card-meta-item">🐳 Pod</span>
+                    </div>
+                </div>
+                <div class="alert-card-header-right">
+                    <span class="severity-badge critical">
+                        🚨 심각
+                    </span>
+                </div>
+            </div>
+            <div class="alert-content-box">
+                <div class="alert-content-header">
+                    <span class="alert-content-title">
+                        🏷️ ml-inference-5c7d8e9f0-p3q2r
+                    </span>
+                </div>
+                
+        <div class="resource-info-grid">
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏢</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">클러스터</span>
+                    <span class="resource-info-value">hdsp-prod-01</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">📁</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">네임스페이스</span>
+                    <span class="resource-info-value">production</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🐳</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 타입</span>
+                    <span class="resource-info-value">Pod</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏷️</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 이름</span>
+                    <span class="resource-info-value">ml-inference-5c7d8e9f0-p3q2r</span>
+                </div>
+            </div>
+        </div>
+        
+                
+            <div class="alert-summary">
+                💬 Pod OOM 종료됨
+            </div>
+            
+                
+            <div class="alert-description">
+                Pod production/ml-inference-5c7d8e9f0-p3q2r이 OOMKilled 되었습니다.
+            </div>
+            
+                
+        <div class="alert-timeline">
+            <div class="timeline-item">
+                <span class="timeline-label">🕐 최초 발생</span>
+                <span class="timeline-value">2026-01-25 20:29:00</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="duration-badge long">40분</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-value">5회</span>
+            </div>
+        </div>
+        
+            </div>
+            
+        <div class="kakao-preview">
+            <div class="kakao-preview-header">
+                <span>💬</span>
+                <span>카카오톡 알림 미리보기</span>
+            </div>
+            <div class="kakao-preview-content">
+                <pre>━━━━━━━━━━━━━━━━━━━━
+🏷️ 클러스터: hdsp-prod-01
+📍 네임스페이스: production
+🔧 리소스: 파드/ml-inference-5c7d8e9f0-p3q2r
+━━━━━━━━━━━━━━━━━━━━
+
+📋 알림 내용:
+Pod production/ml-inference-5c7d8e9f0-p3q2r이 OOMKilled 되었습니다.
+
+⚠️ 조치 권고:
+🚨 즉시 확인이 필요합니다.
+서비스 장애 또는 심각한 문제가 발생했습니다.
+
+[심각도: 심각 | 지속시간: 40분]</pre>
+            </div>
+        </div>
+        
+        </div>
+        
+        </div>
+        
+
+        <div id="section-high" class="severity-section">
+            <div class="severity-section-header">
+                <span style="font-size: 24px;">⚠️</span>
+                <span class="severity-section-title">높음 알림</span>
+                <span class="severity-section-count">5건</span>
+            </div>
+            
+        <div class="alert-card high">
+            <div class="alert-card-header">
+                <div class="alert-card-header-left">
+                    <div class="alert-card-title">
+                        <span class="emoji">⚠️</span>
+                        KubePersistentVolumeClaimPending
+                    </div>
+                    <div class="alert-card-meta">
+                        <span class="alert-card-meta-item">🏢 hdsp-prod-01</span> <span class="alert-card-meta-item">📁 data-pipeline</span> <span class="alert-card-meta-item">📀 PersistentVolumeClaim</span>
+                    </div>
+                </div>
+                <div class="alert-card-header-right">
+                    <span class="severity-badge high">
+                        ⚠️ 높음
+                    </span>
+                </div>
+            </div>
+            <div class="alert-content-box">
+                <div class="alert-content-header">
+                    <span class="alert-content-title">
+                        🏷️ etl-data-pvc
+                    </span>
+                </div>
+                
+        <div class="resource-info-grid">
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏢</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">클러스터</span>
+                    <span class="resource-info-value">hdsp-prod-01</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">📁</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">네임스페이스</span>
+                    <span class="resource-info-value">data-pipeline</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">📀</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 타입</span>
+                    <span class="resource-info-value">PersistentVolumeClaim</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏷️</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 이름</span>
+                    <span class="resource-info-value">etl-data-pvc</span>
+                </div>
+            </div>
+        </div>
+        
+                
+            <div class="alert-summary">
+                💬 PVC 대기 상태
+            </div>
+            
+                
+            <div class="alert-description">
+                PVC data-pipeline/etl-data-pvc가 15분 이상 Pending 상태입니다.
+            </div>
+            
+                
+        <div class="alert-timeline">
+            <div class="timeline-item">
+                <span class="timeline-label">🕐 최초 발생</span>
+                <span class="timeline-value">2026-01-25 20:47:00</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="duration-badge long">22분</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-value">8회</span>
+            </div>
+        </div>
+        
+            </div>
+            
+        <div class="kakao-preview">
+            <div class="kakao-preview-header">
+                <span>💬</span>
+                <span>카카오톡 알림 미리보기</span>
+            </div>
+            <div class="kakao-preview-content">
+                <pre>━━━━━━━━━━━━━━━━━━━━
+🏷️ 클러스터: hdsp-prod-01
+📍 네임스페이스: data-pipeline
+🔧 리소스: 퍼시스턴트볼륨클레임/etl-data-pvc
+━━━━━━━━━━━━━━━━━━━━
+
+📋 알림 내용:
+PVC data-pipeline/etl-data-pvc가 15분 이상 Pending 상태입니다.
+
+⚠️ 조치 권고:
+📢 빠른 확인을 권장합니다.
+성능 저하 또는 안정성 문제가 발생할 수 있습니다.
+
+[심각도: 높음 | 지속시간: 22분]</pre>
+            </div>
+        </div>
+        
+        </div>
+        
+        <div class="alert-card high">
+            <div class="alert-card-header">
+                <div class="alert-card-header-left">
+                    <div class="alert-card-title">
+                        <span class="emoji">⚠️</span>
+                        KubeNodeMemoryPressure
+                    </div>
+                    <div class="alert-card-meta">
+                        <span class="alert-card-meta-item">🏢 hdsp-prod-01</span> <span class="alert-card-meta-item">📁 kube-system</span> <span class="alert-card-meta-item">🖥️ Node</span>
+                    </div>
+                </div>
+                <div class="alert-card-header-right">
+                    <span class="severity-badge high">
+                        ⚠️ 높음
+                    </span>
+                </div>
+            </div>
+            <div class="alert-content-box">
+                <div class="alert-content-header">
+                    <span class="alert-content-title">
+                        🏷️ worker-node-01
+                    </span>
+                </div>
+                
+        <div class="resource-info-grid">
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏢</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">클러스터</span>
+                    <span class="resource-info-value">hdsp-prod-01</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">📁</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">네임스페이스</span>
+                    <span class="resource-info-value">kube-system</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🖥️</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 타입</span>
+                    <span class="resource-info-value">Node</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏷️</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 이름</span>
+                    <span class="resource-info-value">worker-node-01</span>
+                </div>
+            </div>
+        </div>
+        
+                
+            <div class="alert-summary">
+                💬 노드 메모리 압박
+            </div>
+            
+                
+            <div class="alert-description">
+                노드 worker-node-01에 MemoryPressure 상태 발생. 가용 메모리: 512Mi.
+            </div>
+            
+                
+        <div class="alert-timeline">
+            <div class="timeline-item">
+                <span class="timeline-label">🕐 최초 발생</span>
+                <span class="timeline-value">2026-01-25 20:14:00</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="duration-badge long">55분</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-value">18회</span>
+            </div>
+        </div>
+        
+            </div>
+            
+        <div class="kakao-preview">
+            <div class="kakao-preview-header">
+                <span>💬</span>
+                <span>카카오톡 알림 미리보기</span>
+            </div>
+            <div class="kakao-preview-content">
+                <pre>━━━━━━━━━━━━━━━━━━━━
+🏷️ 클러스터: hdsp-prod-01
+📍 네임스페이스: kube-system
+🔧 리소스: 노드/worker-node-01
+━━━━━━━━━━━━━━━━━━━━
+
+📋 알림 내용:
+노드 worker-node-01에 MemoryPressure 상태 발생. 가용 메모리: 512Mi.
+
+⚠️ 조치 권고:
+📢 빠른 확인을 권장합니다.
+성능 저하 또는 안정성 문제가 발생할 수 있습니다.
+
+[심각도: 높음 | 지속시간: 55분]</pre>
+            </div>
+        </div>
+        
+        </div>
+        
+        <div class="alert-card high">
+            <div class="alert-card-header">
+                <div class="alert-card-header-left">
+                    <div class="alert-card-title">
+                        <span class="emoji">⚠️</span>
+                        NodeGPUTemperatureHigh
+                    </div>
+                    <div class="alert-card-meta">
+                        <span class="alert-card-meta-item">🏢 hdsp-prod-01</span> <span class="alert-card-meta-item">📁 kube-system</span> <span class="alert-card-meta-item">🖥️ Node</span>
+                    </div>
+                </div>
+                <div class="alert-card-header-right">
+                    <span class="severity-badge high">
+                        ⚠️ 높음
+                    </span>
+                </div>
+            </div>
+            <div class="alert-content-box">
+                <div class="alert-content-header">
+                    <span class="alert-content-title">
+                        🏷️ gpu-node-01
+                    </span>
+                </div>
+                
+        <div class="resource-info-grid">
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏢</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">클러스터</span>
+                    <span class="resource-info-value">hdsp-prod-01</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">📁</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">네임스페이스</span>
+                    <span class="resource-info-value">kube-system</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🖥️</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 타입</span>
+                    <span class="resource-info-value">Node</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏷️</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 이름</span>
+                    <span class="resource-info-value">gpu-node-01</span>
+                </div>
+            </div>
+        </div>
+        
+                
+            <div class="alert-summary">
+                💬 GPU 온도 높음
+            </div>
+            
+                
+            <div class="alert-description">
+                gpu-node-01 GPU 온도 85°C, 임계값 80°C 초과.
+            </div>
+            
+                
+        <div class="alert-timeline">
+            <div class="timeline-item">
+                <span class="timeline-label">🕐 최초 발생</span>
+                <span class="timeline-value">2026-01-25 20:54:00</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="duration-badge normal">15분</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-value">5회</span>
+            </div>
+        </div>
+        
+            </div>
+            
+        <div class="kakao-preview">
+            <div class="kakao-preview-header">
+                <span>💬</span>
+                <span>카카오톡 알림 미리보기</span>
+            </div>
+            <div class="kakao-preview-content">
+                <pre>━━━━━━━━━━━━━━━━━━━━
+🏷️ 클러스터: hdsp-prod-01
+📍 네임스페이스: kube-system
+🔧 리소스: 노드/gpu-node-01
+━━━━━━━━━━━━━━━━━━━━
+
+📋 알림 내용:
+gpu-node-01 GPU 온도 85°C, 임계값 80°C 초과.
+
+⚠️ 조치 권고:
+📢 빠른 확인을 권장합니다.
+성능 저하 또는 안정성 문제가 발생할 수 있습니다.
+
+[심각도: 높음 | 지속시간: 15분]</pre>
+            </div>
+        </div>
+        
+        </div>
+        
+        <div class="alert-card high">
+            <div class="alert-card-header">
+                <div class="alert-card-header-left">
+                    <div class="alert-card-title">
+                        <span class="emoji">⚠️</span>
+                        KubeHpaMaxedOut
+                    </div>
+                    <div class="alert-card-meta">
+                        <span class="alert-card-meta-item">🏢 hdsp-prod-01</span> <span class="alert-card-meta-item">📁 production</span> <span class="alert-card-meta-item">📦 Deployment</span>
+                    </div>
+                </div>
+                <div class="alert-card-header-right">
+                    <span class="severity-badge high">
+                        ⚠️ 높음
+                    </span>
+                </div>
+            </div>
+            <div class="alert-content-box">
+                <div class="alert-content-header">
+                    <span class="alert-content-title">
+                        🏷️ order-service
+                    </span>
+                </div>
+                
+        <div class="resource-info-grid">
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏢</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">클러스터</span>
+                    <span class="resource-info-value">hdsp-prod-01</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">📁</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">네임스페이스</span>
+                    <span class="resource-info-value">production</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">📦</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 타입</span>
+                    <span class="resource-info-value">Deployment</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏷️</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 이름</span>
+                    <span class="resource-info-value">order-service</span>
+                </div>
+            </div>
+        </div>
+        
+                
+            <div class="alert-summary">
+                💬 HPA 최대 용량 도달
+            </div>
+            
+                
+            <div class="alert-description">
+                HPA production/order-service가 최대 레플리카(20개)로 운영 중입니다.
+            </div>
+            
+                
+        <div class="alert-timeline">
+            <div class="timeline-item">
+                <span class="timeline-label">🕐 최초 발생</span>
+                <span class="timeline-value">2026-01-25 20:24:00</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="duration-badge long">45분</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-value">15회</span>
+            </div>
+        </div>
+        
+            </div>
+            
+        <div class="kakao-preview">
+            <div class="kakao-preview-header">
+                <span>💬</span>
+                <span>카카오톡 알림 미리보기</span>
+            </div>
+            <div class="kakao-preview-content">
+                <pre>━━━━━━━━━━━━━━━━━━━━
+🏷️ 클러스터: hdsp-prod-01
+📍 네임스페이스: production
+🔧 리소스: 디플로이먼트/order-service
+━━━━━━━━━━━━━━━━━━━━
+
+📋 알림 내용:
+HPA production/order-service가 최대 레플리카(20개)로 운영 중입니다.
+
+⚠️ 조치 권고:
+📢 빠른 확인을 권장합니다.
+성능 저하 또는 안정성 문제가 발생할 수 있습니다.
+
+[심각도: 높음 | 지속시간: 45분]</pre>
+            </div>
+        </div>
+        
+        </div>
+        
+        <div class="alert-card high">
+            <div class="alert-card-header">
+                <div class="alert-card-header-left">
+                    <div class="alert-card-title">
+                        <span class="emoji">⚠️</span>
+                        KubeDeploymentReplicasMismatch
+                    </div>
+                    <div class="alert-card-meta">
+                        <span class="alert-card-meta-item">🏢 hdsp-staging-01</span> <span class="alert-card-meta-item">📁 staging</span> <span class="alert-card-meta-item">📦 Deployment</span>
+                    </div>
+                </div>
+                <div class="alert-card-header-right">
+                    <span class="severity-badge high">
+                        ⚠️ 높음
+                    </span>
+                </div>
+            </div>
+            <div class="alert-content-box">
+                <div class="alert-content-header">
+                    <span class="alert-content-title">
+                        🏷️ web-frontend
+                    </span>
+                </div>
+                
+        <div class="resource-info-grid">
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏢</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">클러스터</span>
+                    <span class="resource-info-value">hdsp-staging-01</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">📁</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">네임스페이스</span>
+                    <span class="resource-info-value">staging</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">📦</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 타입</span>
+                    <span class="resource-info-value">Deployment</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏷️</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 이름</span>
+                    <span class="resource-info-value">web-frontend</span>
+                </div>
+            </div>
+        </div>
+        
+                
+            <div class="alert-summary">
+                💬 Deployment 레플리카 불일치
+            </div>
+            
+                
+            <div class="alert-description">
+                Deployment staging/web-frontend: 요청 5개, 현재 3개, 가용 2개.
+            </div>
+            
+                
+        <div class="alert-timeline">
+            <div class="timeline-item">
+                <span class="timeline-label">🕐 최초 발생</span>
+                <span class="timeline-value">2026-01-25 20:51:00</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="duration-badge long">18분</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-value">6회</span>
+            </div>
+        </div>
+        
+            </div>
+            
+        <div class="kakao-preview">
+            <div class="kakao-preview-header">
+                <span>💬</span>
+                <span>카카오톡 알림 미리보기</span>
+            </div>
+            <div class="kakao-preview-content">
+                <pre>━━━━━━━━━━━━━━━━━━━━
+🏷️ 클러스터: hdsp-staging-01
+📍 네임스페이스: staging
+🔧 리소스: 디플로이먼트/web-frontend
+━━━━━━━━━━━━━━━━━━━━
+
+📋 알림 내용:
+Deployment staging/web-frontend: 요청 5개, 현재 3개, 가용 2개.
+
+⚠️ 조치 권고:
+📢 빠른 확인을 권장합니다.
+성능 저하 또는 안정성 문제가 발생할 수 있습니다.
+
+[심각도: 높음 | 지속시간: 18분]</pre>
+            </div>
+        </div>
+        
+        </div>
+        
+        </div>
+        
+
+        <div id="section-medium" class="severity-section">
+            <div class="severity-section-header">
+                <span style="font-size: 24px;">📊</span>
+                <span class="severity-section-title">보통 알림</span>
+                <span class="severity-section-count">5건</span>
+            </div>
+            
+        <div class="alert-card medium">
+            <div class="alert-card-header">
+                <div class="alert-card-header-left">
+                    <div class="alert-card-title">
+                        <span class="emoji">📊</span>
+                        KubeJobFailed
+                    </div>
+                    <div class="alert-card-meta">
+                        <span class="alert-card-meta-item">🏢 hdsp-prod-01</span> <span class="alert-card-meta-item">📁 batch-jobs</span> <span class="alert-card-meta-item">⚙️ Job</span>
+                    </div>
+                </div>
+                <div class="alert-card-header-right">
+                    <span class="severity-badge medium">
+                        📊 보통
+                    </span>
+                </div>
+            </div>
+            <div class="alert-content-box">
+                <div class="alert-content-header">
+                    <span class="alert-content-title">
+                        🏷️ nightly-etl-20250125
+                    </span>
+                </div>
+                
+        <div class="resource-info-grid">
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏢</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">클러스터</span>
+                    <span class="resource-info-value">hdsp-prod-01</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">📁</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">네임스페이스</span>
+                    <span class="resource-info-value">batch-jobs</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">⚙️</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 타입</span>
+                    <span class="resource-info-value">Job</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏷️</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 이름</span>
+                    <span class="resource-info-value">nightly-etl-20250125</span>
+                </div>
+            </div>
+        </div>
+        
+                
+            <div class="alert-summary">
+                💬 Job 실패
+            </div>
+            
+                
+            <div class="alert-description">
+                Job batch-jobs/nightly-etl-20250125가 3회 시도 후 실패했습니다.
+            </div>
+            
+                
+        <div class="alert-timeline">
+            <div class="timeline-item">
+                <span class="timeline-label">🕐 최초 발생</span>
+                <span class="timeline-value">2026-01-24 19:09:00</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="duration-badge long">26시간 0분</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-value">3회</span>
+            </div>
+        </div>
+        
+            </div>
+            
+        <div class="kakao-preview">
+            <div class="kakao-preview-header">
+                <span>💬</span>
+                <span>카카오톡 알림 미리보기</span>
+            </div>
+            <div class="kakao-preview-content">
+                <pre>━━━━━━━━━━━━━━━━━━━━
+🏷️ 클러스터: hdsp-prod-01
+📍 네임스페이스: batch-jobs
+🔧 리소스: 잡/nightly-etl-20250125
+━━━━━━━━━━━━━━━━━━━━
+
+📋 알림 내용:
+Job batch-jobs/nightly-etl-20250125가 3회 시도 후 실패했습니다.
+
+⚠️ 조치 권고:
+📌 모니터링이 필요합니다.
+잠재적인 문제가 감지되었습니다.
+
+[심각도: 보통 | 지속시간: 26시간 0분]</pre>
+            </div>
+        </div>
+        
+        </div>
+        
+        <div class="alert-card medium">
+            <div class="alert-card-header">
+                <div class="alert-card-header-left">
+                    <div class="alert-card-title">
+                        <span class="emoji">📊</span>
+                        CertificateExpiringSoon
+                    </div>
+                    <div class="alert-card-meta">
+                        <span class="alert-card-meta-item">🏢 hdsp-prod-01</span> <span class="alert-card-meta-item">📁 cert-manager</span> <span class="alert-card-meta-item">🌐 Service</span>
+                    </div>
+                </div>
+                <div class="alert-card-header-right">
+                    <span class="severity-badge medium">
+                        📊 보통
+                    </span>
+                </div>
+            </div>
+            <div class="alert-content-box">
+                <div class="alert-content-header">
+                    <span class="alert-content-title">
+                        🏷️ api.hdsp.example.com
+                    </span>
+                </div>
+                
+        <div class="resource-info-grid">
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏢</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">클러스터</span>
+                    <span class="resource-info-value">hdsp-prod-01</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">📁</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">네임스페이스</span>
+                    <span class="resource-info-value">cert-manager</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🌐</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 타입</span>
+                    <span class="resource-info-value">Service</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏷️</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 이름</span>
+                    <span class="resource-info-value">api.hdsp.example.com</span>
+                </div>
+            </div>
+        </div>
+        
+                
+            <div class="alert-summary">
+                💬 인증서 곧 만료
+            </div>
+            
+                
+            <div class="alert-description">
+                api.hdsp.example.com 인증서가 7일 후 만료됩니다.
+            </div>
+            
+                
+        <div class="alert-timeline">
+            <div class="timeline-item">
+                <span class="timeline-label">🕐 최초 발생</span>
+                <span class="timeline-value">2026-01-23 21:09:00</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="duration-badge long">48시간 0분</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-value">48회</span>
+            </div>
+        </div>
+        
+            </div>
+            
+        <div class="kakao-preview">
+            <div class="kakao-preview-header">
+                <span>💬</span>
+                <span>카카오톡 알림 미리보기</span>
+            </div>
+            <div class="kakao-preview-content">
+                <pre>━━━━━━━━━━━━━━━━━━━━
+🏷️ 클러스터: hdsp-prod-01
+📍 네임스페이스: cert-manager
+🔧 리소스: 서비스/api.hdsp.example.com
+━━━━━━━━━━━━━━━━━━━━
+
+📋 알림 내용:
+api.hdsp.example.com 인증서가 7일 후 만료됩니다.
+
+⚠️ 조치 권고:
+📌 모니터링이 필요합니다.
+잠재적인 문제가 감지되었습니다.
+
+[심각도: 보통 | 지속시간: 48시간 0분]</pre>
+            </div>
+        </div>
+        
+        </div>
+        
+        <div class="alert-card medium">
+            <div class="alert-card-header">
+                <div class="alert-card-header-left">
+                    <div class="alert-card-title">
+                        <span class="emoji">📊</span>
+                        KubeCPUOvercommit
+                    </div>
+                    <div class="alert-card-meta">
+                        <span class="alert-card-meta-item">🏢 hdsp-prod-01</span> <span class="alert-card-meta-item">📁 kube-system</span> <span class="alert-card-meta-item">🖥️ Node</span>
+                    </div>
+                </div>
+                <div class="alert-card-header-right">
+                    <span class="severity-badge medium">
+                        📊 보통
+                    </span>
+                </div>
+            </div>
+            <div class="alert-content-box">
+                <div class="alert-content-header">
+                    <span class="alert-content-title">
+                        🏷️ infra-node-01
+                    </span>
+                </div>
+                
+        <div class="resource-info-grid">
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏢</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">클러스터</span>
+                    <span class="resource-info-value">hdsp-prod-01</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">📁</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">네임스페이스</span>
+                    <span class="resource-info-value">kube-system</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🖥️</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 타입</span>
+                    <span class="resource-info-value">Node</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏷️</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 이름</span>
+                    <span class="resource-info-value">infra-node-01</span>
+                </div>
+            </div>
+        </div>
+        
+                
+            <div class="alert-summary">
+                💬 클러스터 CPU 초과 할당
+            </div>
+            
+                
+            <div class="alert-description">
+                클러스터 CPU 리소스 요청량이 초과 할당됨. 초과 비율: 120%.
+            </div>
+            
+                
+        <div class="alert-timeline">
+            <div class="timeline-item">
+                <span class="timeline-label">🕐 최초 발생</span>
+                <span class="timeline-value">2026-01-24 09:09:00</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="duration-badge long">36시간 0분</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-value">30회</span>
+            </div>
+        </div>
+        
+            </div>
+            
+        <div class="kakao-preview">
+            <div class="kakao-preview-header">
+                <span>💬</span>
+                <span>카카오톡 알림 미리보기</span>
+            </div>
+            <div class="kakao-preview-content">
+                <pre>━━━━━━━━━━━━━━━━━━━━
+🏷️ 클러스터: hdsp-prod-01
+📍 네임스페이스: kube-system
+🔧 리소스: 노드/infra-node-01
+━━━━━━━━━━━━━━━━━━━━
+
+📋 알림 내용:
+클러스터 CPU 리소스 요청량이 초과 할당됨. 초과 비율: 120%.
+
+⚠️ 조치 권고:
+📌 모니터링이 필요합니다.
+잠재적인 문제가 감지되었습니다.
+
+[심각도: 보통 | 지속시간: 36시간 0분]</pre>
+            </div>
+        </div>
+        
+        </div>
+        
+        <div class="alert-card medium">
+            <div class="alert-card-header">
+                <div class="alert-card-header-left">
+                    <div class="alert-card-title">
+                        <span class="emoji">📊</span>
+                        KubeNodeDiskPressure
+                    </div>
+                    <div class="alert-card-meta">
+                        <span class="alert-card-meta-item">🏢 hdsp-prod-01</span> <span class="alert-card-meta-item">📁 kube-system</span> <span class="alert-card-meta-item">🖥️ Node</span>
+                    </div>
+                </div>
+                <div class="alert-card-header-right">
+                    <span class="severity-badge medium">
+                        📊 보통
+                    </span>
+                </div>
+            </div>
+            <div class="alert-content-box">
+                <div class="alert-content-header">
+                    <span class="alert-content-title">
+                        🏷️ worker-node-02
+                    </span>
+                </div>
+                
+        <div class="resource-info-grid">
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏢</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">클러스터</span>
+                    <span class="resource-info-value">hdsp-prod-01</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">📁</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">네임스페이스</span>
+                    <span class="resource-info-value">kube-system</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🖥️</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 타입</span>
+                    <span class="resource-info-value">Node</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏷️</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 이름</span>
+                    <span class="resource-info-value">worker-node-02</span>
+                </div>
+            </div>
+        </div>
+        
+                
+            <div class="alert-summary">
+                💬 노드 디스크 압박
+            </div>
+            
+                
+            <div class="alert-description">
+                노드 worker-node-02에 DiskPressure 상태 발생. 가용 디스크: 5%.
+            </div>
+            
+                
+        <div class="alert-timeline">
+            <div class="timeline-item">
+                <span class="timeline-label">🕐 최초 발생</span>
+                <span class="timeline-value">2026-01-25 20:39:00</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="duration-badge long">30분</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-value">10회</span>
+            </div>
+        </div>
+        
+            </div>
+            
+        <div class="kakao-preview">
+            <div class="kakao-preview-header">
+                <span>💬</span>
+                <span>카카오톡 알림 미리보기</span>
+            </div>
+            <div class="kakao-preview-content">
+                <pre>━━━━━━━━━━━━━━━━━━━━
+🏷️ 클러스터: hdsp-prod-01
+📍 네임스페이스: kube-system
+🔧 리소스: 노드/worker-node-02
+━━━━━━━━━━━━━━━━━━━━
+
+📋 알림 내용:
+노드 worker-node-02에 DiskPressure 상태 발생. 가용 디스크: 5%.
+
+⚠️ 조치 권고:
+📌 모니터링이 필요합니다.
+잠재적인 문제가 감지되었습니다.
+
+[심각도: 보통 | 지속시간: 30분]</pre>
+            </div>
+        </div>
+        
+        </div>
+        
+        <div class="alert-card medium">
+            <div class="alert-card-header">
+                <div class="alert-card-header-left">
+                    <div class="alert-card-title">
+                        <span class="emoji">📊</span>
+                        KubeQuotaAlmostFull
+                    </div>
+                    <div class="alert-card-meta">
+                        <span class="alert-card-meta-item">🏢 hdsp-staging-01</span> <span class="alert-card-meta-item">📁 staging</span> <span class="alert-card-meta-item">🐳 Pod</span>
+                    </div>
+                </div>
+                <div class="alert-card-header-right">
+                    <span class="severity-badge medium">
+                        📊 보통
+                    </span>
+                </div>
+            </div>
+            <div class="alert-content-box">
+                <div class="alert-content-header">
+                    <span class="alert-content-title">
+                        🏷️ staging-quota
+                    </span>
+                </div>
+                
+        <div class="resource-info-grid">
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏢</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">클러스터</span>
+                    <span class="resource-info-value">hdsp-staging-01</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">📁</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">네임스페이스</span>
+                    <span class="resource-info-value">staging</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🐳</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 타입</span>
+                    <span class="resource-info-value">Pod</span>
+                </div>
+            </div>
+            <div class="resource-info-item">
+                <span class="resource-info-icon">🏷️</span>
+                <div class="resource-info-content">
+                    <span class="resource-info-label">리소스 이름</span>
+                    <span class="resource-info-value">staging-quota</span>
+                </div>
+            </div>
+        </div>
+        
+                
+            <div class="alert-summary">
+                💬 리소스 쿼터 임계치 도달
+            </div>
+            
+                
+            <div class="alert-description">
+                네임스페이스 staging이 CPU 쿼터의 85%를 사용 중입니다.
+            </div>
+            
+                
+        <div class="alert-timeline">
+            <div class="timeline-item">
+                <span class="timeline-label">🕐 최초 발생</span>
+                <span class="timeline-value">2026-01-25 19:09:00</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">⏱️ 지속 시간</span>
+                <span class="duration-badge long">2시간 0분</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-label">🔢 발생 횟수</span>
+                <span class="timeline-value">20회</span>
+            </div>
+        </div>
+        
+            </div>
+            
+        <div class="kakao-preview">
+            <div class="kakao-preview-header">
+                <span>💬</span>
+                <span>카카오톡 알림 미리보기</span>
+            </div>
+            <div class="kakao-preview-content">
+                <pre>━━━━━━━━━━━━━━━━━━━━
+🏷️ 클러스터: hdsp-staging-01
+📍 네임스페이스: staging
+🔧 리소스: 파드/staging-quota
+━━━━━━━━━━━━━━━━━━━━
+
+📋 알림 내용:
+네임스페이스 staging이 CPU 쿼터의 85%를 사용 중입니다.
+
+⚠️ 조치 권고:
+📌 모니터링이 필요합니다.
+잠재적인 문제가 감지되었습니다.
+
+[심각도: 보통 | 지속시간: 2시간 0분]</pre>
+            </div>
+        </div>
+        
+        </div>
+        
+        </div>
+        
+    </div>
+</body>
+</html>

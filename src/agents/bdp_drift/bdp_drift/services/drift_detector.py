@@ -10,6 +10,7 @@ from typing import Any, Dict, List, Optional, Set
 
 from src.agents.bdp_drift.bdp_drift.services.models import (
     Baseline,
+    DriftCategory,
     DriftField,
     DriftResult,
     DriftSeverity,
@@ -212,7 +213,7 @@ class DriftDetector:
             baseline_value = baseline.get(key)
             current_value = current.get(key)
 
-            # 키가 베이스라인에만 있음 (삭제됨)
+            # 키가 베이스라인에만 있음 (삭제됨) → DISCOVERED
             if key not in current:
                 drift_fields.append(
                     DriftField(
@@ -220,12 +221,13 @@ class DriftDetector:
                         baseline_value=baseline_value,
                         current_value=None,
                         severity=get_field_severity(key),
+                        category=DriftCategory.DISCOVERED,
                         description=f"필드가 삭제되었습니다: {key}",
                     )
                 )
                 continue
 
-            # 키가 현재 설정에만 있음 (추가됨)
+            # 키가 현재 설정에만 있음 (추가됨) → DISCOVERED
             if key not in baseline:
                 drift_fields.append(
                     DriftField(
@@ -233,6 +235,7 @@ class DriftDetector:
                         baseline_value=None,
                         current_value=current_value,
                         severity=get_field_severity(key),
+                        category=DriftCategory.DISCOVERED,
                         description=f"필드가 추가되었습니다: {key}",
                     )
                 )
@@ -300,6 +303,7 @@ class DriftDetector:
     def _calculate_severity(self, drift_fields: List[DriftField]) -> DriftSeverity:
         """드리프트 심각도 계산.
 
+        MONITORED 필드만 심각도 계산에 포함 (DISCOVERED 제외).
         가장 높은 심각도 반환.
 
         Args:
@@ -311,6 +315,15 @@ class DriftDetector:
         if not drift_fields:
             return DriftSeverity.LOW
 
+        # MONITORED 필드만 심각도 계산에 포함
+        monitored_fields = [
+            f for f in drift_fields
+            if f.category == DriftCategory.MONITORED
+        ]
+
+        if not monitored_fields:
+            return DriftSeverity.LOW  # DISCOVERED 필드만 있으면 LOW
+
         severity_order = [
             DriftSeverity.CRITICAL,
             DriftSeverity.HIGH,
@@ -319,7 +332,7 @@ class DriftDetector:
         ]
 
         for severity in severity_order:
-            if any(f.severity == severity for f in drift_fields):
+            if any(f.severity == severity for f in monitored_fields):
                 return severity
 
         return DriftSeverity.LOW

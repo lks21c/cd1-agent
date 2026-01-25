@@ -1,0 +1,26 @@
+{
+  "EventBusName": "${EVENT_BUS:-cd1-agent-events}",
+  "Source": "cd1-agent.hdsp-monitoring",
+  "DetailType": "K8s Alert",
+  "Region": "${AWS_REGION:-ap-northeast-2}",
+  "EventPatterns": {
+    "critical_alert": {
+      "source": ["cd1-agent.hdsp-monitoring"],
+      "detail-type": ["K8s Alert"],
+      "detail": {
+        "severity_level": ["critical"]
+      }
+    },
+    "high_alert": {
+      "source": ["cd1-agent.hdsp-monitoring"],
+      "detail-type": ["K8s Alert"],
+      "detail": {
+        "severity_level": ["high"]
+      }
+    },
+    "all_alerts": {
+      "source": ["cd1-agent.hdsp-monitoring"],
+      "detail-type": ["K8s Alert"]
+    }
+  }
+}

@@ -37,6 +37,13 @@ class DriftSeverity(str, Enum):
     LOW = "low"             # 참고용
 
 
+class DriftCategory(str, Enum):
+    """드리프트 분류."""
+
+    MONITORED = "monitored"    # 베이스라인에 있던 필드의 변경 → 주요 관심 대상
+    DISCOVERED = "discovered"  # 베이스라인에 없던 필드 추가/삭제 → 정보성으로 표시
+
+
 class ChangeType(str, Enum):
     """변경 타입."""
 
@@ -113,7 +120,10 @@ class DriftField:
     baseline_value: Any
     current_value: Any
     severity: DriftSeverity
+    category: DriftCategory = DriftCategory.MONITORED  # 기본값: 모니터링 대상 필드
     description: Optional[str] = None
+    impact: Optional[str] = None  # 변경 영향도
+    recommendation: Optional[str] = None  # 권장 조치
 
 
 @dataclass
@@ -130,6 +140,7 @@ class DriftResult:
     current_config: Dict[str, Any] = field(default_factory=dict)
     baseline_version: int = 0
     detection_timestamp: Optional[datetime] = None
+    baseline_timestamp: Optional[datetime] = None  # 베이스라인 설정 시점
     account_id: Optional[str] = None
     account_name: Optional[str] = None
     confidence_score: float = 1.0
@@ -150,6 +161,26 @@ class DriftResult:
         """HIGH 드리프트 수."""
         return len([f for f in self.drift_fields if f.severity == DriftSeverity.HIGH])
 
+    @property
+    def monitored_fields(self) -> List["DriftField"]:
+        """MONITORED 카테고리 필드 목록."""
+        return [f for f in self.drift_fields if f.category == DriftCategory.MONITORED]
+
+    @property
+    def discovered_fields(self) -> List["DriftField"]:
+        """DISCOVERED 카테고리 필드 목록."""
+        return [f for f in self.drift_fields if f.category == DriftCategory.DISCOVERED]
+
+    @property
+    def monitored_count(self) -> int:
+        """MONITORED 필드 수."""
+        return len(self.monitored_fields)
+
+    @property
+    def discovered_count(self) -> int:
+        """DISCOVERED 필드 수."""
+        return len(self.discovered_fields)
+
     def to_dict(self) -> Dict[str, Any]:
         """딕셔너리로 변환."""
         return {
@@ -165,7 +196,10 @@ class DriftResult:
                     "baseline_value": f.baseline_value,
                     "current_value": f.current_value,
                     "severity": f.severity.value,
+                    "category": f.category.value,
                     "description": f.description,
+                    "impact": f.impact,
+                    "recommendation": f.recommendation,
                 }
                 for f in self.drift_fields
             ],
@@ -173,6 +207,11 @@ class DriftResult:
             "detection_timestamp": (
                 self.detection_timestamp.isoformat()
                 if self.detection_timestamp
+                else None
+            ),
+            "baseline_timestamp": (
+                self.baseline_timestamp.isoformat()
+                if self.baseline_timestamp
                 else None
             ),
             "account_id": self.account_id,
